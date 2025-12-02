@@ -809,10 +809,19 @@ var POReceiptShortcut = class {
             const qty = this.num(this.RVQA);
             this.log.Info(`Prompting for ${qty} serial numbers`);
             
-            // Create form content with input fields for each serial
-            let formHtml = '<div style="padding: 15px;"><form>';
+            // Safety check: Prevent excessive quantity that could crash browser
+            const MAX_SERIALS = 500;  // Reasonable limit for manual entry
+            if (qty > MAX_SERIALS) {
+                this.logError(`Serial quantity ${qty} exceeds maximum allowed ${MAX_SERIALS}`);
+                reject(new Error(`Cannot process ${qty} serials. Maximum allowed is ${MAX_SERIALS}. Please use batch import for large quantities.`));
+                return;
+            }
             
-            // Add PO number display with copy functionality (smaller version)
+            // Create scrollable form content with input fields for each serial
+            // Using a scrollable container to handle large quantities without bleeding off-screen
+            let formHtml = '<div style="padding: 15px;">';
+            
+            // Add PO number display with copy functionality (fixed at top, outside scroll area)
             formHtml += `<div style="margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px; font-size: 12px;">
                 <label class="inforLabel" style="font-weight: bold; font-size: 11px;">PO:</label>
                 <div style="display: flex; align-items: center; margin-top: 2px;">
@@ -820,7 +829,14 @@ var POReceiptShortcut = class {
                            style="flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;">
                     <button type="button" id="copyPoNumber" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;">📋</button>
                 </div>
+                <div style="margin-top: 4px; font-size: 11px; color: #666;">
+                    <strong>Quantity:</strong> ${qty} serial${qty !== 1 ? 's' : ''} required
+                </div>
             </div>`;
+            
+            // Scrollable container for serial inputs - prevents off-screen bleeding
+            // Max height ensures dialog fits on screen while allowing smooth scrolling
+            formHtml += '<div id="serialInputsContainer" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;"><form>';
             
             for (let i = 0; i < qty; i++) {
                 formHtml += `<div style="margin-bottom: 10px;">
@@ -830,11 +846,12 @@ var POReceiptShortcut = class {
                            ${i === 0 ? 'autofocus' : ''}>
                 </div>`;
             }
-            formHtml += '</form></div>';
+            formHtml += '</form></div></div>';
             
             const dialogContent = $(formHtml);
             
             // Method to show validation errors within the dialog context
+            // Error message appears above the scrollable area for visibility
             dialogContent.showValidationError = function(message) {
                 // Remove any existing error messages
                 dialogContent.find('.validation-error').remove();
@@ -855,8 +872,8 @@ var POReceiptShortcut = class {
                     </div>
                 `);
                 
-                // Insert error message at the top of the form
-                dialogContent.find('form').prepend(errorDiv);
+                // Insert error message before the scrollable container (stays visible while scrolling)
+                dialogContent.find('#serialInputsContainer').before(errorDiv);
                 
                 // Auto-remove after 5 seconds
                 setTimeout(() => errorDiv.fadeOut(() => errorDiv.remove()), 5000);
@@ -898,8 +915,15 @@ var POReceiptShortcut = class {
                     const currentIndex = parseInt(this.id.replace('serial', ''));
                     
                     if (qty > 1 && currentIndex < qty - 1) {
-                        // Multiple serials: move to next input
-                        dialogContent.find(`#serial${currentIndex + 1}`).focus();
+                        // Multiple serials: move to next input and scroll it into view
+                        const nextInput = dialogContent.find(`#serial${currentIndex + 1}`);
+                        nextInput.focus();
+                        // Ensure the next input is visible in the scrollable container
+                        const container = dialogContent.find('#serialInputsContainer');
+                        const nextInputOffset = nextInput.position().top;
+                        if (nextInputOffset > container.height() - 60) {
+                            container.scrollTop(container.scrollTop() + 60);
+                        }
                     } else {
                         // Last serial or single serial: trigger Save button
                         const saveButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function() {
@@ -908,32 +932,48 @@ var POReceiptShortcut = class {
                         if (saveButton.length > 0) {
                             saveButton.click();
                         } else {
-                            // Fallback: simulate Save button click with proper validation
+                            // Fallback: simulate Save button click with updated validation logic
                             const serials = [];
                             let invalid = [];
 
-                            // Validate all serial inputs (duplicate the Save button logic)
+                            // Validate all serial inputs - check format and presence first
                             for (let i = 0; i < qty; i++) {
                                 const $field = dialogContent.find(`#serial${i}`);
                                 const val = $field.val().trim();
 
-                                if (!val || val.length > 20 || !/^[A-Z0-9\-]+$/.test(val)) {
+                                if (!val) {
                                     $field.css('border', '2px solid red');
-                                    invalid.push(`Serial ${i + 1}`);
+                                    invalid.push(`Serial ${i + 1} (blank)`);
+                                } else if (val.length > 20) {
+                                    $field.css('border', '2px solid red');
+                                    invalid.push(`Serial ${i + 1} (too long)`);
+                                } else if (!/^[A-Z0-9\-]+$/.test(val)) {
+                                    $field.css('border', '2px solid red');
+                                    invalid.push(`Serial ${i + 1} (invalid characters)`);
                                 } else {
                                     serials.push(val);
                                 }
                             }
 
-                            // Check for duplicates
-                            if (new Set(serials).size !== qty) {
-                                showValidationError('Duplicates detected. Ensure each serial is unique.');
+                            // Show validation errors if any invalid entries found
+                            if (invalid.length) {
+                                showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed), max 20 characters.`);
                                 return;
                             }
 
-                            // Show validation errors if any
-                            if (invalid.length) {
-                                showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed).`);
+                            // Check for duplicates only after all serials are validated
+                            if (new Set(serials).size !== qty) {
+                                const seen = new Set();
+                                const duplicates = [];
+                                serials.forEach((serial, idx) => {
+                                    if (seen.has(serial)) {
+                                        dialogContent.find(`#serial${idx}`).css('border', '2px solid orange');
+                                        if (!duplicates.includes(serial)) duplicates.push(serial);
+                                    } else {
+                                        seen.add(serial);
+                                    }
+                                });
+                                showValidationError(`Duplicates detected: ${duplicates.join(', ')}\nEnsure each serial is unique.`);
                                 return;
                             }
 
@@ -959,28 +999,45 @@ var POReceiptShortcut = class {
                         const serials = [];
                         let invalid = [];
 
-                        // Validate all serial inputs
+                        // Validate all serial inputs - check format and presence first
                         for (let i = 0; i < qty; i++) {
                             const $field = dialogContent.find(`#serial${i}`);
                             const val = $field.val().trim();
 
-                            if (!val || val.length > 20 || !/^[A-Z0-9\-]+$/.test(val)) {
+                            if (!val) {
                                 $field.css('border', '2px solid red');
-                                invalid.push(`Serial ${i + 1}`);
+                                invalid.push(`Serial ${i + 1} (blank)`);
+                            } else if (val.length > 20) {
+                                $field.css('border', '2px solid red');
+                                invalid.push(`Serial ${i + 1} (too long)`);
+                            } else if (!/^[A-Z0-9\-]+$/.test(val)) {
+                                $field.css('border', '2px solid red');
+                                invalid.push(`Serial ${i + 1} (invalid characters)`);
                             } else {
                                 serials.push(val);
                             }
                         }
 
-                        // Check for duplicates
-                        if (new Set(serials).size !== qty) {
-                            showValidationError('Duplicates detected. Ensure each serial is unique.');
+                        // Show validation errors if any invalid entries found
+                        if (invalid.length) {
+                            showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed), max 20 characters.`);
                             return;
                         }
 
-                        // Show validation errors if any
-                        if (invalid.length) {
-                            showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed).`);
+                        // Check for duplicates only after all serials are validated
+                        if (new Set(serials).size !== qty) {
+                            // Find and highlight duplicate serials
+                            const seen = new Set();
+                            const duplicates = [];
+                            serials.forEach((serial, idx) => {
+                                if (seen.has(serial)) {
+                                    dialogContent.find(`#serial${idx}`).css('border', '2px solid orange');
+                                    if (!duplicates.includes(serial)) duplicates.push(serial);
+                                } else {
+                                    seen.add(serial);
+                                }
+                            });
+                            showValidationError(`Duplicates detected: ${duplicates.join(', ')}\nEnsure each serial is unique.`);
                             return;
                         }
 
@@ -1012,9 +1069,10 @@ var POReceiptShortcut = class {
             const dialogOptions = {
                 title: "📋 Enter Serial Numbers",
                 dialogType: "General",
-                modal: true, // Changed back to true
-                width: 450,
-                minHeight: Math.min(350, 150 + (qty * 40)),  // Dynamic height based on quantity
+                modal: true,
+                width: 500,  // Increased width for better readability with scrollbar
+                height: Math.min(600, 250 + (Math.min(qty, 10) * 40)),  // Dynamic height, capped at 600px
+                maxHeight: 600,  // Enforce maximum height to prevent off-screen dialogs
                 icon: "info",
                 closeOnEscape: true,
                 close: function () {
