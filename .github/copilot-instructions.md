@@ -14,7 +14,14 @@ The M3 Odin SDK is a framework for building web applications for Infor M3 ERP. I
   - `/projects/infor-up/m3-odin`: Core library (RxJS only, no Angular deps)
   - `/projects/infor-up/m3-odin-angular`: Angular wrapper services
   - `/src`: Sample applications demonstrating SDK usage
-- `/H5ScriptSDK_10.4.1_20240208`: Legacy H5 Script SDK samples (TypeScript-based, different pattern)
+- `/H5ScriptSDK_10.4.1_20251022`: **Separate H5 Script SDK** (Oct 2025 release) - for scripts that run inside H5 panels/screens (different use case than Odin)
+
+### H5 Script SDK vs Odin SDK
+**Important distinction**: This repo contains TWO different SDKs with different purposes:
+- **Odin SDK** (`/m3-odin`, `/cli`): Build standalone web applications deployed as H5 apps at `/mne/apps/{name}`. Uses RxJS services, runs in its own context.
+- **H5 Script SDK** (`/H5ScriptSDK_10.4.1_20240208`): Create TypeScript scripts that run **inside** M3 H5 panels/screens. Uses global interfaces (`IInstanceController`, `IContentElement`, etc.), manipulates existing H5 UI elements directly.
+
+Use Odin for new applications with custom UI. Use H5 Script SDK only when extending/customizing existing M3 screens.
 
 ### Core vs Angular Pattern
 **Critical distinction**: The core library (`@infor-up/m3-odin`) implements "Core" classes with RxJS Observables that have NO Angular dependencies. Angular services in `@infor-up/m3-odin-angular` wrap these core classes and provide DI integration:
