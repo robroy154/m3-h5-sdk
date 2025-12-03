@@ -1667,7 +1667,7 @@ var POReceiptShortcut = class {
                 const line = new MIRequest();
                 line.program = 'MHS850MI';
                 line.transaction = 'AddWhsLine';
-                line.maxReturnedRecords = 1;
+                line.maxReturnedRecords = 100;
                 line.record = {
                     WHLO: this.WHLO,
                     MSGN: this.MSGN,
@@ -1716,7 +1716,7 @@ var POReceiptShortcut = class {
             const pr = new MIRequest();
             pr.program = 'MHS850MI';
             pr.transaction = 'PrcWhsTran';   // Process Warehouse Transaction
-            pr.maxReturnedRecords = 100;
+            pr.maxReturnedRecords = 1;
             pr.record = {
                 MSGN: this.MSGN,             // Message Number from header creation
                 PRFL: '*EXE'                 // Process Flag (*EXE = Execute immediately)
@@ -1932,13 +1932,13 @@ var POReceiptShortcut = class {
             if (keywords.some(k => msg.includes(k))) return true;
 
             // Known MI error codes that often indicate transient state
-            if (['WDS0101', 'M3LOCK'].includes(code)) return true;
+            if (["WPU0901", "M3LOCK"].includes(code)) return true;
         } catch (_) {}
         return false;
     }
 
     // Execute PrcWhsTran with limited retries and exponential backoff
-    async prcWhsTranWithRetry(pr, maxRetries = 3) {
+    async prcWhsTranWithRetry(pr, maxRetries = 2) {
         let attempt = 1;
         let lastError = null;
         while (attempt <= maxRetries) {
