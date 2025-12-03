@@ -105,14 +105,21 @@ var POReceiptShortcut = class {
 
             // Technical details for troubleshooting
             const errorCode = error.errorCode || '';
+            const errorMessage = error.errorMessage || '';
             const errorField = error.errorField || '';
             const program = error.program || '';
             const transaction = error.transaction || '';
 
-            if (errorCode || errorField || program) {
+            if (errorCode || errorMessage || errorField || program) {
                 technicalDetails = '\n\nTechnical Details:';
                 if (program && transaction) technicalDetails += `\n• API: ${program}/${transaction}`;
-                if (errorCode) technicalDetails += `\n• Error Code: ${errorCode}`;
+                if (errorCode && errorMessage) {
+                    technicalDetails += `\n• Error: ${errorCode}: ${errorMessage}`;
+                } else if (errorMessage) {
+                    technicalDetails += `\n• Error: ${errorMessage}`;
+                } else if (errorCode) {
+                    technicalDetails += `\n• Error Code: ${errorCode}`;
+                }
                 if (errorField) technicalDetails += `\n• Field: ${errorField}`;
             }
         }
@@ -257,7 +264,7 @@ var POReceiptShortcut = class {
 
             /* ─── Branch by control method ─── */
             // Process based on item lot control method (INDI field)
-            console.log(`[CONTROL-METHOD] Processing item with INDI=${this.INDI} (${this.INDI === '2' ? 'Serial' : this.INDI === '3' ? 'Lot' : 'Uncontrolled'})`);
+            console.log(`[CONTROL-METHOD] Processing item with INDI=${this.INDI} (${this.INDI === '2' ? 'Serial' : this.INDI === '3' ? 'Lot' : 'Non-lotted'})`);
             
             if (this.INDI === '2') {        // Serial controlled items
                 console.log('[SERIAL-CONTROL] Starting serial processing workflow');
@@ -317,15 +324,17 @@ var POReceiptShortcut = class {
                 const t9 = performance.now();
                 console.log(`[Timing] checkLot+process (lot): ${(t9-t8).toFixed(1)} ms`);
             } else {                        
-                console.log('[UNCONTROLLED] Starting uncontrolled item processing workflow');
+                console.log('[NON-LOTTED] Starting non-lotted item processing workflow');
                 await this.promptConfirm(); // Simple confirmation dialog - NO busy
-                console.log('[UNCONTROLLED-CONFIRMED] User confirmed receipt');
+                console.log("[NON-LOTTED-CONFIRMED] User confirmed receipt");
                 
                 const t8 = performance.now();
                 await this.process([{ BANO: null, RVQA: this.RVQA, EXPI: null }], false);
-                console.log('[UNCONTROLLED-SUCCESS] ✓ Uncontrolled receipt completed successfully');
+                console.log(
+                  "[NON-LOTTED-SUCCESS] ✓ Non-lotted receipt completed successfully"
+                );
                 const t9 = performance.now();
-                console.log(`[Timing] process (uncontrolled): ${(t9-t8).toFixed(1)} ms`);
+                console.log(`[Timing] process (non-lotted): ${(t9-t8).toFixed(1)} ms`);
             }
 
             await this.advance('Process');
@@ -810,7 +819,7 @@ var POReceiptShortcut = class {
             this.log.Info(`Prompting for ${qty} serial numbers`);
             
             // Safety check: Prevent excessive quantity that could crash browser
-            const MAX_SERIALS = 500;  // Reasonable limit for manual entry
+            const MAX_SERIALS = 25;  // Reasonable limit for manual entry
             if (qty > MAX_SERIALS) {
                 this.logError(`Serial quantity ${qty} exceeds maximum allowed ${MAX_SERIALS}`);
                 reject(new Error(`Cannot process ${qty} serials. Maximum allowed is ${MAX_SERIALS}. Please use batch import for large quantities.`));
@@ -827,7 +836,8 @@ var POReceiptShortcut = class {
                 <div style="display: flex; align-items: center; margin-top: 2px;">
                     <input id="poNumberDisplay" type="text" readonly value="${this.PUNO}" 
                            style="flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;">
-                    <button type="button" id="copyPoNumber" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;">📋</button>
+                    <button type="button" id="copyPoNumber" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Copy PO number">📋</button>
+                    <button type="button" id="generateSerials" style="margin-left: 6px; padding: 3px 6px; background: #2C8C3E; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Generate serials">🔢</button>
                 </div>
                 <div style="margin-top: 4px; font-size: 11px; color: #666;">
                     <strong>Quantity:</strong> ${qty} serial${qty !== 1 ? 's' : ''} required
@@ -895,6 +905,45 @@ var POReceiptShortcut = class {
                 setTimeout(() => {
                     btn.text(originalText).css('background', '#0072C6');
                 }, 1500);
+            });
+            
+            // Add auto-generate functionality for sequential serials
+            dialogContent.find('#generateSerials').on('click', function() {
+                const poNumber = dialogContent.find('#poNumberDisplay').val();
+                console.log(`[GENERATE-SERIALS] Auto-generating ${qty} sequential serials based on PO: ${poNumber}`);
+                
+                // Clear any existing error messages
+                dialogContent.find('.validation-error').remove();
+                
+                // Populate each input field with PO-N format
+                for (let i = 0; i < qty; i++) {
+                    const serialValue = `${poNumber}-${i + 1}`;
+                    const inputField = dialogContent.find(`#serial${i}`);
+                    inputField.val(serialValue);
+                    // Clear any error styling
+                    inputField.css('border-color', '');
+                    inputField.css('background-color', '');
+                }
+                
+                console.log(`[GENERATE-SERIALS] ✓ Generated serials: ${poNumber}-1 through ${poNumber}-${qty}`);
+                
+                // Show success feedback
+                const successMsg = $('<div class="validation-success" style="padding: 6px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; margin-bottom: 10px; font-size: 12px;">✓ Generated ' + qty + ' sequential serial' + (qty !== 1 ? 's' : '') + ': ' + poNumber + '-1 through ' + poNumber + '-' + qty + '</div>');
+                dialogContent.find('#serialInputsContainer').before(successMsg);
+                
+                // Auto-remove success message after 3 seconds
+                setTimeout(() => successMsg.fadeOut(300, function() { $(this).remove(); }), 3000);
+                
+                // Visual feedback on button
+                const btn = $(this);
+                const originalText = btn.text();
+                btn.text('✓ Done!').css('background', '#28a745');
+                setTimeout(() => {
+                    btn.text(originalText).css('background', '#2C8C3E');
+                }, 1500);
+                
+                // Focus on the first input for immediate review/editing
+                dialogContent.find('#serial0').focus();
             });
             
             // Add input validation and uppercase conversion
@@ -1554,19 +1603,19 @@ var POReceiptShortcut = class {
         
         try {
             // ───────────── AddWhsHead ─────────────
-            // Create warehouse transaction header for WMS processing
+            // Create warehouse transaction header for Interface processing
             const head = Object.assign(new MIRequest(), {
-                program: 'MHS850MI',        // WMS Transaction Processing API
-                transaction: 'AddWhsHead',   // Create transaction header
-                maxReturnedRecords: 1,
-                record: {
-                    WHLO: this.WHLO,        // Warehouse Location
-                    QLFR: '20',             // Qualifier (20 = Purchase Receipt)
-                    E0PA: 'WS',             // User ID (WS = Web Service)
-                    E0PB: 'WS',             // Terminal ID
-                    E007: '20',             // Transaction Type (20 = Receipt)
-                    E065: 'PPS300'          // Reference Program (PO Receipt)
-                }
+              program: "MHS850MI", // Interface Transaction Processing API
+              transaction: "AddWhsHead", // Create transaction header
+              maxReturnedRecords: 1,
+              record: {
+                WHLO: this.WHLO, // Warehouse
+                QLFR: "20", // Qualifier (20 = Purchase Receipt)
+                E0PA: "WS", // WS Partner (MMS865)
+                E0PB: "WS", // WS Partner (MMS865)
+                E007: "20", // Qualifier (20 = Purchase Receipt)
+                E065: "PPS300", // Message Type (MMS865)
+              },
             });
 
             console.log('[WHS-HEAD] AddWhsHead payload:', JSON.stringify(head.record, null, 2));
@@ -1589,7 +1638,7 @@ var POReceiptShortcut = class {
             console.log('[WHS-HEAD-SUCCESS] → MSGN received:', this.MSGN);
 
             // ───────────── AddWhsPack + AddWhsLine ─────────────
-            // Create single pack for all items (serial, lot, or uncontrolled)
+            // Create single pack for all items (serial, lot, or non-lotted)
             const packNumber = `${this.PUNO}_${this.PNLI}`;  // Use PUNO_PNLI format for all scenarios
             
             const pack = new MIRequest();
@@ -1610,7 +1659,7 @@ var POReceiptShortcut = class {
             this.logMIResponse(pack.program, pack.transaction, packResult, true);
             
             // Brief delay to ensure pack creation is committed before adding lines
-            await this.sleep(25);
+            await this.sleep(50);
 
             // Add all line items to the single pack
             console.log(`[WHS-LINES] Adding ${lines.length} line(s) to pack ${packNumber}`);
@@ -1626,7 +1675,7 @@ var POReceiptShortcut = class {
                     QLFR: '20',
                     ITNO: this.ITNO,     // Item Number
                     RVQA: rec.RVQA,      // Received Quantity (1 for serials, full qty for others)
-                    TTYP: '25',          // Transaction Type (25 = Receipt)
+                    //TTYP: '25',          // Transaction Type (25 = Putaway)
                     RIDN: this.PUNO,     // Reference ID (PO Number)
                     RIDL: this.PNLI,     // Reference Line (PO Line)
                     RIDX: this.PNLS,     // Reference Suffix (PO Line Suffix)
