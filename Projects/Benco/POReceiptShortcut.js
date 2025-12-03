@@ -1708,7 +1708,7 @@ var POReceiptShortcut = class {
             // Allow lines to settle before processing, especially important for multiple serials
             if (lines.length > 1) {
                 console.log(`[WHS-LINES] Waiting for ${lines.length} lines to settle...`);
-                await this.sleep(50);
+                await this.sleep(200);
             }
 
             // ───────────── PrcWhsTran ─────────────
@@ -1726,9 +1726,8 @@ var POReceiptShortcut = class {
             console.log(`[WHS-PROCESS] [${new Date().toISOString()}] → Starting PrcWhsTran`);
             this.logMIRequest(pr.program, pr.transaction, pr.record);
             
-            const prc = await this.mi.executeRequest(pr);
-            console.log(`[WHS-PROCESS] [${new Date().toISOString()}] → Finished PrcWhsTran`);
-            this.logMIResponse(pr.program, pr.transaction, prc, true);
+            // Execute with retry/backoff to mitigate transient lock/busy errors
+            const prc = await this.prcWhsTranWithRetry(pr, 3);
 
             // Validate transaction processing was successful
             if (!prc || !prc.item) {
@@ -1768,16 +1767,24 @@ var POReceiptShortcut = class {
                 let errorMessage = 'Transaction processing failed.\n\n';
                 let troubleshootingInfo = '';
 
-                // Determine error level based on status code
-                if (['15', '20'].includes(transactionStatus)) {
-                    // Header level errors
-                    troubleshootingInfo = `Header level error detected. Check MHS850 for details.\nMessage no = ${this.MSGN}`;
-                } else if (['25', '30', '35', '40'].includes(transactionStatus)) {
-                    // Package or line level errors
-                    troubleshootingInfo = `Package/Line level error detected. Check MHS851 for details.\nMessage no = ${this.MSGN}\nPackage no = ${packNumber}`;
+                // Prefer a concrete API error message if available
+                const extracted = this.extractErrorMessage(statusResult, 'Transaction processing');
+
+                if (extracted && extracted.trim() && !extracted.startsWith('Transaction processing failed')) {
+                    // Use the actual API-provided error message/details
+                    troubleshootingInfo = extracted;
                 } else {
-                    // Other error statuses
-                    troubleshootingInfo = `Processing error (Status: ${transactionStatus}). Check MHS850/MHS851 for details.\nMessage no = ${this.MSGN}`;
+                    // Fallback: Determine error level based on status code
+                    if (['15', '20'].includes(transactionStatus)) {
+                        // Header level errors
+                        troubleshootingInfo = `Header level error detected. Check MHS850 for details.\nMessage no = ${this.MSGN}`;
+                    } else if (['25', '30', '35', '40'].includes(transactionStatus)) {
+                        // Package or line level errors
+                        troubleshootingInfo = `Package/Line level error detected. Check MHS851 for details.\nMessage no = ${this.MSGN}\nPackage no = ${packNumber}`;
+                    } else {
+                        // Other error statuses
+                        troubleshootingInfo = `Processing error (Status: ${transactionStatus}). Check MHS850/MHS851 for details.\nMessage no = ${this.MSGN}`;
+                    }
                 }
 
                 // Add status description for clarity
@@ -1796,7 +1803,19 @@ var POReceiptShortcut = class {
                 };
 
                 const statusDesc = statusDescriptions[transactionStatus] || 'Unknown status';
-                errorMessage += `Status: ${transactionStatus} (${statusDesc})\n\n${troubleshootingInfo}`;
+
+                // Build a clearer, structured message
+                const lines = [];
+                // If troubleshootingInfo already includes a detailed API error, surface it on a dedicated line
+                if (troubleshootingInfo && troubleshootingInfo.trim()) {
+                    lines.push(`Error: ${troubleshootingInfo.replace(/^[\n\s]+|[\n\s]+$/g, '')}`);
+                }
+                lines.push(`Status: ${transactionStatus} (${statusDesc})`);
+                lines.push(`Message no: ${this.MSGN}`);
+                if (typeof packNumber !== 'undefined') {
+                    lines.push(`Package no: ${packNumber}`);
+                }
+                errorMessage += lines.join('\n');
 
                 console.error('[WHS-STATUS-ERROR] Transaction failed with status:', transactionStatus, statusDesc);
                 
@@ -1896,6 +1915,53 @@ var POReceiptShortcut = class {
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         return `${year}${month}${day}`;
+    }
+
+    // Detect transient lock/busy errors for ProcessTran retry logic
+    isTransientProcessLock(e) {
+        try {
+            const status = e && e.statusCode;
+            const code = ((e && e.errorCode) || '').toString().toUpperCase();
+            const msg = ((e && (e.errorMessage || e.message)) || '').toString().toLowerCase();
+
+            // HTTP-style transient signals
+            if (status === 409 || status === 503) return true;
+
+            // Common lock/busy keywords
+            const keywords = ['locked', 'record lock', 'busy', 'in use', 'try again', 'temporary', 'timeout', 'deadlock'];
+            if (keywords.some(k => msg.includes(k))) return true;
+
+            // Known MI error codes that often indicate transient state
+            if (["WPU0901", "M3LOCK"].includes(code)) return true;
+        } catch (_) {}
+        return false;
+    }
+
+    // Execute PrcWhsTran with limited retries and exponential backoff
+    async prcWhsTranWithRetry(pr, maxRetries = 2) {
+        let attempt = 1;
+        let lastError = null;
+        while (attempt <= maxRetries) {
+            try {
+                const result = await this.mi.executeRequest(pr);
+                console.log(`[WHS-PROCESS] [${new Date().toISOString()}] → Finished PrcWhsTran (attempt ${attempt})`);
+                this.logMIResponse(pr.program, pr.transaction, result, true);
+                return result;
+            } catch (e) {
+                this.logMIResponse(pr.program, pr.transaction, e, false);
+                lastError = e;
+                if (!this.isTransientProcessLock(e) || attempt === maxRetries) {
+                    console.error(`[WHS-PROCESS] PrcWhsTran failed (final). No retry.`, e);
+                    throw e;
+                }
+                const backoff = 300 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 100);
+                console.warn(`[WHS-PROCESS] Transient lock/busy detected. Retrying in ${backoff} ms (attempt ${attempt + 1}/${maxRetries})`);
+                await this.sleep(backoff);
+                attempt++;
+            }
+        }
+        // Should not reach here, but throw last error defensively
+        throw lastError || new Error('Unknown error executing PrcWhsTran');
     }
 
 };
