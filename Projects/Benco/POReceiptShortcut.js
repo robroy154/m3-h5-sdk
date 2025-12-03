@@ -1932,13 +1932,13 @@ var POReceiptShortcut = class {
             if (keywords.some(k => msg.includes(k))) return true;
 
             // Known MI error codes that often indicate transient state
-            if (["WPU0901", "M3LOCK"].includes(code)) return true;
+            if (['WDS0101', 'M3LOCK'].includes(code)) return true;
         } catch (_) {}
         return false;
     }
 
     // Execute PrcWhsTran with limited retries and exponential backoff
-    async prcWhsTranWithRetry(pr, maxRetries = 2) {
+    async prcWhsTranWithRetry(pr, maxRetries = 3) {
         let attempt = 1;
         let lastError = null;
         while (attempt <= maxRetries) {
