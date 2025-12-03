@@ -1,17 +1,21 @@
 /*─────────────────────────────────────────────────────────────────────────────
   POReceiptShortcut.js
   H5-compliant script for PO receipt processing
-  Author: GitHub Copilot   Date: 05-Aug-2025 9:55PM
-  Version: 7.0            Compatible with: H5 2.0+
+  Author: GitHub Copilot   Date: 02-Dec-2025
+  Version: 7.1            Compatible with: H5 2.0+
 
   FEATURES
   • Enterprise-grade H5 SDK compliance using H5ControlUtil.H5Dialog API
   • Promise-based MI service calls with comprehensive error handling
+  • Enhanced error messages with errorCode:errorMessage format
+  • Retry logic with exponential backoff for transient lock/busy errors
   • Proper H5 logging patterns following SDK guidelines
   • Future-proof dialog implementation with version fallback support
   • Single pack with multiple lines for INDI = 2 (PACN = PUNO_PNLI), single pack otherwise
   • Pushes only one PrcWhsTran (message-level)
   • "T for today" in Expiration date input
+  • Auto-generate sequential serial numbers (PO-1, PO-2, etc.)
+  • Scrollable serial input dialog (handles 1-25 serials)
   • Performance timing and monitoring
   • Consistent error reporting and user feedback
   • Transaction rollback for equipment records on failure
@@ -22,6 +26,7 @@
   • Falls back to inforMessageDialog for H5 < 2.0
   • Implements enterprise logging standards with this.log
   • Uses proper IMIResponse error handling patterns
+  • Transient error detection with retry/backoff (up to 3 attempts)
   • Follows H5 SDK naming conventions and structure
 ─────────────────────────────────────────────────────────────────────────────*/
 
