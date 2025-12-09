@@ -153,11 +153,11 @@ var POReceiptShortcut = class {
         const dialogOptions = {
             title: "Processing PO Line...",
             dialogType: "General",
-            modal: false,  // Allow background interaction
+            modal: true,  // Disallow background interaction
             width: 400,
             minHeight: 150,
             icon: "info",
-            closeOnEscape: true,  // Prevent manual closing during processing
+            closeOnEscape: false,  // Prevent manual closing during processing
             close: function () {
                 // Don't allow manual closing during processing
             },
