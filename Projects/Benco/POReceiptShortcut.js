@@ -547,7 +547,7 @@ var POReceiptShortcut = class {
             console.log(`[WMS-CHECK] Warehouse ${this.WHLO} is WMS-managed: ${this.isWmsWhs}`);
             this.log.Info(`WMS warehouse check completed - isWmsWhs: ${this.isWmsWhs}`);
             
-            /* item - Get item control and expiration details */
+            /* item - Get lot control method and expiration method */
             const itemRequest = new MIRequest();
             itemRequest.program = 'MMS200MI';
             itemRequest.transaction = 'GetItmBasic';
@@ -565,7 +565,7 @@ var POReceiptShortcut = class {
             // Store control method and expiration flags
             const itemData = {
                 EXPD: itm.item.EXPD,  // Expiration Date Required (0/1)
-                INDI: itm.item.INDI,  // Control Method (0=None, 1=Manual, 2=Serial, 3=Lot)
+                INDI: itm.item.INDI,  // Lot Control Method (0=None, 1=Manual, 2=Serial, 3=Lot)
                 TPCD: itm.item.TPCD   // Item Category (13=Non-material)
             };
             Object.assign(this, itemData);
@@ -599,7 +599,7 @@ var POReceiptShortcut = class {
             this.RMQA = rem.item.RSTQ;  // Remaining Quantity
             console.log(`[REMAINING-QTY] RMQA: ${this.RMQA}, RVQA: ${this.RVQA}`);
             
-            /* drop-ship customer (optional) - Only for drop-ship orders */
+            /* Order initiated COs (optional) - Only for COs */
             if (this.RORC === '3' && this.RORN) {  // RORC=3 indicates link to customer order
                 const customerRequest = new MIRequest();
                 customerRequest.program = 'OIS100MI';
@@ -616,7 +616,7 @@ var POReceiptShortcut = class {
                     throw new Error(errorMessage);
                 }
                 this.CUNO = c.item.CUNO;  // Customer Number for equipment records
-                console.log(`[CUSTOMER-DATA] Drop-ship customer: ${this.CUNO}`);
+                console.log(`[CUSTOMER-DATA] CO customer: ${this.CUNO}`);
             }
             
             console.log('[LOOKUPS-COMPLETE] All data lookups successful');
@@ -631,7 +631,7 @@ var POReceiptShortcut = class {
         // Business Rule: Warn if WMS-managed warehouse but not using WMS receipt (GETY≠24)
         if (this.isWmsWhs && this.GETY !== '24') {
             await this.dialogWarn(
-                'WMS‑managed Receipt; Receiving this line in M3 instead of WMS may result in balance discrepancy.'
+                'WMS Warehouse Detected; Receiving in M3 instead of WMS may result in balance discrepancy.'
             );
         }
 
@@ -651,6 +651,17 @@ var POReceiptShortcut = class {
             // Create dialog content following H5SampleCustomDialog pattern
             const dialogContent = $(`<div><label class='inforLabel noColon'>${msg}</label></div>`);
             
+            // Helper to close dialog and resolve promise
+            const handleProceed = () => {
+                closedByButton = true;
+                if (ScriptUtil.version >= 2.0) {
+                    $('.ui-dialog-content:visible').dialog('close');
+                } else {
+                    $(dialogContent).inforDialog("close");
+                }
+                resolve();
+            };
+            
             // Add Enter key handling for warning dialog
             dialogContent.on('keydown', function (e) {
                 if (e.key === 'Enter') {
@@ -663,13 +674,7 @@ var POReceiptShortcut = class {
                         proceedButton.click();
                     } else {
                         // Fallback: manually trigger the proceed logic
-                        closedByButton = true;
-                        resolve();
-                        if (ScriptUtil.version >= 2.0) {
-                            $('.ui-dialog-content:visible').dialog('close');
-                        } else {
-                            $(dialogContent).inforDialog("close");
-                        }
+                        handleProceed();
                     }
                 }
             });
@@ -738,6 +743,17 @@ var POReceiptShortcut = class {
             // Create dialog content following H5SampleCustomDialog pattern
             const dialogContent = $(`<div><label class='inforLabel noColon'>Receive ${this.RVQA} unit(s)?</label></div>`);
             
+            // Helper to close dialog and resolve promise
+            const handleConfirm = () => {
+                closedByButton = true;
+                if (ScriptUtil.version >= 2.0) {
+                    $('.ui-dialog-content:visible').dialog('close');
+                } else {
+                    $(dialogContent).inforDialog("close");
+                }
+                resolve();
+            };
+            
             // Add Enter key handling for confirm dialog
             dialogContent.on('keydown', function (e) {
                 if (e.key === 'Enter') {
@@ -750,13 +766,7 @@ var POReceiptShortcut = class {
                         confirmButton.click();
                     } else {
                         // Fallback: manually trigger the confirm logic
-                        closedByButton = true;
-                        resolve();
-                        if (ScriptUtil.version >= 2.0) {
-                            $('.ui-dialog-content:visible').dialog('close');
-                        } else {
-                            $(dialogContent).inforDialog("close");
-                        }
+                        handleConfirm();
                     }
                 }
             });
@@ -962,6 +972,79 @@ var POReceiptShortcut = class {
                 e.stopPropagation(); // Allow default right-click menu on inputs
             });
             
+            // Helper to validate and collect serials from input fields
+            const validateAndCollectSerials = () => {
+                const serials = [];
+                let invalid = [];
+
+                // Validate all serial inputs - check format and presence first
+                for (let i = 0; i < qty; i++) {
+                    const $field = dialogContent.find(`#serial${i}`);
+                    const val = $field.val().trim();
+
+                    if (!val) {
+                        $field.css('border', '2px solid red');
+                        invalid.push(`Serial ${i + 1} (blank)`);
+                    } else if (val.length > 20) {
+                        $field.css('border', '2px solid red');
+                        invalid.push(`Serial ${i + 1} (too long)`);
+                    } else if (!/^[A-Z0-9\-]+$/.test(val)) {
+                        $field.css('border', '2px solid red');
+                        invalid.push(`Serial ${i + 1} (invalid characters)`);
+                    } else {
+                        serials.push(val);
+                    }
+                }
+
+                // Show validation errors if any invalid entries found
+                if (invalid.length) {
+                    showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed), max 20 characters.`);
+                    return null;
+                }
+
+                // Check for duplicates only after all serials are validated
+                if (new Set(serials).size !== qty) {
+                    const seen = new Set();
+                    const duplicates = [];
+                    serials.forEach((serial, idx) => {
+                        if (seen.has(serial)) {
+                            dialogContent.find(`#serial${idx}`).css('border', '2px solid orange');
+                            if (!duplicates.includes(serial)) duplicates.push(serial);
+                        } else {
+                            seen.add(serial);
+                        }
+                    });
+                    showValidationError(`Duplicates detected: ${duplicates.join(', ')}\nEnsure each serial is unique.`);
+                    return null;
+                }
+
+                return serials;
+            };
+
+            // Helper to close dialog and resolve with validated serials
+            const handleSaveSerials = (model) => {
+                const serials = validateAndCollectSerials();
+                if (serials === null) return; // Validation failed
+                
+                closedByButton = true;
+                if (model) {
+                    // Called from button handler - use model.close()
+                    if (ScriptUtil.version >= 2.0) {
+                        model.close(true);
+                    } else {
+                        $(dialogContent).inforDialog("close");
+                    }
+                } else {
+                    // Called from keydown fallback - use DOM method
+                    if (ScriptUtil.version >= 2.0) {
+                        $('.ui-dialog-content:visible').dialog('close');
+                    } else {
+                        $(dialogContent).inforDialog("close");
+                    }
+                }
+                resolve(serials);
+            };
+
             // Add Enter key handling for serial inputs
             dialogContent.find('input[id^="serial"]').on('keydown', function (e) {
                 if (e.key === 'Enter') {
@@ -986,59 +1069,8 @@ var POReceiptShortcut = class {
                         if (saveButton.length > 0) {
                             saveButton.click();
                         } else {
-                            // Fallback: simulate Save button click with updated validation logic
-                            const serials = [];
-                            let invalid = [];
-
-                            // Validate all serial inputs - check format and presence first
-                            for (let i = 0; i < qty; i++) {
-                                const $field = dialogContent.find(`#serial${i}`);
-                                const val = $field.val().trim();
-
-                                if (!val) {
-                                    $field.css('border', '2px solid red');
-                                    invalid.push(`Serial ${i + 1} (blank)`);
-                                } else if (val.length > 20) {
-                                    $field.css('border', '2px solid red');
-                                    invalid.push(`Serial ${i + 1} (too long)`);
-                                } else if (!/^[A-Z0-9\-]+$/.test(val)) {
-                                    $field.css('border', '2px solid red');
-                                    invalid.push(`Serial ${i + 1} (invalid characters)`);
-                                } else {
-                                    serials.push(val);
-                                }
-                            }
-
-                            // Show validation errors if any invalid entries found
-                            if (invalid.length) {
-                                showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed), max 20 characters.`);
-                                return;
-                            }
-
-                            // Check for duplicates only after all serials are validated
-                            if (new Set(serials).size !== qty) {
-                                const seen = new Set();
-                                const duplicates = [];
-                                serials.forEach((serial, idx) => {
-                                    if (seen.has(serial)) {
-                                        dialogContent.find(`#serial${idx}`).css('border', '2px solid orange');
-                                        if (!duplicates.includes(serial)) duplicates.push(serial);
-                                    } else {
-                                        seen.add(serial);
-                                    }
-                                });
-                                showValidationError(`Duplicates detected: ${duplicates.join(', ')}\nEnsure each serial is unique.`);
-                                return;
-                            }
-
-                            // Close dialog and return serials (duplicate the Save button success logic)
-                            closedByButton = true;
-                            if (ScriptUtil.version >= 2.0) {
-                                $('.ui-dialog-content:visible').dialog('close');
-                            } else {
-                                $(dialogContent).inforDialog("close");
-                            }
-                            resolve(serials);
+                            // Fallback: use shared validation and save logic
+                            handleSaveSerials();
                         }
                     }
                 }
@@ -1050,59 +1082,7 @@ var POReceiptShortcut = class {
                     isDefault: true,
                     width: 80,
                     click: function (event, model) {
-                        const serials = [];
-                        let invalid = [];
-
-                        // Validate all serial inputs - check format and presence first
-                        for (let i = 0; i < qty; i++) {
-                            const $field = dialogContent.find(`#serial${i}`);
-                            const val = $field.val().trim();
-
-                            if (!val) {
-                                $field.css('border', '2px solid red');
-                                invalid.push(`Serial ${i + 1} (blank)`);
-                            } else if (val.length > 20) {
-                                $field.css('border', '2px solid red');
-                                invalid.push(`Serial ${i + 1} (too long)`);
-                            } else if (!/^[A-Z0-9\-]+$/.test(val)) {
-                                $field.css('border', '2px solid red');
-                                invalid.push(`Serial ${i + 1} (invalid characters)`);
-                            } else {
-                                serials.push(val);
-                            }
-                        }
-
-                        // Show validation errors if any invalid entries found
-                        if (invalid.length) {
-                            showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed), max 20 characters.`);
-                            return;
-                        }
-
-                        // Check for duplicates only after all serials are validated
-                        if (new Set(serials).size !== qty) {
-                            // Find and highlight duplicate serials
-                            const seen = new Set();
-                            const duplicates = [];
-                            serials.forEach((serial, idx) => {
-                                if (seen.has(serial)) {
-                                    dialogContent.find(`#serial${idx}`).css('border', '2px solid orange');
-                                    if (!duplicates.includes(serial)) duplicates.push(serial);
-                                } else {
-                                    seen.add(serial);
-                                }
-                            });
-                            showValidationError(`Duplicates detected: ${duplicates.join(', ')}\nEnsure each serial is unique.`);
-                            return;
-                        }
-
-                        // Close dialog and return serials
-                        closedByButton = true;
-                        if (ScriptUtil.version >= 2.0) {
-                            model.close(true);
-                        } else {
-                            $(this).inforDialog("close");
-                        }
-                        resolve(serials);
+                        handleSaveSerials(model);
                     }
                 },
                 {
