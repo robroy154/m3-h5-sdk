@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "none",
+    "lib": ["es2015", "dom"],
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "noEmitOnError": false,
+    "skipLibCheck": true,
+    "sourceMap": false
+  },
+  "include": [
+    "./POReceiptShortcut.js",
+    "./POReceiptShortcutV2.js",
+    "./types.d.ts"
+  ]
+}
