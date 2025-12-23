@@ -489,7 +489,8 @@ var POReceiptShortcut = class {
                 RORN: response.item.RORN,
                 RORL: response.item.RORL, 
                 ITDS: response.item.ITDS, 
-                GETY: response.item.GETY
+                GETY: response.item.GETY,
+                PUUN: response.item.PUUN
             };
             
             Object.assign(this, poLineData);
@@ -1660,7 +1661,7 @@ var POReceiptShortcut = class {
                     QLFR: '20',
                     ITNO: this.ITNO,     // Item Number
                     RVQA: rec.RVQA,      // Received Quantity (1 for serials, full qty for others)
-                    //TTYP: '25',          // Transaction Type (25 = Putaway)
+                    PUUN: this.PUUN,
                     RIDN: this.PUNO,     // Reference ID (PO Number)
                     RIDL: this.PNLI,     // Reference Line (PO Line)
                     RIDX: this.PNLS,     // Reference Suffix (PO Line Suffix)
