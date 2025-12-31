@@ -179,6 +179,7 @@ var POReceiptShortcutV2 = class {
         return record;
     }
 
+    //Deletes custom field record. This is not needed since equipment deletion API also deletes custom record
     async deleteEquipmentCustomField(equipmentContext) {
         if (!this.customFieldConfig?.enabled) {
             return;
@@ -746,12 +747,13 @@ var POReceiptShortcutV2 = class {
             }
             
             const poLineData = {
-                PUPR: response.item.PUPR, 
-                RORC: response.item.RORC, 
-                RORN: response.item.RORN,
-                RORL: response.item.RORL, 
-                ITDS: response.item.ITDS, 
-                GETY: response.item.GETY
+              PUPR: response.item.PUPR,
+              RORC: response.item.RORC,
+              RORN: response.item.RORN,
+              RORL: response.item.RORL,
+              ITDS: response.item.ITDS,
+              GETY: response.item.GETY,
+              PUUN: response.item.PUUN
             };
             
             Object.assign(this, poLineData);
@@ -1658,6 +1660,8 @@ var POReceiptShortcutV2 = class {
                 maxReturnedRecords: 1
             });
             
+            //consider validating custom field as well
+
             console.log(`[SERIAL-CHECK-${index + 1}] Checking derived serial: ${derivedSerial} (source: ${entry.originalSerial})`);
             this.logMIRequest(rq.program, rq.transaction, rq.record);
             
@@ -1751,7 +1755,7 @@ var POReceiptShortcutV2 = class {
                     ITNO: this.ITNO,     // Item Number
                     SERN: derivedSerial, // Serial Number stored in MMS240 (<=20 chars)
                     STAT: '20',          // Status (20 = In Stock)
-                    CUNO: this.CUNO,     // Customer Number (hard referenced for drop-ship)
+                    CUNO: this.CUNO,     // Customer Number (hard referenced for order initiated orders)
                     PUPR: this.PUPR,     // Purchase Price
                     CUCD: this.CUCD,     // Currency Code
                     PPDT: this.today(),  // Purchase Date (today)
@@ -1816,7 +1820,7 @@ var POReceiptShortcutV2 = class {
      * 
      * ROLLBACK POLICY (Simplified):
      * - If addEquip() or process() fails, delete ALL equipment records created in this batch
-     * - First delete CMS474MI custom field records (if enabled) to clean audit trail
+     * - First delete CMS474MI custom field records (if enabled) to clean audit trail (THIS IS NOT NEEDED, but doesn't hurt to include. But does create unneccesary API calls)
      * - Then delete MMS240MI equipment records via Del transaction
      * - Continue rollback even if individual deletions fail (best-effort cleanup)
      * - Clear createdEquipment array when complete
@@ -1966,17 +1970,17 @@ var POReceiptShortcutV2 = class {
                 line.transaction = 'AddWhsLine';
                 line.maxReturnedRecords = 100;
                 line.record = {
-                    WHLO: this.WHLO,
-                    MSGN: this.MSGN,
-                    PACN: packNumber,    // All lines use same pack number (PUNO_PNLI)
-                    QLFR: '20',
-                    ITNO: this.ITNO,     // Item Number
-                    RVQA: rec.RVQA,      // Received Quantity (1 for serials, full qty for others)
-                    //TTYP: '25',          // Transaction Type (25 = Putaway)
-                    RIDN: this.PUNO,     // Reference ID (PO Number)
-                    RIDL: this.PNLI,     // Reference Line (PO Line)
-                    RIDX: this.PNLS,     // Reference Suffix (PO Line Suffix)
-                    OEND: this.OEND      // Flag Completed signifier
+                  WHLO: this.WHLO,
+                  MSGN: this.MSGN,
+                  PACN: packNumber, // All lines use same pack number (PUNO_PNLI)
+                  QLFR: "20",
+                  ITNO: this.ITNO, // Item Number
+                  RVQA: rec.RVQA, // Received Quantity (1 for serials, full qty for others)
+                  PUUN: this.PUUN,
+                  RIDN: this.PUNO, // Reference ID (PO Number)
+                  RIDL: this.PNLI, // Reference Line (PO Line)
+                  RIDX: this.PNLS, // Reference Suffix (PO Line Suffix)
+                  OEND: this.OEND, // Flag Completed signifier
                 };
                 
                 // Add warehouse location only for material items (non-material items don't use WHSL)
@@ -2035,7 +2039,7 @@ var POReceiptShortcutV2 = class {
 
             // ───────────── Final Status Validation ─────────────
             // Check actual processing status using GetWhsHead to ensure transaction completed successfully
-            await this.sleep(100); // Brief delay to ensure status is updated
+            await this.sleep(100); // Brief delay to ensure status is updated !!! UPDATE TO USE RESPONSE FROM ProcessTran instead of additional call? Test first, though.
             
             const statusCheck = new MIRequest();
             statusCheck.program = 'MHS850MI';

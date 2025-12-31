@@ -1,7 +1,7 @@
 /*─────────────────────────────────────────────────────────────────────────────
   POReceiptShortcut.js
   H5-compliant script for PO receipt processing
-  Author: GitHub Copilot   Date: 02-Dec-2025
+  Author: GitHub Copilot   Date: 02-Dec-2025 LATEST V1 as of 12/31/25
   Version: 7.1            Compatible with: H5 2.0+
 
   FEATURES
@@ -28,9 +28,18 @@
   • Uses proper IMIResponse error handling patterns
   • Transient error detection with retry/backoff (up to 3 attempts)
   • Follows H5 SDK naming conventions and structure
+
+  DOES NOT INCLUDE EXTENDED SERIAL FUNCTIONALITY LOGIC (v2 does)
 ─────────────────────────────────────────────────────────────────────────────*/
 
 /*──────────────────────────────────────────────────────────────────────────*/
+
+
+
+
+
+
+
 var POReceiptShortcut = class {
 
     constructor(args) {
@@ -1472,20 +1481,20 @@ var POReceiptShortcut = class {
                 rq.transaction = 'Add'; 
                 rq.maxReturnedRecords = 1;
                 rq.record = {
-                    ITNO: this.ITNO,     // Item Number
-                    SERN: s,             // Serial Number
-                    STAT: '20',          // Status (20 = In Stock)
-                    CUNO: this.CUNO,     // Customer Number (hard referenced for drop-ship)
-                    PUPR: this.PUPR,     // Purchase Price
-                    CUCD: this.CUCD,     // Currency Code
-                    PPDT: this.today(),  // Purchase Date (today)
-                    FACI: this.FACI,     // Facility
-                    CUOW: this.CUNO,     // Current Owner
-                    OWTP: '0',           // Owner Type (0 = Company)
-                    PUNO: this.PUNO,     // Purchase Order Number
-                    PNLI: this.PNLI,     // PO Line Number
-                    PNLS: this.PNLS,     // PO Line Suffix
-                    ALII: this.ITDS      // Item Description
+                  ITNO: this.ITNO, // Item Number
+                  SERN: s, // Serial Number
+                  STAT: "20", // Status (20 = In Stock)
+                  CUNO: this.CUNO, // Customer Number (hard referenced for order initiated orders)
+                  PUPR: this.PUPR, // Purchase Price
+                  CUCD: this.CUCD, // Currency Code
+                  PPDT: this.today(), // Purchase Date (today)
+                  FACI: this.FACI, // Facility
+                  CUOW: this.CUNO, // Current Owner
+                  OWTP: "0", // Owner Type (0 = Company)
+                  PUNO: this.PUNO, // Purchase Order Number
+                  PNLI: this.PNLI, // PO Line Number
+                  PNLS: this.PNLS, // PO Line Suffix
+                  ALII: this.ITDS, // Item Description
                 };
                 
                 console.log(`[EQUIPMENT-ADD-${index + 1}] Creating equipment for serial: ${s}`);
