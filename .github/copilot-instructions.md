@@ -19,7 +19,7 @@ The M3 Odin SDK is a framework for building web applications for Infor M3 ERP. I
 ### H5 Script SDK vs Odin SDK
 **Important distinction**: This repo contains TWO different SDKs with different purposes:
 - **Odin SDK** (`/m3-odin`, `/cli`): Build standalone web applications deployed as H5 apps at `/mne/apps/{name}`. Uses RxJS services, runs in its own context.
-- **H5 Script SDK** (`/H5ScriptSDK_10.4.1_20240208`): Create TypeScript scripts that run **inside** M3 H5 panels/screens. Uses global interfaces (`IInstanceController`, `IContentElement`, etc.), manipulates existing H5 UI elements directly.
+- **H5 Script SDK** (`/H5ScriptSDK_10.4.1_20251022`): Create TypeScript/JavaScript scripts that run **inside** M3 H5 panels/screens. Uses global interfaces (`IInstanceController`, `IContentElement`, `IScriptArgs`, etc.), manipulates existing H5 UI elements directly.
 
 Use Odin for new applications with custom UI. Use H5 Script SDK only when extending/customizing existing M3 screens.
 
@@ -179,3 +179,228 @@ Applications are deployed as ZIP files to H5 Administration:
 1. Build: `odin build` → creates `dist/{projectName}.zip`
 2. Upload via H5 Admin → Applications tab → Install
 3. Access at `/mne/apps/{projectName}` or via Ctrl+R in H5 client
+
+---
+
+## H5 Script SDK (In-Panel Customization)
+
+### Overview
+The H5 Script SDK (version 10.4.1, Oct 2025) allows developers to create TypeScript/JavaScript scripts that run **inside** existing M3 H5 panels to extend or customize their functionality. Unlike Odin apps, these scripts don't create standalone applications but instead enhance existing M3 forms.
+
+**Location**: `/H5ScriptSDK_10.4.1_20251022/`
+
+### Script File Requirements
+Scripts must follow specific rules to be executed by the H5 framework:
+- **Class name must match file name** (excluding extension) - this is critical
+- Must have a `public static Init(args: IScriptArgs): void` method
+- TypeScript is preferred over JavaScript for type safety and IDE support
+- Scripts can leverage jQuery (though future platform updates may impact availability)
+
+### Basic Script Structure
+```typescript
+class MyScript {
+    private controller: IInstanceController;
+    private log: IScriptLog;
+    private args: string;
+
+    constructor(scriptArgs: IScriptArgs) {
+        this.controller = scriptArgs.controller;
+        this.log = scriptArgs.log;
+        this.args = scriptArgs.args;
+    }
+
+    /**
+     * Script initialization function - required entry point
+     */
+    public static Init(args: IScriptArgs): void {
+        new MyScript(args);
+        // Initialization code here
+    }
+}
+```
+
+### IScriptArgs Interface
+The Init method receives an `IScriptArgs` object containing:
+- **controller**: `IInstanceController` - Access to the M3 form/panel
+- **log**: `IScriptLog` - Logging utility for browser console
+- **args**: `string` - Script arguments passed during attachment
+- **elem**: Element - The control the script is attached to (null if not element-specific)
+
+### Key H5 Script APIs
+
+#### InstanceController
+Primary interface for interacting with M3 forms:
+- **Properties**:
+  - `Cache: SessionCache` - Session-level cache
+  - `ParentWindow: JQuery` - Parent window element
+  - `RenderEngine: RenderEngine` - Access to content rendering
+  - `Response: ResponseElement` - Current response data
+  - Event properties: `Requesting`, `Requested`, `RequestCompleted`
+  
+- **Key Methods**:
+  - `GetValue(fieldName: string): string` - Get field value
+  - `SetValue(fieldName: string, value: string)` - Set field value
+  - `GetContentElement(): ContentElement` - Access form content
+  - `GetGrid(): ListControl` - Access list/grid control
+  - `PressKey(key: string)` - Simulate key press (e.g., "ENTER", "F3")
+  - `ShowMessage(message: string)` - Display message to user
+  - `ExportToExcel()` - Export list data to Excel
+  - `GetProgramName(): string` - Current M3 program name
+  - `GetPanelName(): string` - Current panel name
+
+#### ContentElement
+Access and modify form layout:
+- `Add(element: any)` - Add element to form
+- `CreateElement(type: string, properties: any)` - Create new UI element
+- `GetElement(name: string)` - Find element by name
+- `RemoveScriptComponents()` - Clean up script-added elements
+
+#### ListControl / ListView
+Work with M3 list panels:
+- `GetColumnIndexByName(name: string): number`
+- `GetListColumnData(): any[]` - Get all column data
+- `GetValueByColumnName(columnName: string): string`
+- `SetValueByColumnName(columnName: string, value: string)`
+- `SelectedItem()` - Get selected list item
+
+#### ScriptLog
+Logging utility with severity levels:
+```typescript
+this.log.Error("Error message");
+this.log.Warning("Warning message");
+this.log.Info("Info message");
+this.log.Debug("Debug message");
+this.log.Trace("Trace message");
+```
+
+#### ScriptUtil
+Utility functions for common tasks:
+- `GetFieldValue(controller, fieldName)` - Safe field value retrieval
+- `SetFieldValue(controller, fieldName, value)` - Safe field value setting
+- `Launch(link: string)` - Launch M3 program
+- `OpenMenu(menuName: string)` - Open M3 menu
+- `GetUserContext(): IUserContext` - Get user/company/division context
+- `DoEnterpriseSearch(query)` - Trigger M3 search
+- `LoadScript(scriptName: string)` - Dynamically load another script
+- `UnloadScript(scriptName: string)` - Unload a script
+
+#### MIService
+Execute M3 MI (Machine Interface) transactions:
+```typescript
+const request = new MIRequest();
+request.program = "MMS200MI";
+request.transaction = "GetItmBasic";
+request.record = { ITNO: "ABC123" };
+request.outputFields = ["ITDS", "UNMS"];
+
+MIService.Current.executeRequest(request)
+    .done((response: MIResponse) => {
+        // Process response.items array
+    })
+    .fail((error: MIResponse) => {
+        this.log.Error("MI call failed: " + error.errorMessage);
+    });
+```
+
+#### IonApiService
+Call Infor ION APIs with OAuth2:
+```typescript
+const request: IonApiRequest = {
+    url: "/TENANT/M3/m3api-rest/execute/CRS610MI/GetBasicData",
+    method: "POST",
+    data: { CUNO: "ABC123" }
+};
+
+IonApiService.Current.execute(request)
+    .then((response: IonApiResponse) => {
+        // Process response
+    })
+    .catch((error) => {
+        this.log.Error("ION API failed");
+    });
+```
+
+### MForms Automation
+Execute automated sequences of M3 transactions:
+```typescript
+const automation = new MFormsAutomation();
+automation.addStep()
+    .addField("ITNO", "ABC123")
+    .addField("WHLO", "001")
+    .setFocus("STQT");
+
+const uri = automation.toEncodedURI();
+// Launch program with automation
+ScriptUtil.Launch(`/mforms/CMS100?automation=${uri}`);
+```
+
+### Drillback Integration
+Launch M3 bookmarks from external applications:
+```typescript
+infor.companyon.client.sendPrepareDrillbackMessage({
+    logicalId: "lid://infor.m3.CRS610",
+    parameters: {
+        "infor.m3.parameter.company": "001",
+        "infor.m3.parameter.CUNO": "ABC123"
+    }
+});
+```
+
+### Development Setup
+Two recommended approaches:
+
+**Option 1: Visual Studio + IIS Express**
+- Open `/H5ScriptSDK_10.4.1_20251022/Samples/Samples.sln`
+- Run samples on built-in IIS Express server
+- Debugging with breakpoints supported
+
+**Option 2: VS Code + Node.js (Recommended)**
+```bash
+cd H5ScriptSDK_10.4.1_20251022/Samples/Nodejs
+npm install
+node webserver.js
+# Access at http://localhost:8080
+```
+
+### Script Deployment
+1. Write script in TypeScript and compile to JavaScript
+2. Minify JavaScript for production (remove comments, obfuscate)
+3. Deploy via M3 H5 Administration tool → Script Management
+4. Attach script to M3 form/panel or add as shortcut
+5. Scripts are cached; use Ctrl+F5 to reload during development
+
+### Best Practices
+- **Always match class name to file name** - critical for script execution
+- **Use TypeScript** - provides typing, compilation, refactoring support
+- **Minimize global scope pollution** - wrap code in IIFE if needed
+- **Proper error handling** - use try/catch and log errors appropriately
+- **Avoid ES6+ features without transpilation** - not all M3 H5 environments support modern JS
+- **Use relative URLs** - when calling M3 URLs sharing the same base URL
+- **Store original source files** - minified scripts are not maintainable
+- **Test in target environment** - browser differences can cause issues
+- **Clean up event handlers** - prevent memory leaks in long-running sessions
+- **Respect platform limitations**:
+  - No file system access
+  - Cross-domain calls restricted by CORS
+  - Browser security sandbox applies
+
+### Sample Scripts Location
+`/H5ScriptSDK_10.4.1_20251022/Samples/Samples/`
+- `H5SampleAddElements.ts` - Adding custom UI elements
+- `H5SampleCancelRequest.ts` - Intercepting form requests
+- `H5SampleCustomColumns.ts` - Modifying list columns
+- `H5SampleMIService.ts` - MI transaction examples
+- `H5SampleIonApiService.ts` - ION API integration
+- `H5SampleMFormsAutomation.ts` - Automation sequences
+- `H5SampleDrillback.ts` - Drillback integration
+- Plus 15+ additional examples
+
+### Common Script Use Cases
+- Field validation and auto-population
+- Custom buttons and actions
+- List column customization and formatting
+- Integration with external systems via ION API
+- Workflow automation across multiple panels
+- Custom dialogs and user interactions
+- Data enrichment from external sources
+- Export functionality extensions
