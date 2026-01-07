@@ -4,7 +4,7 @@
 The M3 Odin SDK is a framework for building web applications for Infor M3 ERP. It consists of three NPM packages that work together:
 - **@infor-up/m3-odin-cli**: Command-line interface for project scaffolding and build tooling
 - **@infor-up/m3-odin**: Core API with RxJS-based services for M3 integration (framework-agnostic)
-- **@infor-up/m3-odin-angular**: Angular-specific wrappers and DI integration test
+- **@infor-up/m3-odin-angular**: Angular-specific wrappers and DI integration
 
 ## Architecture
 
