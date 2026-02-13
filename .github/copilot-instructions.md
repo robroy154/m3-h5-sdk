@@ -1,5 +1,14 @@
 # M3 Odin SDK Development Guide
 
+## SDK Folder Reference Requirement (Global Compliance)
+- Always reference the relevant SDK folder in this repository before suggesting implementation details.
+- Use folder-specific examples as the primary source of truth to ensure platform compliance:
+    - Odin app patterns: `SDKs/H5 Angular/`
+    - H5 in-panel scripting patterns: `SDKs/M3 H5 Scripting/`
+    - Homepages widget patterns: `SDKs/Widget SDKs/`
+- When uncertain, prefer existing sample implementations in these SDK folders over introducing new patterns.
+- If no matching sample exists, explicitly state that and follow documented public APIs only.
+
 ## Project Overview
 The M3 Odin SDK is a framework for building web applications for Infor M3 ERP. It consists of three NPM packages that work together:
 - **@infor-up/m3-odin-cli**: Command-line interface for project scaffolding and build tooling
@@ -404,3 +413,86 @@ node webserver.js
 - Custom dialogs and user interactions
 - Data enrichment from external sources
 - Export functionality extensions
+
+---
+
+## Infor Widget SDK (Ming.le Homepages) Best Practices
+
+### When to Use Widget SDK vs Odin vs H5 Script
+- **Widget SDK**: Build Homepages widgets (inline/external/banner/mobile) for Ming.le/OS Portal.
+- **Odin SDK**: Build standalone M3 web apps deployed as H5 applications.
+- **H5 Script SDK**: Customize existing M3 H5 panels from inside the panel runtime.
+
+If user asks for a Homepages widget (`widget.manifest`, widget catalog, publish settings), prefer **Widget SDK** guidance and samples.
+
+### SDK Folder Reference Requirement (Compliance)
+- Always reference the relevant SDK folder in this repository before suggesting implementation details.
+- Use folder-specific examples as the primary source of truth to ensure platform compliance:
+    - Odin app patterns: `SDKs/H5 Angular/`
+    - H5 in-panel scripting patterns: `SDKs/M3 H5 Scripting/`
+    - Homepages widget patterns: `SDKs/Widget SDKs/`
+- When uncertain, prefer existing sample implementations in these SDK folders over introducing new patterns.
+- If no matching sample exists, explicitly state that and follow documented public APIs only.
+
+### Supported Patterns and Technology Choices
+- Prefer **inline widgets** over external/hybrid for performance and tighter framework integration.
+- Use only supported technologies: **TypeScript/JavaScript** with **Angular** or **jQuery** (no AngularJS).
+- Do not use undocumented/internal Homepages APIs or undocumented framework CSS classes.
+- Do not introduce unsupported UI frameworks (for example React) in shared modules.
+
+### Manifest Rules (Critical)
+Every widget package must include a valid `widget.manifest` with required properties.
+
+Key rules to enforce:
+- `widgetId`: lowercase dotted namespace, unique; tenant widgets must start with `tenant.`
+- `type`: `inline` or `external`
+- `version`: semantic-like numeric dot format
+- `name` plus either:
+    - `title` + `description`, or
+    - `localization` with at least `en-US.widgetTitle` and `en-US.widgetDescription`
+- Inline widgets require `moduleName` and `framework` (`angular` or `jquery`)
+- External widgets require `url`
+- Tenant/customer widgets require `author`
+
+Also validate commonly used optional properties when applicable:
+- `frameworkVersion` for forward-compat deployment gating
+- `targets` (`default`, `banner`, `mobile`, `application`) instead of legacy single-target patterns
+- `requiresConfig` only when widget actually uses settings/config flow
+- `applicationLogicalId` (and related app properties) when widget depends on a specific application
+
+### Theme, UX, and Accessibility Requirements
+- Widgets must support **Light**, **Dark**, and **HighContrast** themes.
+- Prefer IDS Enterprise styling; minimize custom CSS.
+- If custom CSS is needed, structure styles so theme-specific differences are isolated.
+- Keep widget title/description concise, meaningful, and catalog-search friendly.
+
+### Inline Widget Implementation Guidance
+- Export a module with `widgetFactory(context: IWidgetContext): IWidgetInstance`.
+- Use only documented `IWidgetContext`/`IWidgetInstance` capabilities.
+- Implement lifecycle callbacks (`activated`, `deactivated`, `refreshed`) when polling, timers, or refresh behavior exists.
+- Use widget state (`running`, `busy`, `error`) to reflect long-running operations and failures.
+
+### External/Hybrid Widget Guidance
+- Use cautiously; IFrame-heavy widgets can negatively impact browser performance.
+- Support theme propagation through URL replacement variables (for example `inforThemeName`).
+- Use standard/replacement parameters intentionally; avoid over-fetching resources.
+
+### Mobile and Banner Targets
+- Use `targets` to explicitly declare support (`mobile`, `banner`, `default`).
+- Mobile widgets must be responsive and should not assume settings are editable at runtime.
+- Banner widgets must render correctly across banner background colors and variable widths.
+
+### Testing and Automation Conventions
+- Prefer stable test selectors (`name` or data attributes like `data-lmw-id`) over dynamic IDs.
+- Keep selector values readable and namespaced to avoid collisions across widgets.
+- Test behavior across themes, locale/language variants, activation/deactivation, and publish/config scenarios.
+
+### Security and Stability Expectations
+- Follow secure web development practices (OWASP guidance).
+- Avoid DOM/global pollution in inline widgets (shared DOM with Homepages).
+- Treat undocumented APIs as unstable and subject to removal.
+
+### Packaging and Deployment Hygiene
+- Keep widget package structure compliant (no unsupported folder layouts in final package).
+- Keep icon/screenshot assets within platform constraints and stable file naming.
+- For tenant widgets, ensure cloud restrictions and certification requirements are respected.
