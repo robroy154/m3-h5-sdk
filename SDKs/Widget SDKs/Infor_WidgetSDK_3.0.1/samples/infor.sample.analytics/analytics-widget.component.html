@@ -1,0 +1,17 @@
+<ids-tabs-context>
+	<ids-tabs (change)="trackTabActivation($event.detail.value)">
+		<ids-tab value="items">Items</ids-tab>
+		<ids-tab value="customers">Customers</ids-tab>
+	</ids-tabs>
+
+	<ids-tab-content value="items">
+		<ids-button appearance="primary" trackClick="Track item">
+			Track item
+		</ids-button>
+	</ids-tab-content>
+	<ids-tab-content value="customers">
+		<ids-button appearance="primary" trackClick="Track customer">
+			Track customer
+		</ids-button>
+	</ids-tab-content>
+</ids-tabs-context>

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/translation/translation-add.scss"],
+  "sourcesContent": [".max-width {\r\n\tmax-width: 350px;\r\n}\r\n\r\n.add-translation i {\r\n\tposition: relative;\r\n\ttop: -15px;\r\n}\r\n\r\n.icon-margin {\r\n\tmargin-left: 14px;\r\n\tmargin-right: 5px;\r\n\tmargin-top: -5px;\r\n}\r\n\r\n::ng-deep .lm-at-mdl-lang-list li:not(.is-focused) .default-lang {\r\n\tcolor: #999;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,UACC,UAAA,MAGD,CAAA,gBAAA,EACC,SAAA,SACA,IAAA,MAGD,CAAA,YACC,YAAA,KACA,aAAA,IACA,WAAA,KAGD,UAAA,CAAA,oBAAA,EAAA,KAAA,CAAA,YAAA,CAAA,aACC,MAAA",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;bba36b2500b7ea75e661ee9d9aa62dbc98dff7b69b23376bbdaae2a22ffe63a4;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\core\\components\\page-list\\page-list.ts"],
+  "sourcesContent": ["\n\t\t\t.area-inactive {\n\t\t\t\topacity: 0.3;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,CAAC,cACA,QAAS,EACV",
+  "names": []
+}

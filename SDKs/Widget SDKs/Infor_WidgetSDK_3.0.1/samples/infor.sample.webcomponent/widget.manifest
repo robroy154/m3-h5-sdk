@@ -1,0 +1,15 @@
+{
+	"widgetId": "infor.sample.webcomponent",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "webcomponent",
+	"name": "Web Component Sample",
+	"title": "Web Component Sample",
+	"description": "A Web Component widget without any framework",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Web Component Sample",
+			"widgetDescription": "A Web Component widget without any framework"
+		}
+	}
+}

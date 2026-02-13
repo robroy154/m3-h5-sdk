@@ -1,0 +1,13 @@
+{
+	"widgetId": "infor.sample.analytics",
+	"version": "1.0",
+	"type": "inline",
+	"framework": "angular",
+	"name": "Analytics Sample",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Analytics Sample",
+			"widgetDescription": "Showing how to add analytics"
+		}
+	}
+}

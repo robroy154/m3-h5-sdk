@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/app/app.scss"],
+  "sourcesContent": ["ids-container::part(container) {\r\n\tbackground-color: unset;\r\n\tcolor: unset;\r\n\tpadding: unset;\r\n\ttransition: unset;\r\n\tdisplay: contents;\r\n}\r\n"],
+  "mappings": "AAAA,aAAA,OAAA,WACC,iBAAA,MACA,MAAA,MACA,QAAA,MACA,WAAA,MACA,QAAA",
+  "names": []
+}

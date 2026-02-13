@@ -1,0 +1,25 @@
+{
+	"widgetId": "infor.portal.sample.navigation",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "angular",
+	"name": "Navigation",
+	"title": "Navigation",
+	"description": "Navigation",
+	"settings": [
+		{
+			"type": "boolean",
+			"name": "showAll",
+			"isHidden": true,
+			"labelId": "balancesFilter",
+			"defaultValue": true
+		}
+	],
+	"localization": {
+		"en-US": {
+			"balancesFilter": "Balances Filter",
+			"widgetTitle": "Customer Balances",
+			"widgetDescription": "Showcases the navigation feature. Selecting a chart entry lets you navigate to a customer details view. A back button will appear in the widget header."
+		}
+	}
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/memo/basic.scss"],
+  "sourcesContent": [".basic {\r\n\tmin-width: 520px;\r\n\twidth: 100%;\r\n}\r\n\r\n.markdown-editor-field {\r\n\tmargin-bottom: 40px;\r\n}\r\n\r\nlm-markdown-editor {\r\n\tmin-height: 150px;\r\n}\r\n\r\n.markdown-editor-field > label > svg {\r\n\tmargin-left: 5px;\r\n\tmargin-right: 5px;\r\n\tmargin-top: -5px;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,MACC,UAAA,MACA,MAAA,KAGD,CAAA,sBACC,cAAA,KAGD,mBACC,WAAA,MAGD,CARA,qBAQA,CAAA,KAAA,CAAA,IACC,YAAA,IACA,aAAA,IACA,WAAA",
+  "names": []
+}

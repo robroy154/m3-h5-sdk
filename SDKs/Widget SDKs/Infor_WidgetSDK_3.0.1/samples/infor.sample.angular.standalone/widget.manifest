@@ -1,0 +1,15 @@
+{
+	"widgetId": "infor.sample.angular.standalone",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "angular",
+	"name": "Standalone Sample",
+	"title": "Standalone Sample",
+	"description": "A widget without NgModule",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Standalone Sample",
+			"widgetDescription": "A widget without NgModule"
+		}
+	}
+}

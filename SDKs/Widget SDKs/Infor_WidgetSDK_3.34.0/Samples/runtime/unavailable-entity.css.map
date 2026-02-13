@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/unavailable-entity/unavailable-entity.scss"],
+  "sourcesContent": [":host-context(.unavailable-entity-container) {\r\n\tposition: absolute;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n}\r\n\r\n:host-context(.unavailable-entity-container .icon),\r\n:host-context(.unavailable-entity-container p) {\r\n\ttop: -30px;\r\n}\r\n\r\n.unavailable-entity {\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tjustify-content: center;\r\n\talign-items: center;\r\n}\r\n\r\n.unavailable-entity .icon {\r\n\twidth: 128px;\r\n\theight: 128px;\r\n\tcolor: #b7b7b7;\r\n}\r\n\r\n.unavailable-entity p {\r\n\tposition: relative;\r\n\ttext-align: center;\r\n\tmargin-top: 10px;\r\n}\r\n\r\n.unavailable-entity.banner-entity p {\r\n\tcolor: #ffffff;\r\n}\r\n\r\n.unavailable-entity.banner-entity .icon {\r\n\tposition: relative;\r\n\topacity: 0.5;\r\n}\r\n"],
+  "mappings": "AAAA,cAAA,CAAA,8BACC,SAAA,SACA,MAAA,KACA,OAAA,KAGD,cAAA,CAAA,6BAAA,CAAA,MAAA,cAAA,CAAA,6BAAA,GAEC,IAAA,MAGD,CAAA,mBACC,OAAA,KACA,QAAA,KACA,eAAA,OACA,gBAAA,OACA,YAAA,OAGD,CARA,mBAQA,CAAA,KACC,MAAA,MACA,OAAA,MACA,MAAA,QAGD,CAdA,mBAcA,EACC,SAAA,SACA,WAAA,OACA,WAAA,KAGD,CApBA,kBAoBA,CAAA,cAAA,EACC,MAAA,KAGD,CAxBA,kBAwBA,CAJA,cAIA,CAhBA,KAiBC,SAAA,SACA,QAAA",
+  "names": []
+}

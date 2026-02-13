@@ -1,0 +1,13 @@
+{
+	"widgetId": "infor.sample.interval",
+	"type": "inline",
+	"version": "1.0",
+	"framework": "angular",
+	"name": "Interval Sample",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Interval Sample",
+			"widgetDescription": "Showing how to use interval"
+		}
+	}
+}

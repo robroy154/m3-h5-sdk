@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;b616e13b2656ec99dc516df519609620e8bb87e202697bc6ec9c90b4c20dc80a;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\core\\components\\context-site\\context-site.ts"],
+  "sourcesContent": ["\n\t\t\t:host {\n\t\t\t\tdisplay: block;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,MACC,QAAS,KACV",
+  "names": []
+}

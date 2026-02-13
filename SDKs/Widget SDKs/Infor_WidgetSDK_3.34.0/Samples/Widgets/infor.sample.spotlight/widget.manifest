@@ -1,0 +1,22 @@
+{
+	"widgetId": "infor.sample.spotlight",
+	"version": "1.0",
+	"name": "Spotlight Sample",
+	"framework": "angular",
+	"type": "inline",
+	"hide": true,
+	"enableTitleEdit": false,
+	"enableSettings": false,
+	"enablePublish": false,
+	"supportedClients": [
+		{
+			"id": "osportal"
+		}
+	],
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Spotlight Sample",
+			"widgetDescription": "Spotlight Sample"
+		}
+	}
+}

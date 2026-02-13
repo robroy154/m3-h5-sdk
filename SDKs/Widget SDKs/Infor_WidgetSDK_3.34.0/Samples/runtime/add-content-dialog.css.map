@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/pages/dyn/editor/layout-components/information-component/content/add-content-dialog.scss"],
+  "sourcesContent": [".content-type-text {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n}\r\n\r\n.content-type-text .hyperlink {\r\n\talign-self: flex-end;\r\n}\r\n\r\n.selected-container {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n}\r\n\r\n.selected-container h2 {\r\n\tfont-weight: bold;\r\n\tmargin-top: 5px;\r\n\tvertical-align: middle;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,kBACC,QAAA,KACA,eAAA,OAGD,CALA,kBAKA,CAAA,UACC,WAAA,SAGD,CAAA,mBACC,QAAA,KACA,gBAAA,cAGD,CALA,mBAKA,GACC,YAAA,IACA,WAAA,IACA,eAAA",
+  "names": []
+}

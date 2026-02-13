@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/import-dialog.scss"],
+  "sourcesContent": [".lm-import-disclaimer {\r\n\tdisplay: flex;\r\n\tmargin-bottom: 10px;\r\n\tmax-width: 600px;\r\n\r\n\tsvg {\r\n\t\tmin-width: 22px;\r\n\t\ttop: 0px;\r\n\t}\r\n\r\n\tspan {\r\n\t\tmargin-left: 5px;\r\n\t}\r\n}\r\n\r\ninput.checkbox {\r\n\theight: 0; /* IDS checkbox input elements are not rendered, but they still take up space which causes scroll. LIME-6109 */\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,qBACC,QAAA,KACA,cAAA,KACA,UAAA,MAEA,CALD,qBAKC,IACC,UAAA,KACA,IAAA,EAGD,CAVD,qBAUC,KACC,YAAA,IAIF,KAAA,CAAA,SACC,OAAA",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;99818c90d313874da3f5973d3f3198a1ed9489c553013b97ffb02f80554ca637;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\core\\components\\context-host\\context-host.ts"],
+  "sourcesContent": ["\n\t\t\t:host {\n\t\t\t\tdisplay: block;\n\t\t\t\tpadding: 5px 5px 0px 5px;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,MACC,QAAS,MAFb,QAGa,IAAI,IAAI,CAClB",
+  "names": []
+}

@@ -1,0 +1,13 @@
+:host {
+	display: block;
+	overflow-x: hidden;
+	position: relative;
+	height: 100%;
+	width: 100%;
+}
+
+.content-main {
+	padding: var(--ids-space-sm);
+	height: 100%;
+	width: 100%;
+}

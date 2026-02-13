@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;5dfacd3ba7aa262af207806943cc4341a595fb4fb60a0b1e8e1df8410c3e811e;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\admin\\pages\\dyn\\editor\\dynamic-accordion.ts"],
+  "sourcesContent": ["\n\t\t\t:host {\n\t\t\t\tdisplay: flex;\n\t\t\t\tflex-direction: column;\n\t\t\t\tborder-top: 1px solid;\n\t\t\t\tpadding: 15px;\n\t\t\t}\n\n\t\t\t:host ::ng-deep .add-button-container {\n\t\t\t\tdisplay: flex;\n\t\t\t\tflex-direction: row;\n\t\t\t\tjustify-content: center;\n\t\t\t\talign-items: center;\n\t\t\t\tmargin-top: 10px;\n\t\t\t}\n\n\t\t\t:host ::ng-deep .add-button-container:not(.empty) button {\n\t\t\t\tflex: 1;\n\t\t\t}\n\n\t\t\t:host ::ng-deep .add-button-container.empty {\n\t\t\t\theight: 200px;\n\t\t\t\tmargin-top: 0;\n\t\t\t\tflex-direction: column;\n\t\t\t}\n\n\t\t\t:host ::ng-deep .add-button-container.empty button {\n\t\t\t\tmargin-top: 20px;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,MACC,QAAS,KACT,eAAgB,OAChB,WAAY,IAAI,MAJpB,QAKa,IACV,CAEA,MAAM,UAAU,CAAC,qBAChB,QAAS,KACT,eAAgB,IAChB,gBAAiB,OACjB,YAAa,OACb,WAAY,IACb,CAEA,MAAM,UAAU,CARC,oBAQoB,KAAK,CAAC,OAAO,OACjD,KAAM,CACP,CAEA,MAAM,UAAU,CAZC,oBAYoB,CAJM,MAK1C,OAAQ,MACR,WAAY,EACZ,eAAgB,MACjB,CAEA,MAAM,UAAU,CAlBC,oBAkBoB,CAVM,MAUC,OAC3C,WAAY,IACb",
+  "names": []
+}

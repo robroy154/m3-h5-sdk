@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/lazy/components/widget-publish/widget-publish.scss"],
+  "sourcesContent": [".widget-publish-dialog {\r\n\tmin-height: 450px;\r\n\twidth: 550px;\r\n}\r\n\r\n@media (max-width: 655px) {\r\n\t.widget-publish-dialog {\r\n\t\twidth: 100%;\r\n\t}\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,sBACC,WAAA,MACA,MAAA,MAGD,OAAA,CAAA,SAAA,EAAA,OACC,CAND,sBAOE,MAAA",
+  "names": []
+}

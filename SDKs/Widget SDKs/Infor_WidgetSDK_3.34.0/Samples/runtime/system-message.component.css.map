@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/system-message/system-message.component.scss"],
+  "sourcesContent": [":host {\r\n\tdisplay: block;\r\n\twidth: 100%;\r\n\theight: 35px;\r\n\tpadding: 0 15px 0 20px;\r\n}\r\n\r\n.message-container {\r\n\tdisplay: flex;\r\n\theight: 100%;\r\n\talign-items: center;\r\n}\r\n\r\nsvg[icon=\"alert\"] {\r\n\tflex: 0 0 auto;\r\n\ttop: 0;\r\n}\r\n\r\n.system-message {\r\n\tmargin-left: 8px;\r\n\tflex: 1 1 auto;\r\n\tmargin-bottom: 0;\r\n\tmargin-top: 1px;\r\n\tfont-size: 13px;\r\n}\r\n\r\n.dismiss {\r\n\theight: 20px;\r\n\twidth: 20px;\r\n\tmin-height: 20px;\r\n\tmin-width: 20px;\r\n}\r\n\r\n.dismiss ::ng-deep svg {\r\n\theight: 13px;\r\n\twidth: 13px;\r\n\ttop: 2px;\r\n}\r\n"],
+  "mappings": "AAAA,MACC,QAAA,MACA,MAAA,KACA,OAAA,KAHD,QAIC,EAAA,KAAA,EAAA,KAGD,CAAA,kBACC,QAAA,KACA,OAAA,KACA,YAAA,OAGD,GAAA,CAAA,YACC,KAAA,EAAA,EAAA,KACA,IAAA,EAGD,CAAA,eACC,YAAA,IACA,KAAA,EAAA,EAAA,KACA,cAAA,EACA,WAAA,IACA,UAAA,KAGD,CAAA,QACC,OAAA,KACA,MAAA,KACA,WAAA,KACA,UAAA,KAGD,CAPA,QAOA,UAAA,IACC,OAAA,KACA,MAAA,KACA,IAAA",
+  "names": []
+}

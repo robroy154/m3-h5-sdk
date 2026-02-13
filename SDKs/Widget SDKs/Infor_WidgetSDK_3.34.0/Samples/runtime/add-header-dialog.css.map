@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/pages/dyn/editor/layout-components/information-component/header/add-header-dialog.scss"],
+  "sourcesContent": [".header-input-area {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\twidth: 100%;\r\n}\r\n\r\n.input-translation {\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n}\r\n\r\n.user-property {\r\n\talign-self: flex-end;\r\n}\r\n\r\n.headers-input {\r\n\twidth: 100%;\r\n}\r\n\r\n.disabled-colorpicker {\r\n\tcolor: #999999 !important;\r\n\tborder-color: #bdbdbd !important;\r\n\t-webkit-text-fill-color: #999999 !important;\r\n}\r\n\r\n.disabled-colorpicker ::ng-deep + .trigger {\r\n\tcursor: default !important;\r\n}\r\n\r\n.disabled-colorpicker ::ng-deep + .trigger > svg {\r\n\tcursor: default !important;\r\n}\r\n\r\n.selected-container {\r\n\tdisplay: flex;\r\n\tjustify-content: space-between;\r\n}\r\n\r\n.selected-container h2 {\r\n\tfont-weight: bold;\r\n\tmargin-top: 5px;\r\n\tvertical-align: middle;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,kBACC,QAAA,KACA,eAAA,OACA,MAAA,KAGD,CAAA,kBACC,QAAA,KACA,eAAA,IAGD,CAAA,cACC,WAAA,SAGD,CAAA,cACC,MAAA,KAGD,CAAA,qBACC,MAAA,eACA,aAAA,kBACA,wBAAA,kBAGD,CANA,qBAMA,SAAA,CAAA,CAAA,QACC,OAAA,kBAGD,CAVA,qBAUA,SAAA,CAAA,CAJA,OAIA,CAAA,IACC,OAAA,kBAGD,CAAA,mBACC,QAAA,KACA,gBAAA,cAGD,CALA,mBAKA,GACC,YAAA,IACA,WAAA,IACA,eAAA",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/settings/settings.scss"],
+  "sourcesContent": [".flex-toolbar .title {\r\n\tpadding-left: 7px;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,aAAA,CAAA,MACC,aAAA",
+  "names": []
+}

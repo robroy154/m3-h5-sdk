@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/context-zone/context-zone.scss"],
+  "sourcesContent": [":host {\r\n\tdisplay: block;\r\n\theight: 100%;\r\n\toverflow-y: auto;\r\n\tbackground-color: #1a1a1a;\r\n\r\n\t&::-webkit-scrollbar {\r\n\t\tbackground-color: transparent;\r\n\t\twidth: 6px;\r\n\t}\r\n\r\n\t&::-webkit-scrollbar-thumb {\r\n\t\tbackground: #bdbdbd;\r\n\t\tborder-radius: 10px;\r\n\t}\r\n\r\n\t&::-webkit-scrollbar-track {\r\n\t\tbackground-color: #fff;\r\n\t\tborder-left: 1px solid #d8d6db;\r\n\t}\r\n}\r\n"],
+  "mappings": "AAAA,MACC,QAAA,MACA,OAAA,KACA,WAAA,KACA,iBAAA,QAEA,KAAA,oBACC,iBAAA,YACA,MAAA,IAGD,KAAA,0BACC,WAAA,QAZF,cAaE,KAGD,KAAA,0BACC,iBAAA,KACA,YAAA,IAAA,MAAA",
+  "names": []
+}

@@ -1,0 +1,77 @@
+{
+	"widgetId": "infor.sample.angular.contenttranslation",
+	"type": "inline",
+	"framework": "angular",
+	"aotVersion": "",
+	"name": "Infor Sample Content Translation",
+	"version": "1.0",
+	"category": "application",
+	"applicationLogicalId": "lid://infor.homepages",
+	"moduleName": "widget",
+	"localization": {
+		"es-AR": {
+			"widgetTitle": "es-AR: Content Translation",
+			"widgetDescription": "es-AR: Content Translation sample widget.",
+			"add": "es-AR: Add",
+			"editItem": "es-AR: Edit item",
+			"title": "es-AR: Title",
+			"description": "es-AR: Description"
+		},
+		"es-ES": {
+			"widgetTitle": "es-ES: Content Translation",
+			"widgetDescription": "es-ES: Content Translation sample widget.",
+			"add": "es-ES: Add",
+			"editItem": "es-ES: Edit item",
+			"title": "es-ES: Title",
+			"description": "es-ES: Description"
+		},
+		"en-US": {
+			"widgetTitle": "Content Translation",
+			"widgetDescription": "Content Translation sample widget.",
+			"add": "Add",
+			"editItem": "Edit item",
+			"title": "Title",
+			"description": "Description"
+		},
+		"en-GB": {
+			"widgetTitle": "en-GB: Content Translation",
+			"widgetDescription": "en-GB: Content Translation sample widget.",
+			"add": "en-GB: Add",
+			"editItem": "en-GB: Edit item",
+			"title": "en-GB: Title",
+			"description": "en-GB: Description"
+		},
+		"fr-CA": {
+			"widgetTitle": "fr-CA: Content Translation",
+			"widgetDescription": "fr-CA: Content Translation sample widget.",
+			"add": "fr-CA: Add",
+			"editItem": "fr-CA: Edit item",
+			"title": "fr-CA: Title",
+			"description": "fr-CA: Description"
+		},
+		"fr-FR": {
+			"widgetTitle": "fr-FR: Content Translation",
+			"widgetDescription": "fr-FR: Content Translation sample widget.",
+			"add": "fr-FR: Add",
+			"editItem": "fr-FR: Edit item",
+			"title": "fr-FR: Title",
+			"description": "fr-FR: Description"
+		},
+		"pt-BR": {
+			"widgetTitle": "pt-BR: Content Translation",
+			"widgetDescription": "pt-BR: Content Translation sample widget.",
+			"add": "pt-BR: Add",
+			"editItem": "pt-BR: Edit item",
+			"title": "pt-BR: Title",
+			"description": "pt-BR: Description"
+		},
+		"pt-PT": {
+			"widgetTitle": "pt-PT: Content Translation",
+			"widgetDescription": "pt-PT: Content Translation sample widget.",
+			"add": "pt-PT: Add",
+			"editItem": "pt-PT: Edit item",
+			"title": "pt-PT: Title",
+			"description": "pt-PT: Description"
+		}
+	}
+}

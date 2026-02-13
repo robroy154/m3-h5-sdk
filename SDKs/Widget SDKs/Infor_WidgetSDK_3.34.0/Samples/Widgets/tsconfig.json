@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"sourceMap": true,
+		"noEmitOnError": true,
+		"noImplicitAny": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"moduleResolution": "node",
+		"importHelpers": true,
+		"declaration": false,
+		"module": "system",
+		"types": ["jquery"],
+		"lib": ["ES2022", "dom"],
+		"target": "ES2021",
+		"useDefineForClassFields": false,
+		"paths": {
+			"@infor/sohoxi-angular": ["../node_modules/ids-enterprise-ng"],
+			"sample-shared-usercontext": [
+				"infor.sample.sharedmodule/sample-shared-usercontext"
+			],
+			"sample-shared-toast-service": [
+				"infor.sample.sharedmodule/shared-toast.service"
+			]
+		}
+	}
+}

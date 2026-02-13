@@ -1,0 +1,17 @@
+{
+	"widgetId": "infor.portal.sample.borderless",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "angular",
+	"name": "Borderless Sample",
+	"title": "Borderless Sample",
+	"description": "Demonstrates the \"border\" manifest property for creating \"borderless\" widgets. The widget blends into the homepage background.",
+	"targets": ["banner", "default"],
+	"border": "none",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Borderless Sample",
+			"widgetDescription": "Demonstrates the \"border\" manifest property for creating \"borderless\" widgets. The widget blends into the homepage background."
+		}
+	}
+}

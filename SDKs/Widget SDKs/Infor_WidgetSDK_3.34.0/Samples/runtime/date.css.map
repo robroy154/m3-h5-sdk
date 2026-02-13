@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/memo/date.scss"],
+  "sourcesContent": ["/* Slightly smaller than input-xs, fits about two characters. Spec in LIME-4440 */\r\n:host ::ng-deep input.lm-input-xxs {\r\n\twidth: 40px;\r\n\tmargin: 0 5px;\r\n}\r\n\r\n/* Slightly smaller than input-md. Spec in LIME-4440  */\r\n:host ::ng-deep select.lm-dropdown-mds,\r\n:host ::ng-deep select.lm-dropdown-mds + div.dropdown-wrapper .dropdown-md {\r\n\twidth: 120px;\r\n\tmargin: 0 5px;\r\n}\r\n\r\n:host ::ng-deep select.lm-dropdown-mds + div.dropdown-wrapper {\r\n\tmargin: 0;\r\n}\r\n\r\n/* Radio labels with text inputs inside are not vertically centered by IDS.  */\r\n:host ::ng-deep label[soho-label] > .vertical-adjust {\r\n\tmargin-top: -5px;\r\n\tmargin-bottom: 5px;\r\n}\r\n\r\n.recurrence-container {\r\n\tmax-width: 500px;\r\n}\r\n"],
+  "mappings": "AACA,MAAA,UAAA,KAAA,CAAA,aACC,MAAA,KAFD,OAGC,EAAA,IAID,MAAA,UAAA,MAAA,CAAA,gBAAA,MAAA,UAAA,MAAA,CAAA,eAAA,CAAA,GAAA,CAAA,iBAAA,CAAA,YAEC,MAAA,MATD,OAUC,EAAA,IAGD,MAAA,UAAA,MAAA,CANA,eAMA,CAAA,GAAA,CANA,iBAPA,OAcC,EAID,MAAA,UAAA,KAAA,CAAA,WAAA,CAAA,CAAA,gBACC,WAAA,KACA,cAAA,IAGD,CAAA,qBACC,UAAA",
+  "names": []
+}

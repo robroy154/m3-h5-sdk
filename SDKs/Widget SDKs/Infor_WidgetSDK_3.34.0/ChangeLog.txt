@@ -1,0 +1,413 @@
+Version 3.34.0 (12.0.66)
+- Updated to Angular 17.2.1
+- Updated to IDS Enterprise 4.92.3
+- Updated to IDS Enterprise NG 17.4.4
+
+- Updated to Angular 17!
+
+Version 3.32.0 (12.0.65)
+- No changes to IDS Enterprise / IDS Enterprise NG versions
+- Bug fixes
+
+Version 3.30.0 (12.0.64)
+- Fixed issues with Infor GO messaging
+- Minor bugs fixes
+
+- Updated to Angular 16.2.8
+- Updated to IDS Enterprise 4.88.2
+- Updated to IDS Enterprise NG 16.8.1
+
+Version 3.28.0 (12.0.63)
+- Fixed several issues caused by IDS update.
+- Updated to Angular 16.1.5
+- Updated to IDS Enterprise 4.85.0
+- Updated to IDS Enterprise NG 16.5.1
+
+
+Version 3.24.0 (12.0.62)
+- Fixed an issue with SVGs not loading properly.
+- Fixed an issue within Widget SDK where Widget titles were going blank upon changing localization.
+
+Version 3.22.0 (12.0.61)
+- Updated to Angular 15 (15.1.5)
+- Updated to IDS Enterprise 4.80.3
+- Updated to IDS Enterprise NG 15.0.5 (Note: displays as 15.0.4)
+
+- Bumped version number to sync with OS Portal
+
+Version 3.17.0 (12.0.60)
+- Updated to IDS Enterprise 4.69.0
+- Updated to IDS Enterprise NG 14.5.0
+
+- New Development Tools! Added UI for easy access to themes, localization, messaging, widgets, mobile mode and helpful links.
+- Fixed Empty UI positioning bug from .59
+- getContainerURL() is now deprecated and will show errors in logs
+- Fixed an issue in the homepages pack script when symbolic links are used for widget files
+
+
+Version 3.16.0 (12.0.59)
+- Updated to IDS Enterprise 4.67.3
+- Updated to IDS Enterprise NG 14.3.2 (Note: displays as 14.3.1)
+- Updated to Angular 14.2.11
+- Update JQuery UI to 1.13.2
+
+- Added IWidgetContext.getSpotlight for Portal Search Spotlight support.
+
+
+Version 3.15.0 (12.0.58)
+- Updated to Angular 14
+- Menu widget enabled for Banner area
+- Updated to IDS Enterprise 4.65.7
+- Updated to IDS Enterprise NG 14.1.14 (Note: displays as 14.1.13)
+
+
+Version 3.14.0 (12.0.57)
+- Filipino language support
+- Updated to Angular 13.3.2
+- Updated to IDS Enterprise 4.62.1
+- Updated to IDS Enterprise NG 13.3.2
+
+
+Version 3.13.0 (12.0.56)
+- Language improvements
+- "EnabledUnsignedTenantWidgets" default value changed from 1 to 0
+- Updated to Angular 13.3.0
+- Updated to IDS Enterprise 4.61.0
+- Updated to IDS Enterprise NG 13.2.1
+
+
+Version 3.12.0 (12.0.55)
+- Remove feature flag for Banner widget (always enabled)
+- Add support for bottom lazy loading busy indicator
+- Remove non available standard page connections from the user's connections
+- Auditing: Include "ownerID" in Before Update section for updatepublishedwidgetowner and updatepageowner transaction
+- Add support for tel:// and callto:// links in launch method
+- New vulnerability scanning tool from Qualys. (Replacing Rapid-7 in Commercial Cloud)
+- Updated to IDS Enterprise 4.59.4
+- Updated to IDS Enterprise NG 10.12.3
+
+
+Version 3.11.0 (12.0.54)
+- Added support for showing and hiding an empty state message in the widget. See IWidgetContext setEmptyState and clearEmptyState.
+- Added lint support for supportedClients and ContextConfig for Contextual widgets for OS Portal, the next version of Mingle.
+
+
+Version 3.10.0 (12.0.53)
+- Updated to Angular 12.2.9.
+- Updated to IDS Enterprise 4.56.0.
+- Updated to IDS Enterprise NG 10.9.0.
+- Added IWidgetContext.isHomepages and IWidgetContext.isPortal to check whether the widget is running in Homepages or the new Portal.
+- Added support to IWidgetContext.showWidgetMessage for showing a green success message (WidgetMessageType.Success), and support for adding a link to the message.
+
+
+Version 3.9.0 (12.0.52)
+- Added IWidgetContext.interval which can be used for creating intervals that only trigger while the widget is active.
+- Added standardParameters manifest property for external widgets to automatically add Mingle parameters to URL such as languag, locale, theme.
+- Added ESLint rules and extension recommendation for VS Code.
+- Updated to Angular 12.2.6.
+- Updated to IDS Enterprise 4.55.2.
+- Updated to IDS Enterprise NG 10.6.2.
+
+
+Version 3.8.0 (12.0.51)
+- Added support for showing an IDS badge next to the title in the widget header. See IWidgetContext showBadge and removeBadge.
+
+
+Version 3.7.0 (12.0.50)
+- Updated to Angular 11.2.12.
+- Updated to IDS Enterprise 4.51.1.
+- Updated to IDS Enterprise NG 9.5.0.
+
+
+Version 3.5.0 (12.0.48)
+- Updated to Angular 11.2.5.
+- Updated to IDS Enterprise 4.38.1.
+- Updated to IDS Enterprise NG 9.3.1.
+
+
+Version 3.3.0 (12.0.46)
+- Added support for lower and upper pipe in URL templates. Example for helpUrl with variable Language needed in lowercase https://docs.infor.com/mingle/12.0.x/{Language|lower}/minceolh/default.html?helpcontent=jho1449264559166.html
+- Added support in the homepages pack script to pack a standard widget as a tenant widget, using the --asTenant flag.
+- Updated to Angular 11.0.7.
+- Updated to IDS Enterprise 4.36.1.
+- Updated to IDS Enterprise NG 9.1.1.
+
+
+Version 3.2.0 (12.0.45)
+- IWidgetContext, IWidgetInstance, IWidgetSettingsContext and IWidgetSettingsInstance are now injectable.
+- Added optional tenant property to the development configuration.json file for testing ION API with the enableNonTenantUrl property.
+- Addded openDocument function to IDevice for downloading a document (mobile).
+- Improved development proxy configuration.
+- Updated to IDS Enterprise 4.34.2.
+- Updated to IDS Enterprise NG 7.8.2.
+
+
+Version 3.1.0 (12.0.44)
+- Added getVersionInfo function to IWidgetContext which provides access to the Homepages version, displayVersion and frameworkVersion.
+- The IDS locale is set automatically based on which language file is loaded in index.html (e.g scripts/lime/resources/en-US.js), or the value of the devLanguage attribute on lm-app.
+- Updated to IDS Enterprise 4.31.2.
+- Updated to IDS Enterprise NG 7.5.3.
+
+
+Version 3.0.0 (12.0.43)
+- Updated to Angular 9.1.4.
+- Updated to IDS Enterprise 4.28.0.
+- Updated to IDS Enterprise NG 7.1.0.
+- Legacy RxJS (5) support removed from Homepages runtime.
+
+
+Version 2.5.0 (12.0.42)
+- Added support for manifest property "restrictPublishTarget", see Developers guide for more information.
+- Updated to IDS Enterprise 4.24.0.
+- Updated to IDS Enterprise NG 6.3.0.
+- Using browser-sync as SDK dev server with file watcher and browser reloading.
+
+
+Version 2.4.0 (12.0.41)
+- Added support for calling Metadata ION API (getIonApiInfoAsync) to list products for a suite or logicalId Prefix. Used to check if the suite is provisioned in ION API.
+- Added strict widget id validation in pack script to verify that Developer Guide instructions are followed.
+- Removed legacy support for RxJS 5 (deprecated in v1.0.23). RxJS 5 imports & usages in widgets must be changed to RxJS 6.
+
+
+Version 2.3.0 (12.0.40)
+- Added getSize to IWidgetContext to be able to get the current size of the widget (column & row span) in runtime. See sample "infor.sample.angular.widgetsize".
+- Homepages will soon support different UI themes (Light, Dark, High contrast), and widgets should be tested & verified in all three of them. See Developers guide for more information.
+- Updated to IDS Enterprise 4.21.3.
+- Updated to IDS Enterprise NG 6.0.0.
+
+
+Version 2.2.0 (12.0.39)
+- Updated to IDS Enterprise 4.20.1.
+- Updated to IDS Enterprise NG 5.5.2.
+
+
+Version 2.1.0 (12.0.38)
+- Added support for testing widget translations by changing the language used for the widget. See Developers guide for more information.
+- Added support for deprecating a widget. See Developers guide for more information.
+- Added a sample showing how to use Angular services in widgets.
+- Updated to IDS Enterprise 4.19.4.
+- Updated to IDS Enterprise NG 5.4.2.
+
+
+Version 2.0.0 (12.0.36)
+- Introduced semantic versioning for the technical Homepages framework version.
+- Added runtime support for the Widget manifest property "frameworkVersion", see Developers guide for more information.
+- Added applicationLogicalIdSuffix that is used to find the default application for a widget when there are multiple instances of an application.
+- Added a sample showing the Workspace concept.
+- Added support for running widgets in Mobile Single mode.
+- Updated to Angular 8.0.
+- Updated to IDS Enterprise 4.18.2.
+- Updated to IDS Enterprise NG 5.3.0.
+
+
+Version 1.0.34 (12.0.34)
+- Added Widget ZIP validator.
+- Added getMode and getSubMode to IWidgetContext to be able to get the mode the widget is running in (Default, Mobile etc.)
+- Added support for Early Access widgets, including manifest properties isEarlyAccess and EarlyAccessInfo.
+- Added wrapper methods send, receive on IWidgetContext that should be used instead of accessing infor.companyon.client directly.
+
+
+Version 1.0.32 (12.0.32)
+- Removed support for AngularJS widgets (which was deprecated in version 1.0.17).
+- Remove the following interfaces, properties and functions related to AngularJS: IAngularContext, IAngularScopeValue, IAngularTemplateInfo, IDialogService, IDialogOptions.scope, IDialogOptions.template, IDialogOptions.templateUrl
+- Refactored the X2 interfaces (IWidgetContext2 etc). Widgets no longer need to use X2 interfaces and can revert to the regular interfaces since AngularJS is no longer supported. All X2 interfaces still exists but are now empty, extending the regular interfaces (IWidgetContext2 extends IWidgetContext etc).
+- Added support to define custom icon, heading, description and button functionality for the empty UI rendered when the widget requires configuration. See EmptyConfig in the Developers Guide.
+- Updated to Angular 7.2.
+- Updated to IDS Enterprise 4.14.0
+- Updated to IDS Enterprise NG 5.0.0.
+
+
+Version 1.0.30 (12.0.30)
+- Updated IDS Enterprise to 4.11.0
+
+
+Version 1.0.29 (12.0.29)
+- Added tenant widget sample, tenant.sample.angular.helloworld.
+- Added technology disclaimer that tenant widgets might require regular code changes due to updates of dependencies.
+
+
+Version 1.0.28 (12.0.28)
+- Added optional destroy function on IWidgetInstance and IWidgetInstance2.
+
+
+Version 1.0.27 (12.0.27)
+
+
+Version 1.0.25 (12.0.25)
+- Added new manifest property "sohoVersion" for AoT that will be automatically added by the homepages pack script.
+
+
+Version 1.0.24 (12.0.24)
+- Added new optional manifest property called maxSize.
+
+
+Version 1.0.23 (12.0.23)
+- Updated to Angular version 6.
+- Updated to RxJS version 6.
+- Deprecated RxJS 5. A small subset of RxJS 5 will be supported using rxjs-compat during a transition period.
+- Deprecated sub directories in widget zip package files.
+- Updated SoHo Xi controls to 4.5.0.
+- Added support for AOT compilation of Angular widgets. See the Angular AOT Adoption guide and the Developers guide for more information.
+- Added new optional manifest property called aotVersion. See the Developers guide for more information.
+- Added homepages command script for packaging widget packages, deprecated the minifyWidget script.
+- Adopted AOT support for all sample Angular widgets.
+- Added support for radio buttons as part of the metadata setting UI. See sample "infor.sample.angular.helloworld" on how to use it.
+- Added possibility to tell the framework to reevalute the widget's primary action in the widget header, see IWidgetContext2 in the API Documentation for more information.
+
+
+Version 1.0.22 (12.0.22)
+- Added support for injecting the widget context and widget instance in Angular widget component constructors. See widgetContextInjectionToken and widgetInstanceInjectionToken in the Developers guide.
+
+
+Version 1.0.21 (12.0.21)
+- Added new optional manifest property called enableRefresh. See the Developers guide for more information.
+
+
+Version 1.0.19 (12.0.19)
+- Added new optional widget manifest property called enableSettingsWhenPublished. See the Developers guide for more information.
+- Added new optional widget manifest setting property called isEnabledWhenPublished. See the Developers guide for more information.
+- Deprecated sharedWidgetId in widget manifest. Support will be completely removed for Widget variants. See the Developers guide for more information.
+
+
+Version 1.0.18 (12.0.18)
+
+
+Version 1.0.17 (12.0.17)
+- Updated to AngularJS version 1.6.6.
+- Updated Xi SoHo controls to 4.3.2.
+- Changed module loader from RequireJS to SystemJS.
+- Added Angular and deprecated support for AngularJS.
+- Added Xi SoHo Components for Angular.
+- Added mandatory framework property to manifest.
+- Added IWidgetComponent, IAngularWidgetConfig2 for Angular widgets.
+- Added new interfaces to replace previously used interfaces; IWidgetContext2, IWidgetInstance2, IWidgetSettingsContext2, IWidgetSettingsInstance2.
+
+
+Version 1.0.16 (12.0.16)
+
+
+Version 1.0.15 (12.0.15)
+
+
+Version 1.0.14 (12.0.14)
+
+
+Version 1.0.13 (12.0.13)
+- Added support for submenu actions in the widget menu. Added new sample "infor.sample.angular.submenu".
+- Added isSingleTenantCloud to IWidgetContext as well as a grid property that needs to be set for this method to return true.
+
+
+Version 1.0.12 (12.0.12)
+- Added restore of published widgets. Added new parameter to the restore event to signal if user settings are restored or the widget default.
+- Added new APIs to retrieve the current background color used for the Banner container area, and instance event when color has changed. Banner implementation only. See IWidgetContext getBannerBackgroundColor and IWidgetInstance bannerBackgroundChanged
+
+
+Version 1.0.11 (12.0.11)
+- Added new optional widget manifest property called displayVersion. See the Developers guide for more information.
+- Added support for finding widgets on the same page. Added new sample "infor.sample.angular.findwidgets".
+- The term "Hero widget" has been changed to "Banner widget". The manifest target / targets property should be specified as "banner" instead of "hero", but the value "hero" is still supported.
+
+
+Version 1.0.10 (12.0.10)
+- Added support for setting the default size of a widget in the widget manifest.
+- Changed the Widgets sample solution to use a tsconfig.json file to make it compatible with Visual Studio Code and other tools.
+
+
+Version 1.0.8 (12.0.8)
+- Added support for testing a Hero widget in the development container. A Hero widget has "target" property set to "hero" in the widget manifest. Added new samples "infor.sample.angular.hero" and "infor.sample.angular.contextviewer".
+
+
+Version 1.0.7 (12.0.7)
+- Updated sample widgets
+- Samples include a custom.json file which can be used to mock a published state for a widget, to verify that settings are handled correctly if they have been enabled/disabled while publishing the widget. New sample settings.ui.metadata uses this.
+
+
+Version 1.0.6 (12.0.6)
+- Added functions for getting the tenant ID and user ID to IWidgetContext.
+
+
+Version 1.0.3 (12.0.3)
+- Added support for "requiresConfig" flag in the Widget manifest, which can be set to true if the widget needs to be configured before using it. Please see the Developers Guide and API Documentation for more information.
+- Added appendix with widget test scenarios to the Developers Guide.
+- Added SoHo Xi Guidelines PDF in the Documentation directory.
+
+
+Version 1.0.2 (12.0.2)
+- Added functions to the IWidgetContext to allow widgets with a custom settings UI to support title locking in the same way as the standard metadata settings UI (see isTitleLocked, isTitleUnlockable, setTitleLocked and getResolvedTitle).
+- Added support for testing multiple widgets in the development page container. See example in the index.html file in the Sample solution and the Developers Guide.
+
+
+Version 1.0.1 (12.0.1)
+- Added IWidgetContext.isCloud function for checking if Homepages is running in the cloud or on premise.
+- Added IIonApiContext.getCustomerContext function for getting the ION API customer context.
+
+
+Version 1.0.0 (12.0.0)
+- Added containerUrl support for widgets to support IFrame security with X-Frame-Options
+
+
+Version 0.9.8
+- Added helpUrl support to widget manifest
+- The SDK zip now contains a demo application showing how to use the included angular directives for the SoHo Xi controls. Located in \XiDirectives.
+
+
+Version 0.9.7
+- Added a new function called executeIonApiAsync to IWidgetContext. The new function will simplify calls to ION APIs in many cases.
+- Updated the ION API samples to use the new executeIonApiAsync function.
+
+
+Version 0.9.6
+- New sample widgets added (infor.sample.angular.dialogs, infor.sample.ionapi.social, infor.sample.w2wsender and infor.sample.w2wreceiver).
+- The IWidgetContext.isLocked function has been removed since it was never used for anything.
+- Added samples for Widget-to-Widget communication. See \Samples\Widgets\infor.sample.w2wsender & \infor.sample.w2wreceiver
+
+
+Version 0.9.5
+- Breaking change: The enableSettings function on IWidgetSettings has been removed. Disable Settings by setting enableSettings in manifest to false.
+If settings are enabled depends on widget manifest and publish configuration as well as current client state.
+- Added support for ION API. See IIonApiContext and IWidgetContext.getIonApiContextAsync.
+- Added sample for ION API. See \Samples\Widgets\infor.sample.ionapi.m3
+- Added proxy for ION API. See \Samples\StartIonApiProxy.cmd
+- Added support for shared modules.
+
+
+Version 0.9.4
+- Added IDialogService and related classes to the public API.
+- Added getService function to IWidgetContext for accessing supported framework services for widgets not implemented using AngularJS.
+- Added support for specifying one widget action as the primary action, accessible from the widget title bar.
+
+
+Version 0.9.3
+- Added support for multiple application instances (see IWidgetContext).
+- Changed format of the test configuration file to support multiple application instances in the test container.
+
+
+Version 0.9.2
+- Breaking change: The getData and setData functions on the IWidgetContext have been removed since an object widget setting can be used for the same purpose.
+  The examples below shows code that can be used to replace any existing calls to getData / setData.
+  var data = widgetContext.getSettings().get("data");
+  widgetContext.getSettings().set("data", data);
+- Added new widget settings type called "object".
+  Settings of type object will not be shown in the metadata settings UI, they require a custom UI.
+  Default setting for an object setting can be specified in the widget manifest.
+  Note that object settings were partially supported before but are now fully supported and can be used instead of getData / setData.
+- Added documentation section "Settings for a published widget".
+- Added documentation section "Resolved widget values".
+- New functions in IWidgetContext for accessing Ming.le application settings.
+- Custom icons are now supported in the Widget Catalog.
+
+
+Version 0.9.1
+- TypeScript source code and map files are now included in the SDK.
+  Note that the source code is for reference and that only the APIs that are documented in the API documentation are supported.
+  Internal APIs may be refactored or removed without prior notice.
+- The index.html page in the Widgets Samples project has been updated. Existing test projects must be updated to use the new script tags etc.
+- Widgets can be resized and reordered using Edit page layout in dev mode.
+- Development files for configuration, settings and customized widgets are now supported in dev mode.
+- Custom actions can be added to the widget menu.
+- QuickNote sample added to the Widgets Samples project that shows how to use widget data and a custom menu action.
+- External sample added to the Widgets Samples project that shows how to create an external widget with a URL template.
+
+
+Version 0.9.0
+- First alpha release.

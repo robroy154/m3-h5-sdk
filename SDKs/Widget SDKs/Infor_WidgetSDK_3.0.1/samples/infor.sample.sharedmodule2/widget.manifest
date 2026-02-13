@@ -1,0 +1,24 @@
+{
+	"widgetId": "infor.sample.sharedmodule2",
+	"type": "inline",
+	"framework": "angular",
+	"aotVersion": "",
+	"name": "Shared Module Sample 2",
+	"version": "1.0",
+	"category": "application",
+	"applicationLogicalId": "lid://infor.homepages",
+	"sharedModules": [
+		{
+			"name": "sample-shared-usercontext"
+		},
+		{
+			"name": "sample-shared-toast-service"
+		}
+	],
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Shared Module Sample 2",
+			"widgetDescription": "Demonstrates a user context module shared with with other widgets. The shared module will be loaded by the Framework and made available to all widgets importing it. The shared module loads user context information, or returns it if already loaded."
+		}
+	}
+}

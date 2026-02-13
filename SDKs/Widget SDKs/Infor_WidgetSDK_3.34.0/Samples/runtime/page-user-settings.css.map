@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/lazy/components/page-dialogs/page-user-settings.scss"],
+  "sourcesContent": [":host-context(html[dir=\"rtl\"]) .user-settings .checkbox-label {\r\n\tfloat: none;\r\n}\r\n"],
+  "mappings": "AAAA,cAAA,IAAA,CAAA,GAAA,CAAA,MAAA,CAAA,cAAA,CAAA,eACC,MAAA",
+  "names": []
+}

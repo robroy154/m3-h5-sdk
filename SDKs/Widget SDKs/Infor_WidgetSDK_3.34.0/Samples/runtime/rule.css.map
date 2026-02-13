@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/settings/rule.scss"],
+  "sourcesContent": [".lm-setting-dialog {\r\n\tdisplay: flex;\r\n}\r\n\r\n.lm-setting-dialog > div {\r\n\twidth: 50%;\r\n\tmargin-left: 0;\r\n}\r\n\r\n.lm-setting-dialog > div:first-child {\r\n\tpadding-right: 30px;\r\n\tborder-right: 1px solid #e5e5e5;\r\n}\r\n\r\n.lm-setting-dialog > div:nth-child(2) {\r\n\tpadding-left: 30px;\r\n}\r\n\r\n.lm-setting-dialog .lm-compact-list {\r\n\tmin-width: 300px;\r\n}\r\n\r\n.lm-admin-dialog-height {\r\n\theight: 400px;\r\n}\r\n\r\n.lm-admin-dialog-width {\r\n\twidth: 700px;\r\n}\r\n\r\n#affectedUsers li button {\r\n\tfloat: right;\r\n}\r\n\r\nhtml[dir=\"rtl\"] :host #affectedUsers li button {\r\n\tfloat: left;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,kBACC,QAAA,KAGD,CAJA,iBAIA,CAAA,IACC,MAAA,IACA,YAAA,EAGD,CATA,iBASA,CAAA,GAAA,aACC,cAAA,KACA,aAAA,IAAA,MAAA,QAGD,CAdA,iBAcA,CAAA,GAAA,cACC,aAAA,KAGD,CAlBA,kBAkBA,CAAA,gBACC,UAAA,MAGD,CAAA,uBACC,OAAA,MAGD,CAAA,sBACC,MAAA,MAGD,CAAA,cAAA,GAAA,OACC,MAAA,MAGD,IAAA,CAAA,SAAA,MAAA,CAJA,cAIA,GAAA,OACC,MAAA",
+  "names": []
+}

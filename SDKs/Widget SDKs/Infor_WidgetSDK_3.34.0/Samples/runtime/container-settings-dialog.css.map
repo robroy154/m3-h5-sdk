@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;a9298ddd49320c0899a86e386f89dc00c85c82712e1f77b8db16e242a8ea4fb2;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\admin\\pages\\dyn\\editor\\layout-components\\container-settings-dialog.ts"],
+  "sourcesContent": ["\n\t\t\tbutton.btn-icon:focus {\n\t\t\t\tbox-shadow: none;\n\t\t\t}\n\n\t\t\t.moreIconsButton {\n\t\t\t\tfont-size: 12px;\n\t\t\t\tfont-color: #5c5c5c;\n\t\t\t\tpadding: 0px 6px;\n\t\t\t}\n\n\t\t\tsvg.selected,\n\t\t\tbutton.btn-icon:hover svg.selected {\n\t\t\t\tcolor: #fff;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,MAAM,CAAC,QAAQ,OACd,WAAY,IACb,CAEA,CAAC,gBACA,UAAW,KACX,WAAY,QAPhB,QAQa,EAAI,GACd,CAEA,GAAG,CAAC,SACJ,MAAM,CAXC,QAWQ,OAAO,GAAG,CADrB,SAEH,MAAO,IACR",
+  "names": []
+}

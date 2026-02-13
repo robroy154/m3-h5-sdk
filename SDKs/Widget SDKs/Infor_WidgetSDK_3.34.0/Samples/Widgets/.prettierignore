@@ -1,0 +1,5 @@
+.vscode
+**/*.js
+scripts/**
+index.html
+styles.css

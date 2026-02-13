@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;a6a92a05c13e1ef81a11d8ef8e8cec68c8413f379407ff1e4f41827b0ad53bc4;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\admin\\policies\\policy-test.ts"],
+  "sourcesContent": ["\n\t\t\t.field {\n\t\t\t\tpadding-left: 1px;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,CAAC,MACA,aAAc,GACf",
+  "names": []
+}

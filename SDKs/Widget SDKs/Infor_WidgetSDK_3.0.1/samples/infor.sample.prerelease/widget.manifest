@@ -1,0 +1,20 @@
+{
+	"widgetId": "infor.sample.prerelease",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "angular",
+	"category": "utilities",
+	"name": "Pre-release Test",
+	"supportedClients": [{ "id": "osportal" }],
+	"preRelease": {
+		"frameworkVersion": "3.40.0",
+		"isEditor": true,
+		"isInfor": true
+	},
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Pre-release Test",
+			"widgetDescription": "Used for testing the new widget manifest property that can be used to exclude pre-release standard widgets for normal tenants. Should only be available in infor and editor tenants where the frameworkVersion is 3.40.0."
+		}
+	}
+}

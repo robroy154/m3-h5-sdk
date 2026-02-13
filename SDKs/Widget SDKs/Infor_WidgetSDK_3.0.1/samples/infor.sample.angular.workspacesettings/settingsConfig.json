@@ -1,0 +1,66 @@
+{
+	"workspaces": [
+		{
+			"id": "XH5I40D9MEKTP09B",
+			"widgets": [],
+			"disabledWidgets": [],
+			"features": {}
+		}
+	],
+	"theme": "theme-new-light",
+	"locale": "en-US",
+	"language": "en-US",
+	"settingsContext": {
+		"configuration": {
+			"data": {
+				"settings": {
+					"fruitSetting": "Apple",
+					"sodaSetting": "Trocadero",
+					"burgerSetting": "Cheese"
+				}
+			},
+			"settings": [
+				{
+					"name": "fruitSetting",
+					"type": "string",
+					"source": "dynamic",
+					"label": "Fruit",
+					"maxLength": 32,
+					"enabled": true,
+					"visible": true,
+					"rules": [
+						{
+							"type": "cn",
+							"values": ["a"]
+						}
+					],
+					"ignoreCase": true
+				},
+				{
+					"name": "sodaSetting",
+					"type": "string",
+					"source": "dynamic",
+					"label": "Soda",
+					"maxLength": 32,
+					"enabled": true,
+					"visible": true
+				},
+				{
+					"name": "burgerSetting",
+					"type": "string",
+					"label": "Burger",
+					"maxLength": 32,
+					"maxItems": 20,
+					"support": {
+						"enabled": true,
+						"visible": true,
+						"sources": ["dynamic", "static"],
+						"rules": ["cn", "eq", "in", "nin", "rn", "sw"]
+					}
+				}
+			],
+			"id": "default"
+		}
+	},
+	"settingsWidgetId": "infor.sample.angular.workspacesettings"
+}

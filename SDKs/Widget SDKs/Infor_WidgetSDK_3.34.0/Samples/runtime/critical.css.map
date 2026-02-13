@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;6917af8b66ad60290d594a0ce324146f887b764d3d27e1d0ef50f44418df813f;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\core\\components\\memos\\critical\\critical.ts"],
+  "sourcesContent": ["\n\t\t\t::ng-deep #lm-criticalmemos-cap {\n\t\t\t\twidth: 1120px;\n\t\t\t}\n\n\t\t\tlm-memos {\n\t\t\t\theight: 450px;\n\t\t\t}\n\n\t\t\tsoho-toolbar soho-toolbar-button-set div.separator {\n\t\t\t\tmargin-left: 10px;\n\t\t\t\tmargin-right: 10px;\n\t\t\t}\n\n\t\t\t:host-context(html[dir=\"rtl\"])\n\t\t\t\tsoho-toolbar-flex\n\t\t\t\tbutton[icon$=\"arrow\"]\n\t\t\t\t::ng-deep\n\t\t\t\tsvg {\n\t\t\t\ttransform: rotateY(180deg);\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,UAAU,CAAC,qBACV,MAAO,MACR,CAEA,SACC,OAAQ,KACT,CAEA,aAAa,wBAAwB,GAAG,CAAC,UACxC,YAAa,KACb,aAAc,IACf,CAEA,cAAc,IAAI,CAAC,GAAG,CAAC,QACtB,kBACA,MAAM,CAAC,aACP,UACA,IACA,UAAW,QAAQ,OACpB",
+  "names": []
+}

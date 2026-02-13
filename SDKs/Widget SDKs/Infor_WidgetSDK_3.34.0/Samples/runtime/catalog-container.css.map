@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;fda04fb45fc119531059f3b3dbd466ee300c33c9e400a29f22dbb022b7ec40bb;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\core\\components\\catalog-container\\catalog-container.ts"],
+  "sourcesContent": ["\n\t\t\t::ng-deep div.modal-header {\n\t\t\t\tpadding: 0px !important;\n\t\t\t\tbackground-color: #d8d8d8;\n\t\t\t}\n\t\t\t::ng-deep div.modal-body-wrapper {\n\t\t\t\tpadding: 0px !important;\n\t\t\t}\n\t\t\t::ng-deep soho-toolbar.toolbar {\n\t\t\t\tmargin-bottom: 0px !important;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,UAAU,GAAG,CAAC,aADjB,QAEa,YACT,iBAAkB,OACnB,CACA,UAAU,GAAG,CAAC,mBALjB,QAMa,WACV,CACA,UAAU,YAAY,CAAC,QACtB,cAAe,WAChB",
+  "names": []
+}

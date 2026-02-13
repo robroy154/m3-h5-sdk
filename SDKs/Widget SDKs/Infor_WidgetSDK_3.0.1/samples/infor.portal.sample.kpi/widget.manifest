@@ -1,0 +1,124 @@
+{
+	"widgetId": "infor.portal.sample.kpi",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "angular",
+	"supportedClients": [
+		{
+			"id": "osportal"
+		}
+	],
+	"name": "KPI Sample",
+	"title": "KPI Sample",
+	"targets": ["top", "default"],
+	"header": "none",
+	"minSize": "0.5,0.5",
+	"defaultSize": "0.5,0.5",
+	"maxSize": "1,1",
+	"description": "Displays a KPI value in the top bar / KPI ribbon.",
+	"settings": [
+		{
+			"type": "number",
+			"name": "kpi",
+			"defaultValue": 123000,
+			"labelId": "kpi"
+		},
+		{
+			"type": "string",
+			"name": "label",
+			"defaultValue": "Revenue",
+			"labelId": "label"
+		},
+		{
+			"type": "string",
+			"name": "subLabel",
+			"defaultValue": "Q4 2024",
+			"labelId": "subLabel"
+		},
+		{
+			"type": "number",
+			"name": "trend",
+			"defaultValue": 0.12,
+			"labelId": "trend"
+		},
+		{
+			"type": "selector",
+			"defaultValue": "currency",
+			"name": "kpiFormat",
+			"labelId": "kpiFormat",
+			"values": [
+				{
+					"value": "decimal",
+					"textId": "decimal"
+				},
+				{
+					"value": "currency",
+					"textId": "currency"
+				},
+				{
+					"value": "percent",
+					"textId": "percent"
+				}
+			]
+		},
+		{
+			"type": "selector",
+			"defaultValue": "percent",
+			"name": "trendFormat",
+			"labelId": "trendFormat",
+			"values": [
+				{
+					"value": "decimal",
+					"textId": "decimal"
+				},
+				{
+					"value": "percent",
+					"textId": "percent"
+				},
+				{
+					"value": "currency",
+					"textId": "currency"
+				}
+			]
+		},
+		{
+			"type": "selector",
+			"defaultValue": "USD",
+			"name": "currency",
+			"labelId": "currency",
+			"values": [
+				{
+					"value": "EUR",
+					"text": "EUR"
+				},
+				{
+					"value": "INR",
+					"text": "INR"
+				},
+				{
+					"value": "SEK",
+					"text": "SEK"
+				},
+				{
+					"value": "USD",
+					"text": "USD"
+				}
+			]
+		}
+	],
+	"localization": {
+		"en-US": {
+			"widgetTitle": "KPI Sample",
+			"widgetDescription": "Displays a KPI value in the top bar / KPI ribbon.",
+			"kpi": "KPI",
+			"label": "Label",
+			"subLabel": "Sub label",
+			"trend": "Trend",
+			"kpiFormat": "KPI format",
+			"trendFormat": "Trend format",
+			"decimal": "Decimal",
+			"percent": "Percent",
+			"currency": "Currency"
+		}
+	}
+}

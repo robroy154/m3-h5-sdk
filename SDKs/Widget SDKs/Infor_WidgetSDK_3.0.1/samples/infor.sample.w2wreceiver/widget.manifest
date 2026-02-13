@@ -1,0 +1,24 @@
+{
+	"widgetId": "infor.sample.w2wreceiver",
+	"type": "inline",
+	"name": "Message Receiver Sample",
+	"version": "1.0",
+	"category": "application",
+	"applicationLogicalId": "lid://infor.homepages",
+	"framework": "angular",
+	"contextAppConfig": {
+		"type": "context"
+	},
+	"aotVersion": "",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Message Receiver Sample",
+			"widgetDescription": "Receives and displays messages sent from other widgets.",
+			"messageType": "Message type",
+			"title": "Title",
+			"status": "Status",
+			"anniversary": "Anniversary",
+			"noContent": "No message has been received for the registered message type..."
+		}
+	}
+}

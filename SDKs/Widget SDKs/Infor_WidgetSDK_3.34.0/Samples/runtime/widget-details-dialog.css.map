@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/widgets/widget-details-dialog.scss"],
+  "sourcesContent": [".lm-a-sw-det-dlg {\r\n\tmax-width: 800px !important;\r\n\tmin-width: 800px !important;\r\n\twidth: 800px !important;\r\n}\r\n\r\n.lm-a-sw-det-dlg pre {\r\n\tfont-size: 12px;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,gBACC,UAAA,gBACA,UAAA,gBACA,MAAA,gBAGD,CANA,gBAMA,IACC,UAAA",
+  "names": []
+}

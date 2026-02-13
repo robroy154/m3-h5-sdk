@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;a680ba1053830964a9524593027a4a240ab9bbf31e690d28664cc9d3b01c611c;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\core\\components\\widget-dyn\\image.ts"],
+  "sourcesContent": ["\n\t\t\t:host > div {\n\t\t\t\theight: 100%;\n\t\t\t\twidth: 100%;\n\t\t\t\tmin-height: 100%;\n\t\t\t\tmin-width: 100%;\n\t\t\t\ttop: 0;\n\t\t\t\tleft: 0;\n\t\t\t\tmargin: 0;\n\t\t\t\tpadding: 0;\n\t\t\t\tborder: 0;\n\t\t\t\tbackground-repeat: no-repeat;\n\t\t\t\tbackground-position: center;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,KAAM,CAAE,IACP,OAAQ,KACR,MAAO,KACP,WAAY,KACZ,UAAW,KACX,IAAK,EACL,KAAM,EAPV,OAQY,EARZ,QASa,EACT,OAAQ,EACR,kBAAmB,UACnB,oBAAqB,MACtB",
+  "names": []
+}

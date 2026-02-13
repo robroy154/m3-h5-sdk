@@ -1,0 +1,17 @@
+{
+	"widgetId": "infor.portal.sample.titleless",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "angular",
+	"name": "Untitled Sample",
+	"title": "Untitled Sample",
+	"description": "Demonstrates the \"titleDisplay\" manifest property for hiding the title, and excluding the setting for changing the title. It also showcases the possibility of having two primary actions.",
+	"titleDisplay": "none",
+	"defaultSize": "2,1",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Untitled Sample",
+			"widgetDescription": "Demonstrates the \"titleDisplay\" manifest property for hiding the title, and excluding the setting for changing the title. It also showcases the possibility of having two primary actions."
+		}
+	}
+}

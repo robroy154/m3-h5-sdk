@@ -1,0 +1,28 @@
+<ids-bar-chart
+	class="content-main"
+	#barChart
+	width="inherit"
+	height="inherit"
+	selectable
+	(selected)="viewDetails()"></ids-bar-chart>
+<ids-layout-grid class="content-detail" cols="2" gap="md" padding="sm">
+	<ids-layout-grid-cell>
+		<ids-data-label label="Customer Name">Building Suppliers</ids-data-label>
+	</ids-layout-grid-cell>
+	<ids-layout-grid-cell>
+		<ids-data-label label="Type">Contractor</ids-data-label>
+	</ids-layout-grid-cell>
+	<ids-layout-grid-cell>
+		<ids-data-label label="Address">
+			4209 Industrial Avenue
+			<br />
+			Los Angeles, California 90001 USA
+		</ids-data-label>
+	</ids-layout-grid-cell>
+	<ids-layout-grid-cell>
+		<ids-data-label label="Phone Number">(999) 810-2604</ids-data-label>
+	</ids-layout-grid-cell>
+	<ids-layout-grid-cell>
+		<ids-data-label label="Website">www.buildings.com</ids-data-label>
+	</ids-layout-grid-cell>
+</ids-layout-grid>

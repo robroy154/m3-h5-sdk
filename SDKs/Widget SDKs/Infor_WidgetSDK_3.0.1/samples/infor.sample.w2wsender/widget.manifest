@@ -1,0 +1,17 @@
+{
+	"widgetId": "infor.sample.w2wsender",
+	"type": "inline",
+	"framework": "angular",
+	"aotVersion": "",
+	"name": "Message Sender Sample",
+	"version": "1.0",
+	"category": "application",
+	"applicationLogicalId": "lid://infor.homepages",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Message Sender Sample",
+			"widgetDescription": "Sends messages to other widgets.",
+			"messageType": "Message type"
+		}
+	}
+}

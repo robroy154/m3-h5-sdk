@@ -1,0 +1,18 @@
+{
+	"widgetId": "infor.portal.sample.headerless",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "angular",
+	"name": "Headerless Sample",
+	"title": "Headerless Sample",
+	"description": "Demonstrates the \"header\" manifest property for \"headerless\" widgets. This widget does not have any header, and the widget content will span the entire height. Headerless widgets cannot have primary actions.",
+	"header": "none",
+	"border": "none",
+	"maxSize": "1,1",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Headerless Sample",
+			"widgetDescription": "Demonstrates the \"header\" manifest property for \"headerless\" widgets. This widget does not have any header, and the widget content will span the entire height. Headerless widgets cannot have primary actions."
+		}
+	}
+}

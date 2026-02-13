@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/lazy/components/gallery/gallery.scss"],
+  "sourcesContent": [".thumbnail-container {\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n\tflex-wrap: wrap;\r\n}\r\n\r\n.thumbnail {\r\n\twidth: 150px;\r\n\theight: 150px;\r\n\tmargin: 0 10px 20px 0;\r\n\tbox-shadow: 0 0 10px 0 rgba(50, 50, 50, 0.15);\r\n\tcursor: pointer;\r\n\tbackground-size: cover;\r\n\tbackground-position: top left;\r\n\tbackground-repeat: no-repeat;\r\n}\r\n\r\n:host-context(.no-border) .thumbnail {\r\n\tbox-shadow: none;\r\n}\r\n\r\n.gallery-modal {\r\n\tposition: fixed;\r\n\ttop: 0;\r\n\tbottom: 0;\r\n\tleft: 0;\r\n\tright: 0;\r\n\tbackground-color: rgba(0, 0, 0, 0.7);\r\n\tz-index: 5000;\r\n\tdisplay: flex;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n}\r\n\r\n.gallery-modal img {\r\n\tmax-width: 95%;\r\n\tmax-height: 95%;\r\n}\r\n\r\n/*\r\n\t.modal-content has a 10px margin, which causes background-color to be\r\n\tapplied twice, resulting in a 10px very dark border around modals\r\n*/\r\n:host-context(.modal-content) .gallery-modal {\r\n\ttop: 10px;\r\n\tbottom: 10px;\r\n\tleft: 10px;\r\n\tright: 10px;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,oBACC,QAAA,KACA,eAAA,IACA,UAAA,KAGD,CAAA,UACC,MAAA,MACA,OAAA,MARD,OASC,EAAA,KAAA,KAAA,EACA,WAAA,EAAA,EAAA,KAAA,UACA,OAAA,QACA,gBAAA,MACA,oBAAA,IAAA,KACA,kBAAA,UAGD,cAAA,CAAA,WAAA,CAXA,UAYC,WAAA,KAGD,CAAA,cACC,SAAA,MACA,MAAA,EAIA,iBAAA,UACA,QAAA,KACA,QAAA,KACA,YAAA,OACA,gBAAA,OAGD,CAbA,cAaA,IACC,UAAA,IACA,WAAA,IAOD,cAAA,CAAA,eAAA,CAtBA,cAuBC,MAAA",
+  "names": []
+}

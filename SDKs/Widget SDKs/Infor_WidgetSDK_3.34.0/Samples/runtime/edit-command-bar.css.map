@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/edit-command-bar/edit-command-bar.scss"],
+  "sourcesContent": [".no-capitalize {\r\n\ttext-transform: none;\r\n}\r\n\r\n/*\r\n * LIME-9887 Overrides black color in IDS 4.92.2\r\n*/\r\n:host-context(.lm-theme-light) soho-header,\r\n:host-context(.lm-theme-contrast) soho-header {\r\n\tbutton {\r\n\t\tcolor: #ffffff !important;\r\n\r\n\t\t::ng-deep svg {\r\n\t\t\tcolor: #ffffff !important;\r\n\t\t}\r\n\t}\r\n\t[soho-page-title],\r\n\t[soho-section-title] {\r\n\t\tcolor: #ffffff !important;\r\n\t}\r\n\t.separator {\r\n\t\tbackground-color: #ffffff !important;\r\n\t}\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,cACC,eAAA,KAQA,cAAA,CAAA,gBAAA,YAAA,OAAA,cAAA,CAAA,mBAAA,YAAA,OACC,MAAA,eAEA,cAAA,CAAA,gBAAA,YAAA,OAAA,UAAA,IAAA,cAAA,CAAA,mBAAA,YAAA,OAAA,UAAA,IACC,MAAA,eAGF,cAAA,CAAA,gBAAA,YAAA,CAAA,iBAAA,cAAA,CAAA,gBAAA,YAAA,CAAA,oBAAA,cAAA,CAAA,mBAAA,YAAA,CAAA,iBAAA,cAAA,CAAA,mBAAA,YAAA,CAAA,oBAEC,MAAA,eAED,cAAA,CAAA,gBAAA,YAAA,CAAA,UAAA,cAAA,CAAA,mBAAA,YAAA,CAAA,UACC,iBAAA",
+  "names": []
+}

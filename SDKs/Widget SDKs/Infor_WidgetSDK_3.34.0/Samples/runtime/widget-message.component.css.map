@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/widget-message/widget-message.component.scss"],
+  "sourcesContent": [":host {\r\n\twidth: 100%;\r\n\theight: auto;\r\n\tz-index: 2;\r\n\tposition: absolute;\r\n\r\n\t.notification-link {\r\n\t\tcursor: pointer;\r\n\t}\r\n\r\n\t.notification-close svg {\r\n\t\ttop: 2px;\r\n\t}\r\n}\r\n"],
+  "mappings": "AAAA,MACC,MAAA,KACA,OAAA,KACA,QAAA,EACA,SAAA,SAEA,MAAA,CAAA,kBACC,OAAA,QAGD,MAAA,CAAA,mBAAA,IACC,IAAA",
+  "names": []
+}

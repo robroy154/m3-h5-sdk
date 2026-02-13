@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/lime-context.scss"],
+  "sourcesContent": [".header {\r\n\tdisplay: none;\r\n}\r\n\r\n.header + .page-container {\r\n\tmargin-top: 0;\r\n\theight: 100%;\r\n\tposition: relative;\r\n}\r\n\r\n.homepage {\r\n\tpadding: 0;\r\n\theight: 100%;\r\n}\r\n\r\n.homepage > .content {\r\n\tmargin-left: 0 !important;\r\n\tposition: relative;\r\n\tleft: auto;\r\n\theight: 100%;\r\n}\r\n\r\n.homepage .widget {\r\n\tposition: relative;\r\n\ttop: auto;\r\n\tleft: auto;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n\tmargin-bottom: 0;\r\n\tmin-height: 0 !important;\r\n\toverflow-y: hidden;\r\n\tborder: none;\r\n}\r\n\r\n.homepage .widget:last-child::after {\r\n\tdisplay: none;\r\n}\r\n\r\n.widget-header {\r\n\tdisplay: none !important;\r\n}\r\n\r\n.widget-content {\r\n\theight: 100% !important;\r\n\tmin-height: 0 !important;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,OACC,QAAA,KAGD,CAJA,MAIA,CAAA,CAAA,eACC,WAAA,EACA,OAAA,KACA,SAAA,SAGD,CAAA,SAVA,QAWC,EACA,OAAA,KAGD,CALA,QAKA,CAAA,CAAA,QACC,YAAA,YACA,SAAA,SACA,KAAA,KACA,OAAA,KAGD,CAZA,SAYA,CAAA,OACC,SAAA,SACA,IAAA,KACA,KAAA,KACA,MAAA,KACA,OAAA,KACA,cAAA,EACA,WAAA,YACA,WAAA,OACA,OAAA,KAGD,CAxBA,SAwBA,CAZA,MAYA,WAAA,OACC,QAAA,KAGD,CAAA,cACC,QAAA,eAGD,CAAA,eACC,OAAA,eACA,WAAA",
+  "names": []
+}

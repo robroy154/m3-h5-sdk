@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/badges-popover/badges-popover.scss"],
+  "sourcesContent": [".lm-badge-container > div {\r\n\tmargin-right: 5px;\r\n\toverflow: hidden;\r\n\tdisplay: inline-block;\r\n}\r\n\r\nhtml[dir=\"rtl\"] .lm-badge-container > div {\r\n\tmargin-right: 0px;\r\n\tmargin-left: 5px;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,kBAAA,CAAA,IACC,aAAA,IACA,SAAA,OACA,QAAA,aAGD,IAAA,CAAA,SAAA,CANA,kBAMA,CAAA,IACC,aAAA,EACA,YAAA",
+  "names": []
+}

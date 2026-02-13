@@ -1,0 +1,16 @@
+{
+	"widgetId": "infor.sample.visualinsights",
+	"version": "1.0.0",
+	"type": "inline",
+	"author": "Infor",
+	"framework": "angular",
+	"name": "Visual Insights",
+	"title": "Visual Insights",
+	"description": "Birst Visual Insights sample widget.",
+	"dependencies": [
+		{
+			"type": "library",
+			"name": "@birst/infor-visual-insights"
+		}
+	]
+}

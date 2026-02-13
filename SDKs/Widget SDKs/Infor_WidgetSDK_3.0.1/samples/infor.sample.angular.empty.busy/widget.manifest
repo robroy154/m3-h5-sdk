@@ -1,0 +1,19 @@
+{
+	"widgetId": "infor.sample.angular.empty.busy",
+	"type": "inline",
+	"framework": "angular",
+	"aotVersion": "",
+	"name": "Empty State Widget Sample",
+	"version": "1.0",
+	"category": "application",
+	"applicationLogicalId": "lid://infor.homepages",
+	"moduleName": "widget",
+	"settingsUI": "metadata",
+	"enableRefresh": true,
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Empty State Sample",
+			"widgetDescription": "Empty State widget sample."
+		}
+	}
+}

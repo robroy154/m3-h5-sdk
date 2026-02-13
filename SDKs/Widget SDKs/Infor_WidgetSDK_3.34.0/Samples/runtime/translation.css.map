@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/translation/translation.scss"],
+  "sourcesContent": ["li {\r\n\tdisplay: flex;\r\n\tmax-width: 550px;\r\n}\r\n\r\nli p,\r\nspan {\r\n\tflex: 1;\r\n\talign-self: center;\r\n\tposition: static;\r\n}\r\n\r\nli .l-pull-right {\r\n\tmargin-left: 5px;\r\n}\r\n"],
+  "mappings": "AAAA,GACC,QAAA,KACA,UAAA,MAGD,GAAA,EAAA,KAEC,KAAA,EACA,WAAA,OACA,SAAA,OAGD,GAAA,CAAA,aACC,YAAA",
+  "names": []
+}

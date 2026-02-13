@@ -1,0 +1,15 @@
+{
+	"widgetId": "infor.sample.webcomponent.lit",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "webcomponent",
+	"name": "Web Component Sample with Lit",
+	"title": "Web Component Sample with Lit",
+	"description": "A Web Component built with Lit",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Web Component Sample with Lit",
+			"widgetDescription": "A Web Component built with Lit"
+		}
+	}
+}

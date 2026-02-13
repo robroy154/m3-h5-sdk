@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/common/markdown/markdown-help.component.scss"],
+  "sourcesContent": ["p {\r\n\ttext-align: initial;\r\n}\r\n"],
+  "mappings": "AAAA,EACC,WAAA",
+  "names": []
+}

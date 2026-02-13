@@ -1,0 +1,83 @@
+{
+	"root": true,
+	"ignorePatterns": ["scripts/", "*.js"],
+	"overrides": [
+		{
+			"files": ["*.ts"],
+			"parserOptions": {
+				"project": ["tsconfig.json"],
+				"createDefaultProgram": true
+			},
+			"plugins": ["eslint-plugin-lime"],
+			"extends": [
+				"eslint:recommended",
+				"plugin:@typescript-eslint/recommended",
+				"plugin:@angular-eslint/recommended",
+				"plugin:@angular-eslint/template/process-inline-templates",
+				"plugin:sonarjs/recommended",
+				"prettier"
+			],
+			"rules": {
+				"@angular-eslint/directive-selector": [
+					"error",
+					{
+						"type": "attribute",
+						"style": "camelCase"
+					}
+				],
+				"@angular-eslint/component-selector": [
+					"error",
+					{
+						"type": "element",
+						"style": "kebab-case"
+					}
+				],
+				"@typescript-eslint/no-empty-interface": "off",
+				"no-irregular-whitespace": [
+					"error",
+					{
+						"skipComments": true
+					}
+				],
+				"no-console": "error",
+				"sonarjs/no-all-duplicated-branches": "error",
+				"sonarjs/no-element-overwrite": "error",
+				"sonarjs/no-extra-arguments": "error",
+				"sonarjs/no-identical-conditions": "error",
+				"sonarjs/no-identical-expressions": "error",
+				"sonarjs/no-one-iteration-loop": "error",
+				"sonarjs/no-use-of-empty-return-value": "error",
+				"sonarjs/cognitive-complexity": "error",
+				"sonarjs/max-switch-cases": "off",
+				"sonarjs/no-collapsible-if": "warn",
+				"sonarjs/no-collection-size-mischeck": "warn",
+				"sonarjs/no-duplicate-string": "warn",
+				"sonarjs/no-duplicated-branches": "warn",
+				"sonarjs/no-identical-functions": "warn",
+				"sonarjs/no-inverted-boolean-check": "warn",
+				"sonarjs/no-redundant-boolean": "warn",
+				"sonarjs/no-redundant-jump": "warn",
+				"sonarjs/no-same-line-conditional": "warn",
+				"sonarjs/no-small-switch": "warn",
+				"sonarjs/no-unused-collection": "warn",
+				"sonarjs/no-useless-catch": "warn",
+				"sonarjs/prefer-immediate-return": "off",
+				"sonarjs/prefer-object-literal": "warn",
+				"sonarjs/prefer-single-boolean-return": "warn",
+				"sonarjs/prefer-while": "warn",
+				"lime/no-ajax": "error",
+				"lime/no-browser-module": "error",
+				"lime/no-action-assignment": "error",
+				"lime/no-companyon": "error",
+				"lime/no-id": "error",
+				"lime/no-temporary-interfaces": "warn",
+				"lime/no-timers": "error",
+				"lime/no-locale": "error",
+				"lime/style-encapsulation": "error",
+				"lime/no-hardcoded-color": "error",
+				"lime/no-ibc": "error",
+				"lime/no-window-location": "error"
+			}
+		}
+	]
+}

@@ -1,0 +1,33 @@
+{
+	"widgetId": "infor.sample.webcomponent.settings",
+	"version": "1.0.0",
+	"type": "inline",
+	"framework": "webcomponent",
+	"name": "Web Component Settings Sample",
+	"title": "Web Component Settings Sample",
+	"description": "A custom settings UI built with web components",
+	"settings": [
+		{
+			"name": "fontSize",
+			"labelId": "fontSize",
+			"defaultValue": "16"
+		},
+		{
+			"name": "text",
+			"labelId": "text",
+			"defaultValue": "This text can be modified in the widget settings"
+		}
+	],
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Web Component Settings Sample",
+			"widgetDescription": "A custom settings UI built with web components",
+			"fontSize": "Font Size",
+			"text": "Text",
+			"title": "Title",
+			"small": "Small",
+			"normal": "Normal",
+			"large": "Large"
+		}
+	}
+}
