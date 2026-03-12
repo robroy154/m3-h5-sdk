@@ -2,6 +2,7 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
     function BEN_H5_CTS100B1(scriptArgs) {
         this.log = scriptArgs.log;
         this.controller = scriptArgs.controller;
+        this.miService = ScriptUtil.version >= 2.0 ? MIService : MIService.Current;
     }
     /**
      * Script initialization function.
@@ -120,7 +121,11 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
                 click: function (event, model) { model.close(); }
             }]
         };
-        H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
+        if (ScriptUtil.version >= 2.0) {
+            H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
+        } else {
+            dialogContent.inforMessageDialog(dialogOptions);
+        }
         this.log.Info("Dialog shown with " + rows.length + " rows");
     };
 
@@ -136,7 +141,7 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
             outputFields: ['WHSL', 'STQT']
         };
         return this.createRequest(request).then(function(response) {
-            if (response && response.items) {
+            if (response.items) {
                 return response.items.map(function(item) {
                     return {
                         WHSL: item.WHSL,
@@ -148,19 +153,12 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
         });
     };
     BEN_H5_CTS100B1.prototype.createRequest = function (request) {
-        return MIService.Current.executeRequestV2(request)
+        return this.miService.executeRequestV2(request)
             .then(function (response) {
-                if (response.errorCode) {
+                if (response.hasError()) {
                     throw response;
                 }
-                if (response.items) {
-                    return response;
-                } else {
-                    return null;
-                }
-            })
-            .catch(function (err) {
-                return Promise.reject(err);
+                return response;
             });
     };
 
