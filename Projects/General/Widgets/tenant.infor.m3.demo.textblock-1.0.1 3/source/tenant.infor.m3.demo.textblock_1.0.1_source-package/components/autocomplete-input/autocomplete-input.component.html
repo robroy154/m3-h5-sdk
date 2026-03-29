@@ -1,0 +1,9 @@
+<ids-input
+	[id]="'AC' + id + instanceId"
+	[label]="label || 'Search Fields'"
+	[value]="value"
+	autocomplete
+	search-field="label"
+	clearable
+	(change)="onValueChange($event)">
+</ids-input>

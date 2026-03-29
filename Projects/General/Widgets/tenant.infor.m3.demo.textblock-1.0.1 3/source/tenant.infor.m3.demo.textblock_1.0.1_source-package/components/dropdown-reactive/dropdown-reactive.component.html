@@ -1,0 +1,21 @@
+<div class="form-field">
+	<ids-dropdown
+		[id]="'KV' + id + instanceId"
+		[isFormComponent]="true"
+		[label]="
+			label
+				? label
+				: 'Key value ' +
+					(index + 1) +
+					' - KV' +
+					(index + 1).toString().padStart(2, '0')
+		"
+		[disabled]="disabled"
+		[(ngModel)]="value"
+		isMultiSelect="true"
+		[size]="size"
+		[class.required]="required"
+		(change)="onValueChange($event)">
+		<ids-list-box-option> </ids-list-box-option>
+	</ids-dropdown>
+</div>

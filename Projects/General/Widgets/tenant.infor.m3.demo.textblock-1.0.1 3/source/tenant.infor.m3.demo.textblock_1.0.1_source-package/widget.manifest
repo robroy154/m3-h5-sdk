@@ -1,0 +1,110 @@
+{
+	"widgetId": "tenant.infor.m3.demo.textblock",
+	"version": "1.0.1",
+	"type": "inline",
+	"framework": "angular",
+	"name": "Text Block",
+	"title": "Text Block",
+	"author": "Demo Services",
+	"requiresConfig": true,
+	"emptyConfig": {
+		"buttonId": "emptyConfigButton",
+		"icon": "error-loading-new",
+		"descriptionId": "emptyConfigDescription",
+		"titleId": "emptyConfigTitle"
+	},
+	"settingsUI": "metadata",
+	"description": "My Widget Description",
+	"localization": {
+		"en-US": {
+			"widgetTitle": "Text Block",
+			"widgetDescription": "DEMO - Generic contextual text block widget that can display, add, update and delete text blocks.",
+			"empty-error-loading-info": "See your browser's console",
+			"empty-error-loading-title": "An unexpected error occurred",
+			"empty-generic-info": "",
+			"empty-generic-title": "Waiting for context",
+			"empty-no-data-info": "",
+			"empty-no-data-title": "No text available",
+			"emptyConfigTitle": "Config required",
+			"emptyConfigDescription": "Required settings missing",
+			"emptyConfigButton": "Configure",
+			"textBlockLanguage": "Text block language",
+			"textBlockId": "Text block ID",
+			"editEnabled": "Edit enabled",
+			"deleteEnabled": "Delete enabled",
+			"save": "Save",
+			"name": "Name",
+			"description": "Description",
+			"text": "Text",
+			"title": "Title",
+			"update": "Update",
+			"addTextButton": "Add Text",
+			"addTextTitle": "Add new text",
+			"editText": "Edit text",
+			"deleteText": "Delete text",
+			"error": "Error",
+			"fileKey": "File key",
+			"file": "File",
+			"transferFile": "Transfer file",
+			"LNCD": "Language Code",
+			"TXEI": "Text ID",
+			"keyField": "Key Field",
+			"keyValue": "Key value",
+			"deletedTitle": "Deleted",
+			"deletedMessage": "Text block {id} deleted successfully",
+			"confirmDelete": "Confirm Delete",
+			"confirmDeleteMessage": "Are you sure you want to delete text {id}?"
+		}
+	},
+	"sharedModules": [
+		{ "name": "demo-m3-user-context" },
+		{ "name": "demo-ids-input-value-accessor-directive" },
+		{ "name": "demo-setting-title-field" },
+		{ "name": "demo-translate-pipe" }
+	],
+	"settings": [
+		{
+			"name": "autoMode",
+			"labelId": "autoMode",
+			"defaultValue": false,
+			"isMandatory": true
+		},
+		{
+			"name": "textBlockLanguage",
+			"labelId": "textBlockLanguage",
+			"defaultValue": ""
+		},
+		{
+			"name": "editEnabled",
+			"labelId": "editEnabled",
+			"defaultValue": false
+		},
+		{
+			"name": "FILE",
+			"labelId": "file",
+			"defaultValue": "",
+			"isMandatory": true
+		},
+		{
+			"name": "TFIL",
+			"labelId": "transferFile",
+			"defaultValue": ""
+		},
+		{
+			"name": "LNCD",
+			"labelId": "textBlockLanguage",
+			"defaultValue": ""
+		},
+		{
+			"name": "KFLD",
+			"labelId": "fileKey",
+			"defaultValue": ""
+		},
+		{
+			"name": "KV01",
+			"labelId": "keyValue1",
+			"type": "selector",
+			"defaultValue": []
+		}
+	]
+}

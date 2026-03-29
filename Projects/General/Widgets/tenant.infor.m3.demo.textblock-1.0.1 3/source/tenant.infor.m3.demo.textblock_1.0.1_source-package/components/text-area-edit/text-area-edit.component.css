@@ -1,0 +1,32 @@
+:host {
+	display: block;
+	height: 100%;
+}
+
+.edit-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.textarea-container {
+	flex: 1;
+	min-height: 0;
+	height: 100%;
+}
+
+.textarea-container ids-textarea {
+	height: 100%;
+}
+
+.button-container {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	padding-top: 12px;
+	flex-shrink: 0;
+}
+
+.editor {
+	margin: 0;
+}

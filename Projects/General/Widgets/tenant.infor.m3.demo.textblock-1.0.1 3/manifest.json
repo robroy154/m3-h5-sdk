@@ -1,0 +1,14 @@
+{
+  "description": "",
+  "name": "tenant.infor.m3.demo.textblock",
+  "type": "widget",
+  "version": "1.0.1",
+  "contents": {
+    "documentation": [
+      "Text_Block_Solution_Overview.pdf",
+      "GDIS EULA Long 2022-05-23.pdf"
+    ],
+    "runtime": "included",
+    "source": "included"
+  }
+}

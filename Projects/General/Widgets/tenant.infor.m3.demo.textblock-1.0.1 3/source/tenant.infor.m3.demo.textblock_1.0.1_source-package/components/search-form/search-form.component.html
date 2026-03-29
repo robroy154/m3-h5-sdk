@@ -1,0 +1,29 @@
+@if (form) {
+	<form [formGroup]="form" (ngSubmit)="handleFormSubmit()">
+		<fieldset>
+			<legend>Search Table/ Key fields</legend>
+		</fieldset>
+
+		<div class="field-container">
+			<div class="form-field">
+				<ids-input
+					formControlName="program"
+					label="Program"
+					(keydown.enter)="handleFormSubmit()">
+				</ids-input>
+			</div>
+
+			<div class="form-field">
+				<ids-input
+					formControlName="table"
+					label="Table"
+					(keydown.enter)="handleFormSubmit()">
+				</ids-input>
+			</div>
+
+			<ids-button type="submit" icon="search" appearance="secondary"
+				><span>Search</span></ids-button
+			>
+		</div>
+	</form>
+}

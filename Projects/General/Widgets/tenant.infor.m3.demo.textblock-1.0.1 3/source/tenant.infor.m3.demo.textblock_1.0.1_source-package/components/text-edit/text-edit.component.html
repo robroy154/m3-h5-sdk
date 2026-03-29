@@ -1,0 +1,27 @@
+<ids-editor
+	[id]="'editor-demo' + instanceId + index"
+	label="Demo Editor"
+	[sourceFormatter]="true"
+	role="textbox"
+	view="editor"
+	aria-multiline="true"
+	(change)="onChange($event)"
+	label-state="collapsed">
+	<!-- <div slot="content" [innerHTML]="text"></div> -->
+</ids-editor>
+
+<!-- <ids-editor
+	><div slot="content"><p>Some sample text</p></div></ids-editor
+> -->
+
+<!-- <div
+	soho-editor
+	#editor
+	[id]="instanceId + 'editor1'"
+	role="textbox"
+	aria-multiline="true"
+	aria-label="Comments"
+	(change)="onChange($event)"
+	(contentChange)="onContentChange($event)"
+	[innerHTML]="model.editorText"
+	(generateai)="onGenerateAi($event)"></div> -->

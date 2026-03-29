@@ -1,0 +1,119 @@
+@if (form) {
+	<form [formGroup]="form" (ngSubmit)="handleFormSubmit()">
+		<!-- Autocomplete Search -->
+		<!-- 		<div class="form-field">
+			<autocomplete-input
+				[instanceId]="instanceId"
+				[index]="0"
+				size="lg"
+				label="Search Fields"
+				(selected)="onFieldSelected($event)">
+			</autocomplete-input>
+		</div> -->
+		<div class="">
+			<search-form label="Search Fields" (searchResult)="patchForm($event)">
+			</search-form>
+		</div>
+
+		<div class="two-field-row">
+			<!-- FILE field (required) -->
+			<div class="width-140">
+				<ids-input
+					[id]="'FILE' + instanceId"
+					formControlName="FILE"
+					[isFormComponent]="true"
+					[label]="('file' | t) + ' - FILE'"
+					required>
+				</ids-input>
+			</div>
+
+			<!-- TFIL field (optional) -->
+			<div class="form-field width-140">
+				<ids-input
+					formControlName="TFIL"
+					[label]="('transferFile' | t) + ' - TFIL'"
+					required>
+				</ids-input>
+			</div>
+		</div>
+
+		<!-- LNCD field (optional) -->
+		<!-- 		<div class="form-field">
+			<ids-input
+				formControlName="LNCD"
+				[label]="'language' | t + 'LNCD'"
+				required
+				aria-label="LNCD field">
+			</ids-input>
+		</div> -->
+
+		<!-- TXEI field (optional) -->
+		<!-- 		<div class="form-field">
+			<ids-input
+				formControlName="TXEI"
+				label="External/internal text - TXEI"
+				required
+				aria-label="TXEI field">
+			</ids-input>
+		</div> -->
+
+		<!-- KFLD field (optional) -->
+		<dropdown-reactive
+			[id]="'dr' + instanceId + 'KFLD'"
+			formControlName="KFLD"
+			[instanceId]="instanceId"
+			[label]="('fileKey' | t) + ' - KFLD'"
+			[required]="true"
+			[index]="-2">
+		</dropdown-reactive>
+
+		<!-- Key Values FormArray section -->
+		<div class="key-value-section" formArrayName="keyValues">
+			<div class="key-value-grid">
+				@for (control of keyValues.controls; track $index) {
+					<dropdown-reactive
+						[id]="'dr' + $index + instanceId"
+						[formControlName]="$index"
+						[instanceId]="instanceId"
+						[index]="$index">
+					</dropdown-reactive>
+				}
+				<div class="form-field">
+					<ids-button
+						type="button"
+						appearance="tertiary"
+						icon="add"
+						(click)="addKeyValueControl()"
+						><span>
+							{{ "addKey | t" }} {{ keyValues.controls.length + 1 }}</span
+						></ids-button
+					>
+				</div>
+			</div>
+		</div>
+
+		<!-- Additional Key Value fields -->
+		<!-- 	<div class="key-value-section" formGroupName="keyValue">
+				<div class="key-value-grid">
+					<div class="form-field">
+						<ids-input
+							formControlName="FLDI"
+							label="FLDI"
+							aria-label="FLDI field"></ids-input>
+					</div>
+					<div class="form-field">
+						<ids-input
+							formControlName="KFLD"
+							label="KFLD"
+							aria-label="KFLD field"></ids-input>
+					</div>
+				</div>
+			</div> -->
+
+		<!-- Form actions -->
+		<!-- 		<div class="form-actions">
+			<ids-button type="submit" appearance="primary">Submit</ids-button>
+			<ids-button type="button" (click)="resetForm()">Reset</ids-button>
+		</div> -->
+	</form>
+}
