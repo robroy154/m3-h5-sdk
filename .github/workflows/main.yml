@@ -105,6 +105,22 @@ jobs:
           cd app-basic-soho
           odin build
 
+  # Run ESLint on Projects scripts
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18.19"
+
+      - name: Install ESLint dependencies
+        run: npm install
+
+      - name: Lint Projects scripts
+        run: npx eslint "Projects/**/*.{ts,js}" --max-warnings=0
+
   # Run all automated tests
   test:
     # Depends on successful run of Build

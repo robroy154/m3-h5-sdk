@@ -3,5 +3,6 @@
     "sonarlint.connectedMode.project": {
         "connectionId": "robroy154",
         "projectKey": "robroy154_m3-h5-sdk"
-    }
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
