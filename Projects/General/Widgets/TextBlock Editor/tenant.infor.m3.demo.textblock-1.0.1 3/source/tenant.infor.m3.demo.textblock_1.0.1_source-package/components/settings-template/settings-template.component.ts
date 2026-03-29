@@ -8,6 +8,7 @@ import {
 	OnDestroy,
 	OnInit,
 	signal,
+	ViewChild,
 } from "@angular/core";
 import {
 	IWidgetContext,
@@ -37,7 +38,10 @@ import { SettingsServiceService } from "./settings-data.service";
 export class SettingsComponent
 	implements IWidgetSettingsComponent, OnInit, AfterViewInit, OnDestroy
 {
-	@Input() widgetSettingsContext1: IWidgetSettingsContext | undefined;
+	@Input() widgetSettingsContext!: IWidgetSettingsContext;
+	@Input() widgetSettingsInstance!: IWidgetSettingsInstance;
+	@ViewChild(TitleSettingComponent)
+	titleSettingComponent?: TitleSettingComponent;
 
 	private subscriptions = new Subscription();
 
@@ -47,8 +51,6 @@ export class SettingsComponent
 
 	titleLocked = false;
 
-	widgetSettingsContext!: IWidgetSettingsContext;
-	widgetSettingsInstance!: IWidgetSettingsInstance;
 	$textBlockId!: IdsInput;
 	$textBlockLanguage!: IdsDropdown;
 	$autoMode!: IdsCheckbox;
@@ -168,7 +170,8 @@ export class SettingsComponent
 	}
 
 	#save() {
-		const settings = this.#context.getSettings();
+		const widgetContext = this.widgetSettingsContext?.getWidgetContext();
+		const settings = (widgetContext ?? this.#context).getSettings();
 		settings.set("textBlockLanguage", this.$textBlockLanguage.value ?? "");
 
 		settings.set("autoMode", this.$autoMode?.checked ?? false);
@@ -180,5 +183,7 @@ export class SettingsComponent
 				settings.set(key, this.configFormValue[key]);
 			});
 		}
+
+		this.titleSettingComponent?.save();
 	}
 }

@@ -1741,7 +1741,9 @@ System.register(['tslib', '@angular/core', '@infor-lime/core', 'rxjs', '@angular
 			        this.isTitleLocked = widgetContext.isTitleLocked();
 			        this.title = widgetContext.getResolvedTitle(this.isTitleLocked);
 			        this.isTitleUnlockable = widgetContext.isTitleUnlockable();
+			        const currentClosingHandler = this.#instance.closing;
 			        this.#instance.closing = ({ isSave }) => {
+			            currentClosingHandler?.({ isSave });
 			            if (isSave) {
 			                this.save();
 			            }
