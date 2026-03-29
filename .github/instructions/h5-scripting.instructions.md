@@ -144,4 +144,4 @@ npm install && node webserver.js     # http://localhost:8080
 - `H5SampleDrillback.ts` — Drillback integration
 
 ## Projects/Benco/ — Current File Status
-See `Projects/Benco/README.md` for which POReceiptShortcut version is current and which files are deprecated.
+See `Projects/Benco/H5-Scripts/README.md` for which POReceiptShortcut version is current and which files are deprecated. Scripts live in `Projects/Benco/H5-Scripts/`.

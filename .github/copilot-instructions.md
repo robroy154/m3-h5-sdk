@@ -32,7 +32,7 @@ This is a **multi-SDK repository** for Infor M3 ERP development. It is NOT limit
 - Odin core library must remain Angular-agnostic (no Angular imports in `@infor-up/m3-odin`)
 
 ## Projects Directory
-- `Projects/Benco/` — H5 Script customizations; see `Projects/Benco/README.md` for current file status
+- `Projects/Benco/` — H5 Script customizations; see `Projects/Benco/H5-Scripts/README.md` for current file status
 - `Projects/General/Widgets/` — Reusable Homepages widgets
 
 ---

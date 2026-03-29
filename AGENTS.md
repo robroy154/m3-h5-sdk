@@ -56,7 +56,10 @@ This is a **multi-SDK repository** for Infor M3 ERP development. It contains thr
 ## Projects Directory
 
 ### `Projects/Benco/`
-H5 Script SDK scripts for the Benco client. See `Projects/Benco/README.md` for which files are current vs. experimental vs. deprecated.
+Client-specific work for Benco, organized by SDK type:
+- `H5-Scripts/` — H5 Script customizations; see `Projects/Benco/H5-Scripts/README.md` for which files are current vs. experimental vs. deprecated
+- `Widgets/` — Homepages widgets (future)
+- `Odin-Apps/` — Standalone M3 apps (future)
 
 ### `Projects/General/Widgets/`
 Reusable Homepages widgets. Each widget subfolder contains a `widget.manifest`.
@@ -81,5 +84,5 @@ If no matching sample exists, state that explicitly and follow documented public
 2. **Wrong date format** — Always `yyyyMMdd` for M3 inputs.
 3. **Hardcoding CONO/DIVI** — Both SDKs inject these from user context automatically.
 4. **Importing Angular in core** — `@infor-up/m3-odin` must stay framework-agnostic.
-5. **Editing deprecated script versions** — Check `Projects/Benco/README.md` before editing any `POReceiptShortcut` variant.
+5. **Editing deprecated script versions** — Check `Projects/Benco/H5-Scripts/README.md` before editing any `POReceiptShortcut` variant.
 6. **Using Widget SDK 3.0.1** — Always use `Infor_WidgetSDK_3.34.0` for new work.
