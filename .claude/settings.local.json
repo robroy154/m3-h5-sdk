@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/robroy/Documents/Infor/m3-h5-sdk/Projects/Benco/*.ts)",
+      "Bash(grep -n \"^\\\\s*[a-zA-Z_$][a-zA-Z0-9_$]*\\\\s*\\(.*\\)\\\\s*{\" /Users/robroy/Documents/Infor/m3-h5-sdk/Projects/Benco/POReceiptShortcutV2_Claude.js)"
+    ]
+  }
+}

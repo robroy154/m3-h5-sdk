@@ -32,7 +32,7 @@
 ─────────────────────────────────────────────────────────────────────────────*/
 
 /*──────────────────────────────────────────────────────────────────────────*/
-const POReceiptShortcutV3 = class {
+var POReceiptShortcutV3 = class {
 
     constructor(args) {
         // Initialize base properties following H5 SDK patterns

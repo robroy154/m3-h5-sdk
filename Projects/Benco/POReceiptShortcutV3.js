@@ -31,13 +31,13 @@
 ─────────────────────────────────────────────────────────────────────────────*/
 
 /*──────────────────────────────────────────────────────────────────────────*/
-const POReceiptShortcutV3 = class {
+var POReceiptShortcutV3 = class { //changed from var to let
 
     constructor(args) {
         // Initialize base properties following H5 SDK patterns
         this.typeName = 'POReceiptShortcutV3';
         // Use appropriate MIService version based on H5 compatibility
-        this.mi = ScriptUtil.version >= 2 ? MIService : MIService.Current;
+        this.mi = ScriptUtil.version >= 2.0 ? MIService : MIService.Current;
         this.ctrl = args.controller;    // H5 controller for UI interactions
         this.log = args.log;           // H5 logging service
 
@@ -51,7 +51,7 @@ const POReceiptShortcutV3 = class {
             this.division = this.userContext.CurrentDivision || this.userContext.DIVI || '';
         } catch (e) {
             // User context capture failed; continue with empty values
-            this.lrg.Warning('User context capture failed');
+            this.log.Warning('User context capture failed');
             this.userContext = {};
             this.company = '';
             this.division = '';
@@ -110,7 +110,7 @@ const POReceiptShortcutV3 = class {
     }
 
     _resolveDialog(dialogContent, resolve) {
-        if (ScriptUtil.version >= 2) {
+        if (ScriptUtil.version >= 2.0) {
             $('.ui-dialog-content:visible').dialog('close');
         } else {
             $(dialogContent).inforDialog("close");
@@ -386,7 +386,7 @@ const POReceiptShortcutV3 = class {
         };
 
         // Show progress dialog with proper version handling
-        if (ScriptUtil.version >= 2) {
+        if (ScriptUtil.version >= 2.0) {
             this.progressDialog = H5ControlUtil.H5Dialog.CreateDialogElement(this.progressContent[0], dialogOptions);
         } else {
             this.progressDialog = this.progressContent.inforMessageDialog(dialogOptions);
@@ -423,7 +423,7 @@ const POReceiptShortcutV3 = class {
         try {
             if (this.progressDialog) {
                 // H5 2.0+ dialogs expose a close() function on the model
-                if (ScriptUtil.version >= 2 && typeof this.progressDialog.close === 'function') {
+                if (ScriptUtil.version >= 2.0 && typeof this.progressDialog.close === 'function') {
                     this.progressDialog.close(true);
                 } else {
                     // For pre‑2.0 dialogs use the inforDialog API on the element
@@ -772,7 +772,7 @@ const POReceiptShortcutV3 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -785,7 +785,7 @@ const POReceiptShortcutV3 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -813,7 +813,7 @@ const POReceiptShortcutV3 = class {
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
+            if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
@@ -858,7 +858,7 @@ const POReceiptShortcutV3 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -871,7 +871,7 @@ const POReceiptShortcutV3 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -899,7 +899,7 @@ const POReceiptShortcutV3 = class {
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
+            if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
@@ -1102,12 +1102,12 @@ const POReceiptShortcutV3 = class {
                 closedByButton = true;
                 if (model) {
                     // Called from button handler - use model.close()
-                    if (ScriptUtil.version >= 2) {
+                    if (ScriptUtil.version >= 2.0) {
                         model.close(true);
                     } else {
                         $(dialogContent).inforDialog("close");
                     }
-                } else if (ScriptUtil.version >= 2) {
+                } else if (ScriptUtil.version >= 2.0) {
                     // Called from keydown fallback - use DOM method
                     $('.ui-dialog-content:visible').dialog('close');
                 } else {
@@ -1161,7 +1161,7 @@ const POReceiptShortcutV3 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -1190,7 +1190,7 @@ const POReceiptShortcutV3 = class {
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
+            if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
@@ -1334,7 +1334,7 @@ const POReceiptShortcutV3 = class {
 
                             // Close dialog and return lot data (duplicate the Save button success logic)
                             closedByButton = true;
-                            if (ScriptUtil.version >= 2) {
+                            if (ScriptUtil.version >= 2.0) {
                                 $('.ui-dialog-content:visible').dialog('close');
                             } else {
                                 $(dialogContent).inforDialog("close");
@@ -1397,7 +1397,7 @@ const POReceiptShortcutV3 = class {
 
                         // Close dialog and return lot data
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -1410,7 +1410,7 @@ const POReceiptShortcutV3 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -1438,7 +1438,7 @@ const POReceiptShortcutV3 = class {
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
+            if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
@@ -1842,7 +1842,7 @@ const POReceiptShortcutV3 = class {
                 isDefault: true,
                 width: 80,
                 click: function (event, model) {
-                    if (ScriptUtil.version >= 2) {
+                    if (ScriptUtil.version >= 2.0) {
                         model.close(true);
                     } else {
                         $(this).inforDialog("close");
@@ -1870,7 +1870,7 @@ const POReceiptShortcutV3 = class {
         };
 
         // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-        if (ScriptUtil.version >= 2) {
+        if (ScriptUtil.version >= 2.0) {
             H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
         } else {
             dialogContent.inforMessageDialog(dialogOptions);
