@@ -1,3 +1,7 @@
 {
-    "workbench.colorTheme": "Dark Modern"
+    "workbench.colorTheme": "Dark Modern",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "robroy154",
+        "projectKey": "robroy154_m3-h5-sdk"
+    }
 }
