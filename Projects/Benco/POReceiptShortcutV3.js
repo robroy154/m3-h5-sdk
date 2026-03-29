@@ -28,7 +28,6 @@
   • Uses proper IMIResponse error handling patterns
   • Transient error detection with retry/backoff (up to 3 attempts)
   • Follows H5 SDK naming conventions and structure
-  SAME AS V3. This is the WORK FILE
 ─────────────────────────────────────────────────────────────────────────────*/
 
 /*──────────────────────────────────────────────────────────────────────────*/
@@ -52,7 +51,7 @@ const POReceiptShortcutV3 = class {
             this.division = this.userContext.CurrentDivision || this.userContext.DIVI || '';
         } catch (e) {
             // User context capture failed; continue with empty values
-            this.log.Warning('User context capture failed');
+            this.lrg.Warning('User context capture failed');
             this.userContext = {};
             this.company = '';
             this.division = '';
