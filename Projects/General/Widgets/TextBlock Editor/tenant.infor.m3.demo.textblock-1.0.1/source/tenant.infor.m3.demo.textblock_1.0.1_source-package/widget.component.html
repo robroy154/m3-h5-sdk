@@ -41,39 +41,7 @@
 					}
 				</ids-accordion-header>
 				<div slot="content">
-					<table
-						class="text-line-table"
-						[class.compact-lines]="compactMode"
-						style="width: 100%">
-						<thead>
-							<tr>
-								<th style="text-align: left; width: 80px">No</th>
-								<th style="text-align: left">Text</th>
-								@if (deleteEnabled) {
-									<th style="text-align: right; width: 80px">Action</th>
-								}
-							</tr>
-						</thead>
-						<tbody>
-							@for (line of block.textLines; track line; let idx = $index) {
-								<tr>
-									<td>{{ line.LINO || idx + 1 }}</td>
-									<td style="white-space: pre-wrap">{{ line.TX60 }}</td>
-									@if (deleteEnabled) {
-										<td style="text-align: right">
-											<ids-button
-												icon="delete"
-												appearance="tertiary"
-												size="sm"
-												[title]="'deleteText' | t"
-												(click)="onDeleteTextLine(block, line, $event)">
-											</ids-button>
-										</td>
-									}
-								</tr>
-							}
-						</tbody>
-					</table>
+					<ids-text [innerHTML]="block.text">{{ block.text }}</ids-text>
 				</div>
 			</ids-accordion-panel>
 		}

@@ -14,15 +14,18 @@
 		<ids-input
 			[id]="'name' + instanceId"
 			[label]="'textBlockId' | t"
-			[value]="textBlockHeaderId"
-			readonly>
+			validate="required"
+			maxlength="13"
+			formControlName="TXVR"
+			[isFormComponent]="true">
 		</ids-input>
 
 		<ids-input
 			[id]="'description' + instanceId"
 			[label]="lang.get('description')"
-			[value]="textBlockHeaderDescription"
-			readonly>
+			maxlength="40"
+			formControlName="TX40"
+			[isFormComponent]="true">
 		</ids-input>
 
 		<div

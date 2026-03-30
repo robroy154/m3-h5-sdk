@@ -1,6 +1,9 @@
 import { Component, inject, Input, OnInit } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { IWidgetSettingsContext } from "@infor-lime/core";
+import {
+	IWidgetSettingsContext,
+	IWidgetSettingsInstance,
+} from "@infor-lime/core";
 import { SohoButtonModule } from "ids-enterprise-ng";
 
 /**
@@ -33,6 +36,7 @@ import { SohoButtonModule } from "ids-enterprise-ng";
 export class TitleSettingComponent implements OnInit {
 	@Input() widgetSettingsContext!: IWidgetSettingsContext;
 	@Input() label!: string;
+	readonly #instance = inject(IWidgetSettingsInstance);
 
 	title!: string;
 	isTitleEditEnabled!: boolean;
@@ -49,6 +53,12 @@ export class TitleSettingComponent implements OnInit {
 		this.isTitleLocked = widgetContext.isTitleLocked();
 		this.title = widgetContext.getResolvedTitle(this.isTitleLocked);
 		this.isTitleUnlockable = widgetContext.isTitleUnlockable();
+
+		this.#instance.closing = ({ isSave }) => {
+			if (isSave) {
+				this.save();
+			}
+		};
 	}
 
 	/**

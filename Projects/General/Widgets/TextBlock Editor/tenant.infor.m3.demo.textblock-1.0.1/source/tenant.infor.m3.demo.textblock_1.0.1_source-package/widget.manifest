@@ -32,7 +32,6 @@
 			"textBlockId": "Text block ID",
 			"editEnabled": "Edit enabled",
 			"deleteEnabled": "Delete enabled",
-			"compactMode": "Compact mode",
 			"save": "Save",
 			"name": "Name",
 			"description": "Description",
@@ -78,11 +77,6 @@
 		{
 			"name": "editEnabled",
 			"labelId": "editEnabled",
-			"defaultValue": false
-		},
-		{
-			"name": "compactMode",
-			"labelId": "compactMode",
 			"defaultValue": false
 		},
 		{

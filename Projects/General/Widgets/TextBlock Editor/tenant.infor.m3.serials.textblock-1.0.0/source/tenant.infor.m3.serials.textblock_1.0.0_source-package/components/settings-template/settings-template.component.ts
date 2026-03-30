@@ -8,7 +8,6 @@ import {
 	OnDestroy,
 	OnInit,
 	signal,
-	ViewChild,
 } from "@angular/core";
 import {
 	IWidgetContext,
@@ -38,10 +37,7 @@ import { SettingsServiceService } from "./settings-data.service";
 export class SettingsComponent
 	implements IWidgetSettingsComponent, OnInit, AfterViewInit, OnDestroy
 {
-	@Input() widgetSettingsContext!: IWidgetSettingsContext;
-	@Input() widgetSettingsInstance!: IWidgetSettingsInstance;
-	@ViewChild(TitleSettingComponent)
-	titleSettingComponent?: TitleSettingComponent;
+	@Input() widgetSettingsContext1: IWidgetSettingsContext | undefined;
 
 	private subscriptions = new Subscription();
 
@@ -51,12 +47,13 @@ export class SettingsComponent
 
 	titleLocked = false;
 
+	widgetSettingsContext!: IWidgetSettingsContext;
+	widgetSettingsInstance!: IWidgetSettingsInstance;
 	$textBlockId!: IdsInput;
 	$textBlockLanguage!: IdsDropdown;
 	$autoMode!: IdsCheckbox;
 	$editEnabled!: IdsCheckbox;
 	$deleteEnabled!: IdsCheckbox;
-	$compactMode!: IdsCheckbox;
 
 	readonly #instance = inject(IWidgetSettingsInstance);
 	readonly #data = inject(SettingsServiceService);
@@ -119,19 +116,14 @@ export class SettingsComponent
 		this.$deleteEnabled = document.querySelector<IdsCheckbox>(
 			`#deleteEnabled${this.instanceId}`,
 		)!;
-		this.$compactMode = document.querySelector<IdsCheckbox>(
-			`#compactMode${this.instanceId}`,
-		)!;
 
 		// const autoModeSettings = settings.get("autoMode", false);
 		const editModeSettings = settings.get("editEnabled", false);
 		const deleteModeSettings = settings.get("deleteEnabled", false);
-		const compactModeSettings = settings.get("compactMode", false);
 
 		// this.$autoMode.checked = autoModeSettings;
 		this.$editEnabled.checked = editModeSettings;
 		this.$deleteEnabled.checked = deleteModeSettings;
-		this.$compactMode.checked = compactModeSettings;
 
 		this.getMiData();
 	}
@@ -176,21 +168,17 @@ export class SettingsComponent
 	}
 
 	#save() {
-		const widgetContext = this.widgetSettingsContext?.getWidgetContext();
-		const settings = (widgetContext ?? this.#context).getSettings();
+		const settings = this.#context.getSettings();
 		settings.set("textBlockLanguage", this.$textBlockLanguage.value ?? "");
 
 		settings.set("autoMode", this.$autoMode?.checked ?? false);
 		settings.set("editEnabled", this.$editEnabled.checked ?? false);
 		settings.set("deleteEnabled", this.$deleteEnabled.checked ?? false);
-		settings.set("compactMode", this.$compactMode.checked ?? false);
 
 		if (this.configFormValue) {
 			Object.keys(this.configFormValue).forEach((key) => {
 				settings.set(key, this.configFormValue[key]);
 			});
 		}
-
-		this.titleSettingComponent?.save();
 	}
 }

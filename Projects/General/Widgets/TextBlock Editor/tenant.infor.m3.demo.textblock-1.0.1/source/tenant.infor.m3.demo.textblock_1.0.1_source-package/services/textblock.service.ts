@@ -306,29 +306,6 @@ export class TextBlockService {
 		return this.dltTextBlockLines(textBlock);
 	}
 
-	deleteTextBlockLine(textBlock: ITextBlock, lineNumber?: string | number) {
-		const normalizedLineNo = String(lineNumber ?? "").trim();
-		const remainingLines = (textBlock.textLines ?? []).filter((line: any) => {
-			return String(line?.LINO ?? "").trim() !== normalizedLineNo;
-		});
-
-		if (remainingLines.length === 0) {
-			return this.deleteTextBlockById(textBlock);
-		}
-
-		const rebuiltText = remainingLines
-			.map((line: any) => line?.TX60 ?? "")
-			.join("\n");
-
-		return this.saveTextblock(
-			{
-				...textBlock,
-				text: rebuiltText,
-			},
-			textBlock.TXVR,
-		);
-	}
-
 	dltTextBlockLines(params: ITextBlock, textBlockId?: string) {
 		const parameters = {
 			FILE: params.FILE ?? "",
@@ -436,13 +413,6 @@ export class TextBlockService {
 	}
 
 	formatTextblockLines(text: string) {
-		if (text.includes("\n")) {
-			return text
-				.split("\n")
-				.flatMap((line) => this.splitLineByMaxLength(line))
-				.map((line) => line ?? "");
-		}
-
 		const newTextBlock: string[] = [];
 		const words = [];
 		let newText = "";
@@ -487,27 +457,18 @@ export class TextBlockService {
 		return newTextBlock;
 	}
 
-	private splitLineByMaxLength(line: string): string[] {
-		if (!line || line.length <= 60) {
-			return [line ?? ""];
-		}
-
-		const chunks: string[] = [];
-		let cursor = 0;
-
-		while (cursor < line.length) {
-			chunks.push(line.slice(cursor, cursor + 60));
-			cursor += 60;
-		}
-
-		return chunks;
-	}
-
 	textBlockLinesToText(textBlockLines: any[]) {
 		if (!textBlockLines?.length) return "";
 
-		const lineStringList = textBlockLines.map((line: any) => line.TX60 ?? "");
+		textBlockLines.forEach((line: any) => {
+			if (line.TX60 === "") {
+				line.TX60 = "<br><br>";
+			}
+		});
 
-		return lineStringList.join("\n");
+		const lineStringList = textBlockLines.map((line: any) => line.TX60);
+
+		const text = lineStringList.join(" ");
+		return text;
 	}
 }

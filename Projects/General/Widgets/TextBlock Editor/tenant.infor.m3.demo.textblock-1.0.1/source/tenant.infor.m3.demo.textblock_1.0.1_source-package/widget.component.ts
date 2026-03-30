@@ -74,7 +74,6 @@ export class WidgetComponent
 	selectedId!: string;
 	editEnabled = false;
 	deleteEnabled = false;
-	compactMode = false;
 	autoMode!: boolean;
 
 	async ngOnInit() {
@@ -144,6 +143,18 @@ export class WidgetComponent
 
 	updatePrimaryActions() {
 		const actions = [
+			{
+				text: this.lang.get("addTextTitle"),
+				standardIconName: "#icon-add",
+				isPrimary: true,
+				optionsSelectable: false,
+				isEnabled: true,
+				isVisible:
+					this.editEnabled &&
+					!this.editingTextVersion() &&
+					this.contextMap.size !== 0,
+				execute: () => this.onNewTextBlock(),
+			},
 			{
 				text: this.lang.get("refresh"),
 				standardIconName: "#refresh",
@@ -274,35 +285,6 @@ export class WidgetComponent
 		);
 	}
 
-	onDeleteTextLine(textBlock: ITextBlock, line: any, event: Event) {
-		event.stopPropagation();
-		const lineNo = line?.LINO || "";
-		const messageSettings: IdsMessageSettings = {
-			title: this.lang.get("confirmDelete"),
-			message: `Delete line ${lineNo}?`,
-			status: "warning",
-		};
-
-		this.openDeleteMessage(messageSettings).then((deleteConfirmed) => {
-			if (!deleteConfirmed) return;
-
-			this.setBusy(true);
-			this.subscriptions.add(
-				this.#textBlockService.deleteTextBlockLine(textBlock, line?.LINO).subscribe({
-					next: () => {
-						this.setBusy(false);
-						this.setTextBlocks();
-					},
-					error: (err) => {
-						const message = err.message ?? "Error deleting text line";
-						this.showWidgetMessage(message, WidgetMessageType.Error);
-						this.setBusy(false);
-					},
-				}),
-			);
-		});
-	}
-
 	onAccordionExpanded(event: any) {
 		const id = event.target.id;
 		this.selectedId = id;
@@ -334,7 +316,6 @@ export class WidgetComponent
 		this.autoMode = settings.get("autoMode", false);
 		this.editEnabled = settings.get("editEnabled", false);
 		this.deleteEnabled = settings.get("deleteEnabled", false);
-		this.compactMode = settings.get("compactMode", false);
 	}
 
 	setTextBlocks() {

@@ -38,9 +38,6 @@ import type { ITextBlock } from "../../types/text-block.type";
 	providers: [TranslatePipe],
 })
 export class NewTextblockComponent extends WidgetBase implements OnInit {
-	private static readonly DEFAULT_TXVR = "Serials";
-	private static readonly DEFAULT_TX40 = "Additional Serials";
-
 	@Input() text: string = "";
 	@Input() contextMap!: Map<string, string>;
 	@Input() textVersion: ITextBlock | any = {};
@@ -66,25 +63,14 @@ export class NewTextblockComponent extends WidgetBase implements OnInit {
 
 	private createForm(): FormGroup {
 		const formConfig: any = {
-			TXVR: [
-				this.textVersion?.TXVR ?? NewTextblockComponent.DEFAULT_TXVR,
-			],
-			TX40: [
-				this.textVersion?.TX40 ?? NewTextblockComponent.DEFAULT_TX40,
-				Validators.required,
-			],
+			TXVR: [this.textVersion?.TXVR ?? ""],
+			TX40: [this.textVersion?.TX40 ?? "", Validators.required],
 			text: [this.textVersion?.text ?? "", Validators.required],
 		};
 		return this.#fb.group(formConfig);
 	}
 
 	onSaveText(textBlockValues: ITextBlock) {
-		const normalizedValues: ITextBlock = {
-			...textBlockValues,
-			TXVR: NewTextblockComponent.DEFAULT_TXVR,
-			TX40: NewTextblockComponent.DEFAULT_TX40,
-		};
-
 		this.setBusy(true);
 		/* const textblockKeys = {
 			PRNO: this.contextMap.get("PRNO") || this.contextMap.get("ITNO") || "",
@@ -92,12 +78,11 @@ export class NewTextblockComponent extends WidgetBase implements OnInit {
 		}; */
 
 		this.#textBlockService
-			.saveTextblock(normalizedValues, this.textVersion?.TXVR)
+			.saveTextblock(textBlockValues, this.textVersion?.TXVR)
 			.subscribe({
 				next: (resp) => {
 					this.setBusy(false);
-					const result =
-						normalizedValues.TXID || normalizedValues.TXVR || null;
+					const result = textBlockValues.TXID || textBlockValues.TXVR || null;
 					if (resp.length) {
 						this.showToast({
 							title: "Success",
@@ -133,13 +118,5 @@ export class NewTextblockComponent extends WidgetBase implements OnInit {
 
 	get submitButtonText(): string {
 		return this.isEditMode ? "update" : "add";
-	}
-
-	get textBlockHeaderId(): string {
-		return NewTextblockComponent.DEFAULT_TXVR;
-	}
-
-	get textBlockHeaderDescription(): string {
-		return NewTextblockComponent.DEFAULT_TX40;
 	}
 }
