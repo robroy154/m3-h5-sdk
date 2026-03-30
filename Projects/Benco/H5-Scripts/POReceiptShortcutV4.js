@@ -2,7 +2,7 @@
     POReceiptShortcutV4.js
     H5-compliant script for PO receipt processing with extended serial support
     Author: Rob Roy   Date: 02-Dec-2025
-    Version: 7.3            Compatible with: H5 2.0+
+    Version: 8.0            Compatible with: H5 2.0+
 
   FEATURES
   • H5 SDK compliance using H5ControlUtil.H5Dialog API
@@ -14,7 +14,7 @@
   • Serial policy: <=20 chars stays as-is in SERN and CFMA; >20 chars gets BSN epoch-derived SERN with original kept in CFMA
   • Single pack with multiple lines for INDI = 2 (PACN = PUNO_PNLI), single pack otherwise
   • Pushes only one PrcWhsTran (message-level)
-  • "T for today" in Expiration date input
+    • "T for today" shortcut in Expiration date input with validation (today is not allowed)
   • Auto-generate sequential serial numbers (PO-1, PO-2, etc.)
   • Scrollable serial input dialog (handles 1-25 serials)
   • Consistent error reporting and user feedback
@@ -28,7 +28,6 @@
   • Uses proper IMIResponse error handling patterns
   • Transient error detection with retry/backoff (up to 3 attempts)
   • Follows H5 SDK naming conventions and structure
-  SAME AS V3. This is the WORK FILE
 ─────────────────────────────────────────────────────────────────────────────*/
 
 /*──────────────────────────────────────────────────────────────────────────*/
@@ -37,8 +36,12 @@ var POReceiptShortcutV4 = class {
     constructor(args) {
         // Initialize base properties following H5 SDK patterns
         this.typeName = 'POReceiptShortcutV4';
+        // Event namespace for safe attach/remove lifecycle handling
+        this.eventNamespace = '.poReceiptV4';
+        this.dialogInstanceIdCounter = 0;
+
         // Use appropriate MIService version based on H5 compatibility
-        this.mi = ScriptUtil.version >= 2 ? MIService : MIService.Current;
+        this.mi = ScriptUtil.version >= 2.0 ? MIService : MIService.Current;
         this.ctrl = args.controller;    // H5 controller for UI interactions
         this.log = args.log;           // H5 logging service
 
@@ -110,13 +113,22 @@ var POReceiptShortcutV4 = class {
         return `Processing error (Status: ${transactionStatus}). Check MHS850/MHS851 for details.\nMessage no = ${this.MSGN}`;
     }
 
-    _resolveDialog(dialogContent, resolve) {
-        if (ScriptUtil.version >= 2) {
-            $('.ui-dialog-content:visible').dialog('close');
-        } else {
-            $(dialogContent).inforDialog("close");
+    _resolveDialog(dialogContent, resolve, dialogModel = null) {
+        try {
+            if (ScriptUtil.version >= 2.0 && dialogModel && typeof dialogModel.close === 'function') {
+                dialogModel.close(true);
+            } else if (dialogContent?.inforDialog) {
+                dialogContent.inforDialog("close");
+            }
+        } catch (closeError) {
+            this.log.Warning(`Dialog close fallback triggered: ${closeError.message || closeError}`);
         }
         resolve();
+    }
+
+    createScopedId(prefix) {
+        this.dialogInstanceIdCounter += 1;
+        return `${prefix}_${Date.now()}_${this.dialogInstanceIdCounter}`;
     }
 
     /**
@@ -167,7 +179,7 @@ var POReceiptShortcutV4 = class {
         return record;
     }
 
-    //Deletes custom field record. This is not needed since equipment deletion API also deletes custom record
+    // Deletes custom field record used during rollback cleanup.
     async deleteEquipmentCustomField(equipmentContext) {
         if (!this.customFieldConfig?.enabled) {
             return;
@@ -363,10 +375,10 @@ var POReceiptShortcutV4 = class {
         // Create progress dialog content
         const progressHtml = `
             <div style="padding: 20px;">
-                <div id="progressWrap" style="width: 100%; height: 18px; background: #ddd; border-radius: 4px; overflow: hidden;">
-                    <div id="progressFill" style="height: 100%; width: 0; background: #0072C6; transition: width .25s;"></div>
+                <div class="po-receipt-progress-wrap" style="width: 100%; height: 18px; background: #ddd; border-radius: 4px; overflow: hidden;">
+                    <div class="po-receipt-progress-fill" style="height: 100%; width: 0; background: #0072C6; transition: width .25s;"></div>
                 </div>
-                <div id="progressMsg" style="text-align: center; margin-top: 8px; font-size: 13px;">Starting…</div>
+                <div class="po-receipt-progress-msg" style="text-align: center; margin-top: 8px; font-size: 13px;">Starting…</div>
             </div>
         `;
         
@@ -387,7 +399,7 @@ var POReceiptShortcutV4 = class {
         };
 
         // Show progress dialog with proper version handling
-        if (ScriptUtil.version >= 2) {
+        if (ScriptUtil.version >= 2.0) {
             this.progressDialog = H5ControlUtil.H5Dialog.CreateDialogElement(this.progressContent[0], dialogOptions);
         } else {
             this.progressDialog = this.progressContent.inforMessageDialog(dialogOptions);
@@ -400,8 +412,8 @@ var POReceiptShortcutV4 = class {
     
     updateProgress(msg) {
         const pct = Math.round((this.idx / this.steps.length) * 100);
-        $('#progressFill').css('width', pct + '%');
-        if (msg) $('#progressMsg').text(msg);
+        this.progressContent?.find('.po-receipt-progress-fill').css('width', pct + '%');
+        if (msg) this.progressContent?.find('.po-receipt-progress-msg').text(msg);
     }
     
     async advance(label) {
@@ -411,8 +423,8 @@ var POReceiptShortcutV4 = class {
     }
     
     progressDone() {
-        $('#progressFill').css('width', '100%');
-        $('#progressMsg').text('Done!');
+        this.progressContent?.find('.po-receipt-progress-fill').css('width', '100%');
+        this.progressContent?.find('.po-receipt-progress-msg').text('Done!');
         setTimeout(() => this.closeProgress(), 300);
     }
     
@@ -424,7 +436,7 @@ var POReceiptShortcutV4 = class {
         try {
             if (this.progressDialog) {
                 // H5 2.0+ dialogs expose a close() function on the model
-                if (ScriptUtil.version >= 2 && typeof this.progressDialog.close === 'function') {
+                if (ScriptUtil.version >= 2.0 && typeof this.progressDialog.close === 'function') {
                     this.progressDialog.close(true);
                 } else {
                     // For pre‑2.0 dialogs use the inforDialog API on the element
@@ -738,6 +750,7 @@ var POReceiptShortcutV4 = class {
     dialogWarn(msg) {
         return new Promise((resolve, reject) => {
             let closedByButton = false;
+            let dialogModel = null;
             this.log.Info(`Displaying warning dialog: ${msg}`);
             
             // Create dialog content following H5SampleCustomDialog pattern
@@ -746,11 +759,11 @@ var POReceiptShortcutV4 = class {
             // Helper to close dialog and resolve promise
             const handleProceed = () => {
                 closedByButton = true;
-                this._resolveDialog(dialogContent, resolve);
+                this._resolveDialog(dialogContent, resolve, dialogModel);
             };
             
             // Add Enter key handling for warning dialog
-            dialogContent.on('keydown', function (e) {
+            dialogContent.on(`keydown${this.eventNamespace}`, function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     // Trigger Proceed button (default action)
@@ -773,7 +786,7 @@ var POReceiptShortcutV4 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -786,7 +799,7 @@ var POReceiptShortcutV4 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -799,23 +812,25 @@ var POReceiptShortcutV4 = class {
             const dialogOptions = {
                 title: "⚠️ Warning",
                 dialogType: "General",
-                modal: true, // Changed back to true
+                modal: true,
                 width: 500,
                 minHeight: 200,
                 icon: "warning",
                 closeOnEscape: true,
                 close: function () {
+                    dialogContent.off(this.eventNamespace);
+                    dialogContent.find('*').off(this.eventNamespace);
                     dialogContent.remove();
                     if (!closedByButton) {
                         reject(new Error('Operation cancelled by user')); // Handle escape/X button same as Cancel
                     }
-                },
+                }.bind(this),
                 buttons: dialogButtons
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
-                H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
+            if (ScriptUtil.version >= 2.0) {
+                dialogModel = H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
@@ -825,6 +840,7 @@ var POReceiptShortcutV4 = class {
     promptConfirm() {
         return new Promise((resolve, reject) => {
             let closedByButton = false;
+            let dialogModel = null;
             
             // Create dialog content following H5SampleCustomDialog pattern
             const dialogContent = $(`<div><label class='inforLabel noColon'>Receive ${this.RVQA} unit(s)?</label></div>`);
@@ -832,11 +848,11 @@ var POReceiptShortcutV4 = class {
             // Helper to close dialog and resolve promise
             const handleConfirm = () => {
                 closedByButton = true;
-                this._resolveDialog(dialogContent, resolve);
+                this._resolveDialog(dialogContent, resolve, dialogModel);
             };
             
             // Add Enter key handling for confirm dialog
-            dialogContent.on('keydown', function (e) {
+            dialogContent.on(`keydown${this.eventNamespace}`, function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     // Trigger Confirm button
@@ -859,7 +875,7 @@ var POReceiptShortcutV4 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -872,7 +888,7 @@ var POReceiptShortcutV4 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -885,23 +901,25 @@ var POReceiptShortcutV4 = class {
             const dialogOptions = {
                 title: "🔄 Confirm Receipt",
                 dialogType: "General",
-                modal: true, // Changed back to true
+                modal: true,
                 width: 400,
                 minHeight: 180,
                 icon: "info",
                 closeOnEscape: true,
                 close: function () {
+                    dialogContent.off(this.eventNamespace);
+                    dialogContent.find('*').off(this.eventNamespace);
                     dialogContent.remove();
                     if (!closedByButton) {
                         reject(new Error('Receipt cancelled by user')); // Handle escape/X button same as Cancel
                     }
-                },
+                }.bind(this),
                 buttons: dialogButtons
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
-                H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
+            if (ScriptUtil.version >= 2.0) {
+                dialogModel = H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
@@ -911,7 +929,14 @@ var POReceiptShortcutV4 = class {
     promptSerials() {
         return new Promise((resolve, reject) => {
             let closedByButton = false;
+            let dialogModel = null;
             const qty = this.num(this.RVQA);
+            const dialogId = this.createScopedId('serialDlg');
+            const poNumberDisplayId = `poNumberDisplay_${dialogId}`;
+            const copyPoNumberId = `copyPoNumber_${dialogId}`;
+            const generateSerialsId = `generateSerials_${dialogId}`;
+            const serialInputsContainerId = `serialInputsContainer_${dialogId}`;
+            const serialInputId = (index) => `serial_${dialogId}_${index}`;
 
             // Safety check: Prevent excessive quantity that could crash browser
             const MAX_SERIALS = 25;  // Reasonable limit for manual entry
@@ -929,10 +954,10 @@ var POReceiptShortcutV4 = class {
             formHtml += `<div style="margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px; font-size: 12px;">
                 <label class="inforLabel" style="font-weight: bold; font-size: 11px;">PO:</label>
                 <div style="display: flex; align-items: center; margin-top: 2px;">
-                    <input id="poNumberDisplay" type="text" readonly value="${this.PUNO}" 
+                    <input id="${poNumberDisplayId}" type="text" readonly value="${this.PUNO}" 
                            style="flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;">
-                    <button type="button" id="copyPoNumber" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Copy PO number">📋</button>
-                    <button type="button" id="generateSerials" style="margin-left: 6px; padding: 3px 6px; background: #2C8C3E; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Generate serials">🔢</button>
+                    <button type="button" id="${copyPoNumberId}" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Copy PO number">📋</button>
+                    <button type="button" id="${generateSerialsId}" style="margin-left: 6px; padding: 3px 6px; background: #2C8C3E; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Generate serials">🔢</button>
                 </div>
                 <div style="margin-top: 4px; font-size: 11px; color: #666;">
                     <strong>Quantity:</strong> ${qty} serial${qty !== 1 ? 's' : ''} required
@@ -942,12 +967,12 @@ var POReceiptShortcutV4 = class {
             // Scrollable container for serial inputs - prevents off-screen bleeding
             // Max height ensures dialog fits on screen while allowing smooth scrolling
             const maxSerialLength = this.maxSerialInputLength || 20;
-            formHtml += '<div id="serialInputsContainer" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;"><form>';
+            formHtml += `<div id="${serialInputsContainerId}" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;"><form>`;
             
             for (let i = 0; i < qty; i++) {
                 formHtml += `<div style="margin-bottom: 10px;">
-                    <label class="inforLabel" for="serial${i}">Serial ${i + 1}:</label>
-                    <input id="serial${i}" type="text" class="inforTextBox" maxlength="${maxSerialLength}" 
+                    <label class="inforLabel" for="${serialInputId(i)}">Serial ${i + 1}:</label>
+                    <input id="${serialInputId(i)}" type="text" class="inforTextBox" maxlength="${maxSerialLength}" 
                            placeholder="Enter serial number (max ${maxSerialLength} chars)" style="width: 100%; text-transform: uppercase;" 
                            ${i === 0 ? 'autofocus' : ''}>
                 </div>`;
@@ -979,7 +1004,7 @@ var POReceiptShortcutV4 = class {
                 `);
                 
                 // Insert error message before the scrollable container (stays visible while scrolling)
-                dialogContent.find('#serialInputsContainer').before(errorDiv);
+                dialogContent.find(`#${serialInputsContainerId}`).before(errorDiv);
                 
                 // Auto-remove after 5 seconds
                 setTimeout(() => errorDiv.fadeOut(() => errorDiv.remove()), 5000);
@@ -989,8 +1014,8 @@ var POReceiptShortcutV4 = class {
             const showValidationError = dialogContent.showValidationError;
             
             // Add copy functionality for PO number
-            dialogContent.find('#copyPoNumber').on('click', function() {
-                const poNumber = dialogContent.find('#poNumberDisplay').val();
+            dialogContent.find(`#${copyPoNumberId}`).on(`click${this.eventNamespace}`, function() {
+                const poNumber = dialogContent.find(`#${poNumberDisplayId}`).val();
                 const btn = $(this);
                 const originalText = btn.text();
                 navigator.clipboard.writeText(poNumber).then(() => {
@@ -1000,8 +1025,8 @@ var POReceiptShortcutV4 = class {
             });
 
             // Add auto-generate functionality for sequential serials
-            dialogContent.find('#generateSerials').on('click', function() {
-                const poNumber = dialogContent.find('#poNumberDisplay').val();
+            dialogContent.find(`#${generateSerialsId}`).on(`click${this.eventNamespace}`, function() {
+                const poNumber = dialogContent.find(`#${poNumberDisplayId}`).val();
 
                 // Clear any existing error messages
                 dialogContent.find('.validation-error').remove();
@@ -1009,7 +1034,7 @@ var POReceiptShortcutV4 = class {
                 // Populate each input field with PO-N format
                 for (let i = 0; i < qty; i++) {
                     const serialValue = `${poNumber}-${i + 1}`;
-                    const inputField = dialogContent.find(`#serial${i}`);
+                    const inputField = dialogContent.find(`#${serialInputId(i)}`);
                     inputField.val(serialValue);
                     // Clear any error styling
                     inputField.css('border-color', '');
@@ -1018,7 +1043,7 @@ var POReceiptShortcutV4 = class {
                 
                 // Show success feedback
                 const successMsg = $('<div class="validation-success" style="padding: 6px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; margin-bottom: 10px; font-size: 12px;">✓ Generated ' + qty + ' sequential serial' + (qty !== 1 ? 's' : '') + ': ' + poNumber + '-1 through ' + poNumber + '-' + qty + '</div>');
-                dialogContent.find('#serialInputsContainer').before(successMsg);
+                dialogContent.find(`#${serialInputsContainerId}`).before(successMsg);
                 
                 // Auto-remove success message after 3 seconds
                 setTimeout(() => successMsg.fadeOut(300, function() { $(this).remove(); }), 3000);
@@ -1032,17 +1057,17 @@ var POReceiptShortcutV4 = class {
                 }, 1500);
                 
                 // Focus on the first input for immediate review/editing
-                dialogContent.find('#serial0').focus();
+                dialogContent.find(`#${serialInputId(0)}`).focus();
             });
             
             // Add input validation and uppercase conversion
-            dialogContent.find('input').on('input', function () {
+            dialogContent.find('input').on(`input${this.eventNamespace}`, function () {
                 this.value = this.value.toUpperCase();
                 $(this).css('border', ''); // Clear any error styling
             });
             
             // Enable right-click context menu for all input fields (for paste functionality)
-            dialogContent.find('input').on('contextmenu', function (e) {
+            dialogContent.find('input').on(`contextmenu${this.eventNamespace}`, function (e) {
                 e.stopPropagation(); // Allow default right-click menu on inputs
             });
             
@@ -1053,7 +1078,7 @@ var POReceiptShortcutV4 = class {
 
                 // Validate all serial inputs - check format and presence first
                 for (let i = 0; i < qty; i++) {
-                    const $field = dialogContent.find(`#serial${i}`);
+                    const $field = dialogContent.find(`#${serialInputId(i)}`);
                     const val = $field.val().trim();
 
                     if (!val) {
@@ -1082,7 +1107,7 @@ var POReceiptShortcutV4 = class {
                     const duplicates = [];
                     serials.forEach((serial, idx) => {
                         if (seen.has(serial)) {
-                            dialogContent.find(`#serial${idx}`).css('border', '2px solid orange');
+                            dialogContent.find(`#${serialInputId(idx)}`).css('border', '2px solid orange');
                             if (!duplicates.includes(serial)) duplicates.push(serial);
                         } else {
                             seen.add(serial);
@@ -1103,32 +1128,33 @@ var POReceiptShortcutV4 = class {
                 closedByButton = true;
                 if (model) {
                     // Called from button handler - use model.close()
-                    if (ScriptUtil.version >= 2) {
+                    if (ScriptUtil.version >= 2.0) {
                         model.close(true);
                     } else {
                         $(dialogContent).inforDialog("close");
                     }
-                } else if (ScriptUtil.version >= 2) {
-                    // Called from keydown fallback - use DOM method
-                    $('.ui-dialog-content:visible').dialog('close');
                 } else {
-                    $(dialogContent).inforDialog("close");
+                    if (ScriptUtil.version >= 2.0 && dialogModel && typeof dialogModel.close === 'function') {
+                        dialogModel.close(true);
+                    } else {
+                        $(dialogContent).inforDialog("close");
+                    }
                 }
                 resolve(serials);
             };
 
             // Add Enter key handling for serial inputs
-            dialogContent.find('input[id^="serial"]').on('keydown', function (e) {
+            dialogContent.find(`input[id^="serial_${dialogId}_"]`).on(`keydown${this.eventNamespace}`, function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const currentIndex = Number.parseInt(this.id.replace('serial', ''));
+                    const currentIndex = Number.parseInt(this.id.replace(`serial_${dialogId}_`, ''));
                     
                     if (qty > 1 && currentIndex < qty - 1) {
                         // Multiple serials: move to next input and scroll it into view
-                        const nextInput = dialogContent.find(`#serial${currentIndex + 1}`);
+                        const nextInput = dialogContent.find(`#${serialInputId(currentIndex + 1)}`);
                         nextInput.focus();
                         // Ensure the next input is visible in the scrollable container
-                        const container = dialogContent.find('#serialInputsContainer');
+                        const container = dialogContent.find(`#${serialInputsContainerId}`);
                         const nextInputOffset = nextInput.position().top;
                         if (nextInputOffset > container.height() - 60) {
                             container.scrollTop(container.scrollTop() + 60);
@@ -1162,7 +1188,7 @@ var POReceiptShortcutV4 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -1182,17 +1208,19 @@ var POReceiptShortcutV4 = class {
                 icon: "info",
                 closeOnEscape: true,
                 close: function () {
+                    dialogContent.off(this.eventNamespace);
+                    dialogContent.find('*').off(this.eventNamespace);
                     dialogContent.remove();
                     if (!closedByButton) {
                         reject(new Error('Serial input cancelled by user')); // Handle escape/X button same as Cancel
                     }
-                },
+                }.bind(this),
                 buttons: dialogButtons
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
-                H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
+            if (ScriptUtil.version >= 2.0) {
+                dialogModel = H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
@@ -1202,6 +1230,13 @@ var POReceiptShortcutV4 = class {
     promptLot() {
         return new Promise((resolve, reject) => {
             let closedByButton = false;
+            let dialogModel = null;
+            const dialogId = this.createScopedId('lotDlg');
+            const poNumberDisplayId = `poNumberDisplay_${dialogId}`;
+            const copyPoNumberId = `copyPoNumber_${dialogId}`;
+            const lotNumberId = `lotNumber_${dialogId}`;
+            const expirationDateId = `expirationDate_${dialogId}`;
+            const expirationDateRequired = this.EXPD === '1';
             
             // Create form content for lot number and optional expiration date
             let formHtml = '<div style="padding: 15px;"><form>';
@@ -1210,24 +1245,24 @@ var POReceiptShortcutV4 = class {
             formHtml += `<div style="margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px; font-size: 12px;">
                 <label class="inforLabel" style="font-weight: bold; font-size: 11px;">PO:</label>
                 <div style="display: flex; align-items: center; margin-top: 2px;">
-                    <input id="poNumberDisplay" type="text" readonly value="${this.PUNO}" 
+                    <input id="${poNumberDisplayId}" type="text" readonly value="${this.PUNO}" 
                            style="flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;">
-                    <button type="button" id="copyPoNumber" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;">📋</button>
+                    <button type="button" id="${copyPoNumberId}" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;">📋</button>
                 </div>
             </div>`;
             
             formHtml += `<div style="margin-bottom: 15px;">
-                <label class="inforLabel" for="lotNumber">Lot Number:</label>
-                <input id="lotNumber" type="text" class="inforTextBox" maxlength="20" 
+                <label class="inforLabel" for="${lotNumberId}">Lot Number:</label>
+                <input id="${lotNumberId}" type="text" class="inforTextBox" maxlength="20" 
                        placeholder="Enter lot number" style="width: 100%; text-transform: uppercase;" autofocus>
             </div>`;
             
-            if (this.EXPD === '1') {
+            if (expirationDateRequired) {
                 formHtml += `<div style="margin-bottom: 15px;">
-                    <label class="inforLabel" for="expirationDate">Expiration Date:</label>
-                    <input id="expirationDate" type="date" class="inforTextBox" 
-                           style="width: 100%;" title="Press 'T' for today's date">
-                    <small style="color: #666;">Press 'T' for today's date</small>
+                    <label class="inforLabel" for="${expirationDateId}">Expiration Date:</label>
+                    <input id="${expirationDateId}" type="date" class="inforTextBox" 
+                           style="width: 100%;" title="Press 'T' for today's date (today not allowed)">
+                    <small style="color: #666;">Press 'T' for today's date (today not allowed)</small>
                 </div>`;
             }
             
@@ -1267,8 +1302,8 @@ var POReceiptShortcutV4 = class {
             const showValidationError = dialogContent.showValidationError;
             
             // Add copy functionality for PO number
-            dialogContent.find('#copyPoNumber').on('click', function() {
-                const poNumber = dialogContent.find('#poNumberDisplay').val();
+            dialogContent.find(`#${copyPoNumberId}`).on(`click${this.eventNamespace}`, function() {
+                const poNumber = dialogContent.find(`#${poNumberDisplayId}`).val();
                 const btn = $(this);
                 const originalText = btn.text();
                 navigator.clipboard.writeText(poNumber).then(() => {
@@ -1278,23 +1313,58 @@ var POReceiptShortcutV4 = class {
             });
 
             // Add input validation and uppercase conversion for lot number
-            dialogContent.find('#lotNumber').on('input', function () {
+            dialogContent.find(`#${lotNumberId}`).on(`input${this.eventNamespace}`, function () {
                 this.value = this.value.toUpperCase();
                 $(this).css('border', ''); // Clear any error styling
             });
             
             // Enable right-click context menu for all input fields (for paste functionality)
-            dialogContent.find('input').on('contextmenu', function (e) {
+            dialogContent.find('input').on(`contextmenu${this.eventNamespace}`, function (e) {
                 e.stopPropagation(); // Allow default right-click menu on inputs
             });
+
+            const validateLotInputs = () => {
+                const $lot = dialogContent.find(`#${lotNumberId}`);
+                const lot = $lot.val().trim();
+                let expi = null;
+                let errors = [];
+
+                if (!lot || lot.length > 20 || !/^[A-Z0-9-]+$/.test(lot)) {
+                    $lot.css('border', '2px solid red');
+                    errors.push('Lot number required (alphanumeric, max 20 chars)');
+                }
+
+                if (expirationDateRequired) {
+                    const $exp = dialogContent.find(`#${expirationDateId}`);
+                    const expDate = $exp.val();
+                    if (!expDate) {
+                        $exp.css('border', '2px solid red');
+                        errors.push('Expiration date required');
+                    } else {
+                        expi = expDate.replaceAll('-', ''); // Convert YYYY-MM-DD to YYYYMMDD
+                        if (expi === this.today()) {
+                            $exp.css('border', '2px solid red');
+                            errors.push('Expiration date cannot be today. Please use a future date.');
+                        }
+                    }
+                }
+
+                if (errors.length) {
+                    showValidationError(errors.join('\n'));
+                    return null;
+                }
+
+                return { lot, expi };
+            };
             
             // Add Enter key handling for lot inputs
-            dialogContent.find('#lotNumber, #expirationDate').on('keydown', function (e) {
+            dialogContent.find(`#${lotNumberId}, #${expirationDateId}`).on(`keydown${this.eventNamespace}`, (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    if (this.id === 'lotNumber' && this.EXPD === '1') {
+                    const currentFieldId = e.currentTarget?.id;
+                    if (currentFieldId === lotNumberId && expirationDateRequired) {
                         // Move to expiration date if it exists
-                        dialogContent.find('#expirationDate').focus();
+                        dialogContent.find(`#${expirationDateId}`).focus();
                     } else {
                         // Trigger Save button
                         const saveButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function() {
@@ -1303,52 +1373,27 @@ var POReceiptShortcutV4 = class {
                         if (saveButton.length > 0) {
                             saveButton.click();
                         } else {
-                            // Fallback: simulate Save button click with proper validation
-                            const $lot = dialogContent.find('#lotNumber');
-                            const lot = $lot.val().trim();
-                            let expi = null;
-                            let errors = [];
-
-                            // Validate lot number
-                            if (!lot || lot.length > 20 || !/^[A-Z0-9-]+$/.test(lot)) {
-                                $lot.css('border', '2px solid red');
-                                errors.push('Lot number required (alphanumeric, max 20 chars)');
-                            }
-
-                            // Validate expiration date if required
-                            if (this.EXPD === '1') {
-                                const $exp = dialogContent.find('#expirationDate');
-                                const expDate = $exp.val();
-                                if (!expDate) {
-                                    $exp.css('border', '2px solid red');
-                                    errors.push('Expiration date required');
-                                } else {
-                                    expi = expDate.replaceAll('-', ''); // Convert YYYY-MM-DD to YYYYMMDD
-                                }
-                            }
-
-                            // Show validation errors if any
-                            if (errors.length) {
-                                showValidationError(errors.join('\n'));
+                            const lotData = validateLotInputs();
+                            if (!lotData) {
                                 return;
                             }
 
-                            // Close dialog and return lot data (duplicate the Save button success logic)
+                            // Close dialog and return lot data
                             closedByButton = true;
-                            if (ScriptUtil.version >= 2) {
-                                $('.ui-dialog-content:visible').dialog('close');
+                            if (ScriptUtil.version >= 2.0 && dialogModel && typeof dialogModel.close === 'function') {
+                                dialogModel.close(true);
                             } else {
                                 $(dialogContent).inforDialog("close");
                             }
-                            resolve({ lot, expi });
+                            resolve(lotData);
                         }
                     }
                 }
-            }.bind(this));
+            });
             
             // Add 'T' for today shortcut for expiration date
-            if (this.EXPD === '1') {
-                dialogContent.find('#expirationDate').on('keydown', function(e) {
+            if (expirationDateRequired) {
+                dialogContent.find(`#${expirationDateId}`).on(`keydown${this.eventNamespace}`, function(e) {
                     if (e.key.toLowerCase() === 't') {
                         e.preventDefault();
                         $(this).val(new Date().toISOString().slice(0, 10));
@@ -1356,7 +1401,7 @@ var POReceiptShortcutV4 = class {
                     }
                 });
                 
-                dialogContent.find('#expirationDate').on('change', function() {
+                dialogContent.find(`#${expirationDateId}`).on(`change${this.eventNamespace}`, function() {
                     $(this).css('border', ''); // Clear any error styling
                 });
             }
@@ -1367,43 +1412,19 @@ var POReceiptShortcutV4 = class {
                     isDefault: true,
                     width: 80,
                     click: function (event, model) {
-                        const $lot = dialogContent.find('#lotNumber');
-                        const lot = $lot.val().trim();
-                        let expi = null;
-                        let errors = [];
-
-                        // Validate lot number
-                        if (!lot || lot.length > 20 || !/^[A-Z0-9-]+$/.test(lot)) {
-                            $lot.css('border', '2px solid red');
-                            errors.push('Lot number required (alphanumeric, max 20 chars)');
-                        }
-
-                        // Validate expiration date if required
-                        if (this.EXPD === '1') {
-                            const $exp = dialogContent.find('#expirationDate');
-                            const expDate = $exp.val();
-                            if (!expDate) {
-                                $exp.css('border', '2px solid red');
-                                errors.push('Expiration date required');
-                            } else {
-                                expi = expDate.replaceAll('-', ''); // Convert YYYY-MM-DD to YYYYMMDD
-                            }
-                        }
-
-                        // Show validation errors if any
-                        if (errors.length) {
-                            showValidationError(errors.join('\n'));
+                        const lotData = validateLotInputs();
+                        if (!lotData) {
                             return;
                         }
 
                         // Close dialog and return lot data
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
                         }
-                        resolve({ lot, expi });
+                        resolve(lotData);
                     }.bind(this)
                 },
                 {
@@ -1411,7 +1432,7 @@ var POReceiptShortcutV4 = class {
                     width: 80,
                     click: function (event, model) {
                         closedByButton = true;
-                        if (ScriptUtil.version >= 2) {
+                        if (ScriptUtil.version >= 2.0) {
                             model.close(true);
                         } else {
                             $(this).inforDialog("close");
@@ -1424,23 +1445,25 @@ var POReceiptShortcutV4 = class {
             const dialogOptions = {
                 title: "📦 Enter Lot Number",
                 dialogType: "General",
-                modal: true, // Changed back to true
+                modal: true,
                 width: 450,
                 minHeight: this.EXPD === '1' ? 280 : 220,  // Dynamic height based on expiration requirement
                 icon: "info",
                 closeOnEscape: true,
                 close: function () {
+                    dialogContent.off(this.eventNamespace);
+                    dialogContent.find('*').off(this.eventNamespace);
                     dialogContent.remove();
                     if (!closedByButton) {
                         reject(new Error('Lot input cancelled by user')); // Handle escape/X button same as Cancel
                     }
-                },
+                }.bind(this),
                 buttons: dialogButtons
             };
 
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-            if (ScriptUtil.version >= 2) {
-                H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
+            if (ScriptUtil.version >= 2.0) {
+                dialogModel = H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
@@ -1590,7 +1613,7 @@ var POReceiptShortcutV4 = class {
      * 
      * ROLLBACK POLICY (Simplified):
      * - If addEquip() or process() fails, delete ALL equipment records created in this batch
-     * - First delete CMS474MI custom field records (if enabled) to clean audit trail (THIS IS NOT NEEDED, but doesn't hurt to include. But does create unneccesary API calls)
+    * - Delete CMS474MI custom field records first (if enabled) for explicit cleanup before equipment deletion
      * - Then delete MMS240MI equipment records via Del transaction
      * - Continue rollback even if individual deletions fail (best-effort cleanup)
      * - Clear createdEquipment array when complete
@@ -1843,7 +1866,7 @@ var POReceiptShortcutV4 = class {
                 isDefault: true,
                 width: 80,
                 click: function (event, model) {
-                    if (ScriptUtil.version >= 2) {
+                    if (ScriptUtil.version >= 2.0) {
                         model.close(true);
                     } else {
                         $(this).inforDialog("close");
@@ -1871,7 +1894,7 @@ var POReceiptShortcutV4 = class {
         };
 
         // Show dialog with proper version handling (H5SampleCustomDialog pattern)
-        if (ScriptUtil.version >= 2) {
+        if (ScriptUtil.version >= 2.0) {
             H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
         } else {
             dialogContent.inforMessageDialog(dialogOptions);

@@ -11,19 +11,20 @@ SDK reference: `SDKs/M3 H5 Scripting/`
 ### PO Receipt Shortcut
 
 | File | Status | Notes |
-|---|---|---|
-| `POReceiptShortcutV3.js` | ✅ **Current** | Production version — use this for all edits and deployments |
+| --- | --- | --- |
+| `POReceiptShortcutV4.js` | ✅ **Current** | Production version — use this for all edits and deployments |
+| `POReceiptShortcutV3.js` | ℹ️ Compatibility shim | Delegates to V4 for backward compatibility |
 | `POReceiptShortcutV2.js` | ⚠️ Superseded | Kept for rollback reference only |
 | `POReceiptShortcutV2_Claude.js` | 🧪 Experimental | AI-assisted refactor of V2; not deployed |
 | `POReceiptShortcut.js` | ❌ Deprecated | Original version — do not edit |
 | `POReceiptShortcut_UsingConsole.js` | ❌ Deprecated | Console-based debugging variant — do not deploy |
 
-> **When asked to update or fix the PO Receipt script, always edit `POReceiptShortcutV3.js`.**
+> **When asked to update or fix the PO Receipt script, always edit `POReceiptShortcutV4.js`.**
 
 ### Other Scripts
 
 | File | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `BEN_H5_AutoComplete.js` | ✅ Active | Autocomplete enhancement for M3 input fields |
 | `BEN_H5_CTS100B1.js` | ✅ Active | Panel customization for CTS100 panel B1 |
 
