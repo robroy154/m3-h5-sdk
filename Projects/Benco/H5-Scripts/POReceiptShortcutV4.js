@@ -207,6 +207,57 @@ var POReceiptShortcutV4 = class {
         return `${prefix}_${Date.now()}_${this.dialogInstanceIdCounter}`;
     }
 
+    async copyToClipboard(text, focusElement = null) {
+        const value = (text ?? '').toString();
+        if (!value) {
+            return false;
+        }
+
+        // Modern API first
+        try {
+            if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                await navigator.clipboard.writeText(value);
+                return true;
+            }
+        } catch (error) {
+            this.log.Warning(`copyToClipboard: navigator.clipboard failed: ${error.message || error}`);
+        }
+
+        // Fallback for embedded/legacy contexts
+        let tempArea = null;
+        try {
+            if (typeof document === 'undefined' || !document.body) {
+                return false;
+            }
+
+            tempArea = document.createElement('textarea');
+            tempArea.value = value;
+            tempArea.setAttribute('readonly', 'readonly');
+            tempArea.style.position = 'fixed';
+            tempArea.style.top = '-1000px';
+            tempArea.style.left = '-1000px';
+            tempArea.style.opacity = '0';
+
+            document.body.appendChild(tempArea);
+            tempArea.focus();
+            tempArea.select();
+            tempArea.setSelectionRange(0, tempArea.value.length);
+
+            const copied = !!(document.execCommand && document.execCommand('copy'));
+            return copied;
+        } catch (error) {
+            this.log.Error(`copyToClipboard: fallback copy failed: ${error.message || error}`);
+            return false;
+        } finally {
+            if (tempArea?.parentNode) {
+                tempArea.parentNode.removeChild(tempArea);
+            }
+            if (focusElement && typeof focusElement.focus === 'function') {
+                focusElement.focus();
+            }
+        }
+    }
+
     /**
      * Stores the full original serial in CMS474MI custom field (audit trail).
      * 
@@ -248,8 +299,8 @@ var POReceiptShortcutV4 = class {
             [this.customFieldConfig.valueField]: originalSerial
         };
 
-        if (this.company) record.CONO = this.company;
-        if (this.division) record.DIVI = this.division;
+        // Note: CONO/DIVI are injected by the H5 MIService session (matrix params);
+        // adding them here would duplicate them in the URL and cause a 400 Bad Request.
 
         return record;
     }
@@ -278,8 +329,8 @@ var POReceiptShortcutV4 = class {
             SQNR: this.customFieldConfig.sequenceNum
         };
 
-        if (this.company) deleteRequest.record.CONO = this.company;
-        if (this.division) deleteRequest.record.DIVI = this.division;
+        // Note: CONO/DIVI are injected by the H5 MIService session (matrix params);
+        // adding them here would duplicate them in the URL and cause a 400 Bad Request.
 
         try {
             await this.mi.executeRequest(deleteRequest);
@@ -296,7 +347,9 @@ var POReceiptShortcutV4 = class {
     isRecordMissingError(error) {
         if (!error) return false;
         const message = (error.errorMessage || error.message || '').toLowerCase();
-        return error.statusCode === 400 || message.includes('no record') || message.includes('not found');
+        // Check both .statusCode (MI response object) and .status (jQuery XHR rejection)
+        const httpStatus = error.statusCode ?? error.status;
+        return httpStatus === 400 || message.includes('no record') || message.includes('not found');
     }
 
     /**
@@ -828,7 +881,6 @@ var POReceiptShortcutV4 = class {
             let dialogModel = null;
             this.log.Info(`Displaying warning dialog: ${msg}`);
             
-            // Create dialog content following H5SampleCustomDialog pattern
             const dialogContent = $(`<div><label class='inforLabel noColon'>${msg}</label></div>`);
             
             // Helper to close dialog and resolve promise
@@ -917,7 +969,6 @@ var POReceiptShortcutV4 = class {
             let closedByButton = false;
             let dialogModel = null;
             
-            // Create dialog content following H5SampleCustomDialog pattern
             const dialogContent = $(`<div><label class='inforLabel noColon'>Receive ${this.RVQA} unit(s)?</label></div>`);
             
             // Helper to close dialog and resolve promise
@@ -992,7 +1043,6 @@ var POReceiptShortcutV4 = class {
                 buttons: dialogButtons
             };
 
-            // Show dialog with proper version handling (H5SampleCustomDialog pattern)
             if (ScriptUtil.version >= 2.0) {
                 dialogModel = H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
             } else {
@@ -1021,8 +1071,7 @@ var POReceiptShortcutV4 = class {
                 return;
             }
             
-            // Create scrollable form content with input fields for each serial
-            // Using a scrollable container to handle large quantities without bleeding off-screen
+        
             let formHtml = '<div style="padding: 15px;">';
             
             // Add PO number display with copy functionality (fixed at top, outside scroll area)
@@ -1089,14 +1138,20 @@ var POReceiptShortcutV4 = class {
             const showValidationError = dialogContent.showValidationError;
             
             // Add copy functionality for PO number
-            dialogContent.find(`#${copyPoNumberId}`).on(`click${this.eventNamespace}`, function() {
+            dialogContent.find(`#${copyPoNumberId}`).on(`click${this.eventNamespace}`, async (e) => {
                 const poNumber = dialogContent.find(`#${poNumberDisplayId}`).val();
-                const btn = $(this);
+                const btn = $(e.currentTarget);
+                const poInput = dialogContent.find(`#${poNumberDisplayId}`)[0];
                 const originalText = btn.text();
-                navigator.clipboard.writeText(poNumber).then(() => {
+
+                const copied = await this.copyToClipboard(poNumber, poInput);
+                if (copied) {
                     btn.text('✓ Copied!').css('background', '#28a745');
                     setTimeout(() => btn.text(originalText).css('background', '#0072C6'), 1500);
-                }).catch(() => {});
+                } else {
+                    btn.text('✗ Failed').css('background', '#dc3545');
+                    setTimeout(() => btn.text(originalText).css('background', '#0072C6'), 1800);
+                }
             });
 
             // Add auto-generate functionality for sequential serials
@@ -1377,14 +1432,20 @@ var POReceiptShortcutV4 = class {
             const showValidationError = dialogContent.showValidationError;
             
             // Add copy functionality for PO number
-            dialogContent.find(`#${copyPoNumberId}`).on(`click${this.eventNamespace}`, function() {
+            dialogContent.find(`#${copyPoNumberId}`).on(`click${this.eventNamespace}`, async (e) => {
                 const poNumber = dialogContent.find(`#${poNumberDisplayId}`).val();
-                const btn = $(this);
+                const btn = $(e.currentTarget);
+                const poInput = dialogContent.find(`#${poNumberDisplayId}`)[0];
                 const originalText = btn.text();
-                navigator.clipboard.writeText(poNumber).then(() => {
+
+                const copied = await this.copyToClipboard(poNumber, poInput);
+                if (copied) {
                     btn.text('✓ Copied!').css('background', '#28a745');
                     setTimeout(() => btn.text(originalText).css('background', '#0072C6'), 1500);
-                }).catch(() => {});
+                } else {
+                    btn.text('✗ Failed').css('background', '#dc3545');
+                    setTimeout(() => btn.text(originalText).css('background', '#0072C6'), 1800);
+                }
             });
 
             // Add input validation and uppercase conversion for lot number
@@ -1798,8 +1859,8 @@ var POReceiptShortcutV4 = class {
 
             const resolvedPackNumber = packResult.item.PACN || packNumber;
 
-            // Add all line items to the single pack
-            await Promise.all(lines.map((rec) => {
+            // Add all line items to the single pack — sequential to prevent MHS850MI job lock contention (CR_0093)
+            for (const rec of lines) {
                 const line = new MIRequest();
                 line.program = 'MHS850MI';
                 line.transaction = 'AddWhsLine';
@@ -1827,14 +1888,12 @@ var POReceiptShortcutV4 = class {
                 if (rec.BANO) line.record.BANO = rec.BANO;  // Batch/Serial/Lot Number
                 if (rec.EXPI) line.record.EXPI = rec.EXPI;  // Expiration Date
 
-                return this.mi.executeRequest(line).then((lineResult) => {
-                    if (lineResult?.errorCode || lineResult?.errorMessage) {
-                        const lineId = rec.BANO || rec.RVQA || 'unknown';
-                        throw new Error(this.extractErrorMessage(lineResult, `Warehouse transaction line ${lineId}`));
-                    }
-                    return lineResult;
-                });
-            }));
+                const lineResult = await this.mi.executeRequest(line);
+                if (lineResult?.errorCode || lineResult?.errorMessage) {
+                    const lineId = rec.BANO || rec.RVQA || 'unknown';
+                    throw new Error(this.extractErrorMessage(lineResult, `Warehouse transaction line ${lineId}`));
+                }
+            }
 
             // Allow lines to settle before processing, especially important for multiple serials
             if (lines.length > 1) {
