@@ -54,10 +54,13 @@ export class TitleSettingComponent implements OnInit {
 		this.title = widgetContext.getResolvedTitle(this.isTitleLocked);
 		this.isTitleUnlockable = widgetContext.isTitleUnlockable();
 
-		this.#instance.closing = ({ isSave }) => {
-			if (isSave) {
+		const previousClosing = this.#instance.closing;
+		this.#instance.closing = (args) => {
+			if (args.isSave) {
 				this.save();
 			}
+
+			previousClosing?.(args);
 		};
 	}
 
