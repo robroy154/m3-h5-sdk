@@ -1,8 +1,8 @@
 /*─────────────────────────────────────────────────────────────────────────────
     POReceiptShortcutV4.js
-    H5-compliant script for PO receipt processing with extended serial support
+    H5 script for PO receipt processing with extended serial support
     Author: Rob Roy   Date: 02-Dec-2025
-    Version: 8.0            Compatible with: H5 2.0+
+    Version: 8.0
 
   FEATURES
   • H5 SDK compliance using H5ControlUtil.H5Dialog API
@@ -19,15 +19,6 @@
   • Scrollable serial input dialog (handles 1-25 serials)
   • Consistent error reporting and user feedback
   • Transaction rollback for equipment records on failure
-
-  ARCHITECTURE
-  • Follows official H5 SDK sample patterns (H5SampleCustomDialog.ts)
-  • Uses H5ControlUtil.H5Dialog.CreateDialogElement for H5 >= 2.0
-  • Falls back to inforMessageDialog for H5 < 2.0
-  • Uses this.log for H5-compliant logging
-  • Uses proper IMIResponse error handling patterns
-  • Transient error detection with retry/backoff (up to 3 attempts)
-  • Follows H5 SDK naming conventions and structure
 ─────────────────────────────────────────────────────────────────────────────*/
 
 /*──────────────────────────────────────────────────────────────────────────*/
@@ -99,18 +90,103 @@ var POReceiptShortcutV4 = class {
 
     get isNonMaterial() { return this.INDI === '0' && this.TPCD === '13'; }
 
-    _getTroubleshootingInfo(transactionStatus, statusResult, packNumber) {
-        const extracted = this.extractErrorMessage(statusResult, 'Transaction processing');
-        if (extracted?.trim() && !extracted.startsWith('Transaction processing failed')) {
-            return extracted;
+    applyCompanyContext(record) {
+        if (this.company) {
+            record.CONO = this.company;
         }
-        if (['15', '20'].includes(transactionStatus)) {
-            return `Header level error detected. Check MHS850 for details.\nMessage no = ${this.MSGN}`;
+        return record;
+    }
+
+    applyCompanyDivisionContext(record) {
+        this.applyCompanyContext(record);
+        if (this.division) {
+            record.DIVI = this.division;
         }
-        if (['25', '30', '35', '40'].includes(transactionStatus)) {
-            return `Package/Line level error detected. Check MHS851 for details.\nMessage no = ${this.MSGN}\nPackage no = ${packNumber}`;
+        return record;
+    }
+
+    getTransactionStatusDescription(transactionStatus) {
+        const statusDescriptions = {
+            '10': 'Entered',
+            '15': 'Error on message header',
+            '20': 'Header validated, no errors',
+            '25': 'Error on message packages/IDs',
+            '30': 'Package/ID validated, no errors',
+            '35': 'Error on message lines/instructions',
+            '40': 'Line/instructions validated, no errors',
+            '45': 'Error from business component',
+            '90': 'Processed, no errors',
+            '92': 'Processed, test message, no update performed',
+            '99': 'Archived'
+        };
+
+        return statusDescriptions[transactionStatus] || 'Unknown status';
+    }
+
+    async getWhsLineFailureDetail(packNumber) {
+        const request = new MIRequest();
+        request.program = 'MHS850MI';
+        request.transaction = 'LstWhsLine';
+        request.maxReturnedRecords = 25;
+        request.outputFields = ['MSLN', 'STAT', 'ITNO', 'BANO', 'REMK', 'BREM', 'PACN'];
+        request.record = this.applyCompanyContext({
+            MSGN: this.MSGN,
+            PACN: packNumber
+        });
+
+        try {
+            const response = await this.mi.executeRequest(request);
+            const items = Array.isArray(response?.items)
+                ? response.items
+                : response?.item
+                    ? [response.item]
+                    : [];
+
+            const failingLine = items.find((item) => item?.STAT && item.STAT !== '90') || items[0];
+            if (!failingLine) {
+                return '';
+            }
+
+            const detailLines = [];
+            const lineMessage = failingLine.REMK || failingLine.BREM || '';
+
+            if (lineMessage) detailLines.push(lineMessage);
+            if (failingLine.MSLN) detailLines.push(`Line no: ${failingLine.MSLN}`);
+            if (failingLine.ITNO) detailLines.push(`Item: ${failingLine.ITNO}`);
+            if (failingLine.BANO) detailLines.push(`Lot/Serial: ${failingLine.BANO}`);
+
+            return detailLines.join('\n');
+        } catch (error) {
+            this.log.Warning(`getWhsLineFailureDetail: Unable to read line diagnostics for message ${this.MSGN}: ${error.message || error}`);
+            return '';
         }
-        return `Processing error (Status: ${transactionStatus}). Check MHS850/MHS851 for details.\nMessage no = ${this.MSGN}`;
+    }
+
+    _getTroubleshootingInfo(transactionStatus, packNumber, lineFailureDetail = '') {
+        switch (transactionStatus) {
+            case '10':
+                return 'Warehouse transaction message was created but has not been validated yet.';
+            case '15':
+                return 'Header validation failed. Check MHS850 for the header error.';
+            case '20':
+                return 'Header validated, but package processing did not start. Check MHS850 for the message details.';
+            case '25':
+                return 'Package validation failed. Check MHS851 for the package error.';
+            case '30':
+                return 'Package validated, but line processing did not complete. Check MHS851 for the package details.';
+            case '35':
+                return ['Line validation failed. Check MHS851 for the failing line.', lineFailureDetail].filter(Boolean).join('\n');
+            case '40':
+                return ['Lines validated, but downstream processing did not finish. Check MHS851 for the failing line.', lineFailureDetail].filter(Boolean).join('\n');
+            case '45':
+                return ['Business validation failed during receipt processing.', lineFailureDetail].filter(Boolean).join('\n');
+            case '92':
+                return 'The transaction ran in test mode, so no inventory update was performed.';
+            case '99':
+                return 'The warehouse transaction message is archived.';
+            default:
+                return `Warehouse transaction ended in status ${transactionStatus}. Check MHS850/MHS851 for details.`;
+        }
     }
 
     _resolveDialog(dialogContent, resolve, dialogModel = null) {
@@ -172,7 +248,6 @@ var POReceiptShortcutV4 = class {
             [this.customFieldConfig.valueField]: originalSerial
         };
 
-        // Add optional company/division context if available
         if (this.company) record.CONO = this.company;
         if (this.division) record.DIVI = this.division;
 
@@ -1261,8 +1336,8 @@ var POReceiptShortcutV4 = class {
                 formHtml += `<div style="margin-bottom: 15px;">
                     <label class="inforLabel" for="${expirationDateId}">Expiration Date:</label>
                     <input id="${expirationDateId}" type="date" class="inforTextBox" 
-                           style="width: 100%;" title="Press 'T' for today's date (today not allowed)">
-                    <small style="color: #666;">Press 'T' for today's date (today not allowed)</small>
+                           style="width: 100%;" title="Date cannot be today's date.">
+                    <small style="color: #666;">Date cannot be today's date.</small>
                 </div>`;
             }
             
@@ -1392,7 +1467,7 @@ var POReceiptShortcutV4 = class {
             });
             
             // Add 'T' for today shortcut for expiration date
-            if (expirationDateRequired) {
+/*             if (expirationDateRequired) {
                 dialogContent.find(`#${expirationDateId}`).on(`keydown${this.eventNamespace}`, function(e) {
                     if (e.key.toLowerCase() === 't') {
                         e.preventDefault();
@@ -1404,7 +1479,7 @@ var POReceiptShortcutV4 = class {
                 dialogContent.find(`#${expirationDateId}`).on(`change${this.eventNamespace}`, function() {
                     $(this).css('border', ''); // Clear any error styling
                 });
-            }
+            } */
             
             const dialogButtons = [
                 {
@@ -1679,14 +1754,14 @@ var POReceiptShortcutV4 = class {
               program: "MHS850MI", // Interface Transaction Processing API
               transaction: "AddWhsHead", // Create transaction header
               maxReturnedRecords: 1,
-              record: {
+                            record: this.applyCompanyDivisionContext({
                 WHLO: this.WHLO, // Warehouse
                 QLFR: "20", // Qualifier (20 = Purchase Receipt)
                 E0PA: "WS", // WS Partner (MMS865)
                 E0PB: "WS", // WS Partner (MMS865)
                 E007: "20", // Qualifier (20 = Purchase Receipt)
                 E065: "PPS300", // Message Type (MMS865)
-              },
+                            }),
             });
 
             const h = await this.mi.executeRequest(head);
@@ -1708,17 +1783,20 @@ var POReceiptShortcutV4 = class {
             pack.program = 'MHS850MI';
             pack.transaction = 'AddWhsPack';
             pack.maxReturnedRecords = 1;
-            pack.record = {
+            pack.record = this.applyCompanyDivisionContext({
                 WHLO: this.WHLO,
                 MSGN: this.MSGN,
                 PACN: packNumber,        // Pack Number = PUNO_PNLI
                 QLFR: '20'
-            };
+            });
 
-            await this.mi.executeRequest(pack);
+            const packResult = await this.mi.executeRequest(pack);
+            if (packResult?.errorCode || packResult?.errorMessage || !packResult?.item?.PACN) {
+                const errorMessage = this.extractErrorMessage(packResult, 'Warehouse package creation');
+                throw new Error(errorMessage);
+            }
 
-            // Brief delay to ensure pack creation is committed before adding lines
-            await this.sleep(50);
+            const resolvedPackNumber = packResult.item.PACN || packNumber;
 
             // Add all line items to the single pack
             await Promise.all(lines.map((rec) => {
@@ -1726,10 +1804,10 @@ var POReceiptShortcutV4 = class {
                 line.program = 'MHS850MI';
                 line.transaction = 'AddWhsLine';
                 line.maxReturnedRecords = 100;
-                line.record = {
+                line.record = this.applyCompanyDivisionContext({
                   WHLO: this.WHLO,
                   MSGN: this.MSGN,
-                  PACN: packNumber, // All lines use same pack number (PUNO_PNLI)
+                  PACN: resolvedPackNumber, // All lines use same pack number (PUNO_PNLI)
                   QLFR: "20",
                   ITNO: this.ITNO, // Item Number
                   RVQA: rec.RVQA, // Received Quantity (1 for serials, full qty for others)
@@ -1738,7 +1816,7 @@ var POReceiptShortcutV4 = class {
                   RIDL: this.PNLI, // Reference Line (PO Line)
                   RIDX: this.PNLS, // Reference Suffix (PO Line Suffix)
                   OEND: this.OEND, // Flag Completed signifier
-                };
+                });
 
                 // Add warehouse location only for material items (non-material items don't use WHSL)
                 if (!this.isNonMaterial) {
@@ -1749,7 +1827,13 @@ var POReceiptShortcutV4 = class {
                 if (rec.BANO) line.record.BANO = rec.BANO;  // Batch/Serial/Lot Number
                 if (rec.EXPI) line.record.EXPI = rec.EXPI;  // Expiration Date
 
-                return this.mi.executeRequest(line);
+                return this.mi.executeRequest(line).then((lineResult) => {
+                    if (lineResult?.errorCode || lineResult?.errorMessage) {
+                        const lineId = rec.BANO || rec.RVQA || 'unknown';
+                        throw new Error(this.extractErrorMessage(lineResult, `Warehouse transaction line ${lineId}`));
+                    }
+                    return lineResult;
+                });
             }));
 
             // Allow lines to settle before processing, especially important for multiple serials
@@ -1763,16 +1847,17 @@ var POReceiptShortcutV4 = class {
             pr.program = 'MHS850MI';
             pr.transaction = 'PrcWhsTran';   // Process Warehouse Transaction
             pr.maxReturnedRecords = 1;
-            pr.record = {
+            pr.record = this.applyCompanyContext({
                 MSGN: this.MSGN,             // Message Number from header creation
                 PRFL: '*EXE'                 // Process Flag (*EXE = Execute immediately)
-            };
+            });
 
             // Execute with retry/backoff to mitigate transient lock/busy errors
             const prc = await this.prcWhsTranWithRetry(pr);
 
-            // Validate transaction processing was successful
-            if (!prc?.item) {
+            // PrcWhsTran is a processor call and does not return item payloads on success.
+            // Only explicit MI error fields should fail the request at this stage.
+            if (prc?.errorCode || prc?.errorMessage) {
                 const errorMessage = this.extractErrorMessage(prc, 'Transaction processing');
                 throw new Error(errorMessage);
             }
@@ -1785,10 +1870,10 @@ var POReceiptShortcutV4 = class {
             statusCheck.program = 'MHS850MI';
             statusCheck.transaction = 'GetWhsHead';
             statusCheck.maxReturnedRecords = 1;
-            statusCheck.outputFields = ['STAT', 'STRD'];
-            statusCheck.record = {
+            statusCheck.outputFields = ['STAT', 'TRSL', 'TRSH'];
+            statusCheck.record = this.applyCompanyContext({
                 MSGN: this.MSGN
-            };
+            });
 
             const statusResult = await this.mi.executeRequest(statusCheck);
 
@@ -1800,37 +1885,21 @@ var POReceiptShortcutV4 = class {
 
             // Only status 90 (Processed, no errors) indicates success
             if (transactionStatus !== '90') {
-                // Transaction failed - determine error level and provide specific guidance
-                let errorMessage = 'Transaction processing failed.\n\n';
-                let troubleshootingInfo = '';
+                const lineFailureDetail = ['25', '30', '35', '40', '45'].includes(transactionStatus)
+                    ? await this.getWhsLineFailureDetail(resolvedPackNumber)
+                    : '';
+                const troubleshootingInfo = this._getTroubleshootingInfo(transactionStatus, resolvedPackNumber, lineFailureDetail);
+                const statusDesc = this.getTransactionStatusDescription(transactionStatus);
 
-                troubleshootingInfo = this._getTroubleshootingInfo(transactionStatus, statusResult, packNumber);
-
-                // Add status description for clarity
-                const statusDescriptions = {
-                    '10': 'Entered',
-                    '15': 'Error on message header',
-                    '20': 'Header validated, no errors',
-                    '25': 'Error on message packages/IDs',
-                    '30': 'Package/ID validated, no errors',
-                    '35': 'Error on message lines/instructions',
-                    '40': 'Line/instructions validated, no errors',
-                    '45': 'Error from business component',
-                    '90': 'Processed, no errors',
-                    '92': 'Processed, test message, no update performed',
-                    '99': 'Archived'
-                };
-
-                const statusDesc = statusDescriptions[transactionStatus] || 'Unknown status';
-
-                // Build a clearer, structured message
                 const statusLines = [
-                    ...(troubleshootingInfo?.trim() ? [`Error: ${troubleshootingInfo.trim()}`] : []),
+                    ...(troubleshootingInfo?.trim() ? [troubleshootingInfo.trim()] : []),
                     `Status: ${transactionStatus} (${statusDesc})`,
                     `Message no: ${this.MSGN}`,
-                    ...(packNumber !== undefined ? [`Package no: ${packNumber}`] : []),
+                    ...(resolvedPackNumber !== undefined ? [`Package no: ${resolvedPackNumber}`] : []),
+                    ...(statusResult.item.TRSL ? [`Lowest line status: ${statusResult.item.TRSL}`] : []),
+                    ...(statusResult.item.TRSH ? [`Highest line status: ${statusResult.item.TRSH}`] : []),
                 ];
-                errorMessage += statusLines.join('\n');
+                const errorMessage = statusLines.join('\n');
 
                 this.log.Error(`process: Transaction failed with status ${transactionStatus} (${statusDesc})`);
 
