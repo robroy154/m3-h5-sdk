@@ -1,0 +1,73 @@
+:host.ok {
+	display: block;
+	overflow-x: hidden;
+	position: relative;
+	height: 100%;
+	width: 100%;
+}
+
+.text-container {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto; /* grow and shrink as needed */
+	overflow-y: auto;
+}
+
+.item-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	flex: 0 0 auto; /* fixed height */
+}
+
+.flex-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
+}
+
+.text-container {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow-y: hidden;
+}
+
+.text-line-table {
+	width: 100%;
+	border-collapse: collapse;
+	border-spacing: 0;
+	font-size: 20px;
+	line-height: 1.15;
+}
+
+.text-line-table th,
+.text-line-table td {
+	padding: 4px 8px;
+	vertical-align: top;
+}
+
+.text-line-table thead th {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.text-line-table tbody td:nth-child(1) {
+	width: 72px;
+}
+
+.text-line-table tbody td:nth-child(2) {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.text-line-table.compact-lines {
+	font-size: 17px;
+	line-height: 1.05;
+}
+
+.text-line-table.compact-lines th,
+.text-line-table.compact-lines td {
+	padding: 2px 6px;
+}

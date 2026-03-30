@@ -1,0 +1,13 @@
+:host {
+	display: block;
+	height: 100%;
+}
+
+.ids-editor .editor-container {
+	/* height: 285px; */
+	height: auto;
+}
+
+.editor {
+	margin: 0;
+}

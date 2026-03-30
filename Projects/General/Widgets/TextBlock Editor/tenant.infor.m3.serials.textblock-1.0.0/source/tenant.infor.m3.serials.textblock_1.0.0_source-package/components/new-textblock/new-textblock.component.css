@@ -1,0 +1,26 @@
+:host {
+	display: block;
+	height: 100%;
+}
+
+.new-textblock textarea {
+	width: 100%;
+	min-height: 100px;
+	resize: vertical;
+}
+
+ids-form {
+	display: flex;
+	justify-content: center;
+}
+
+.button-container {
+	display: flex;
+	justify-content: space-between;
+}
+
+form {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}

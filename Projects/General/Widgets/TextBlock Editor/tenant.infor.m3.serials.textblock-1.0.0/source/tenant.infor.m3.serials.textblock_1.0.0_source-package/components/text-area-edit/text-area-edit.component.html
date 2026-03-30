@@ -1,0 +1,31 @@
+<div class="edit-container">
+	<div class="textarea-container">
+		<ids-textarea
+			label-state="collapsed"
+			(change)="onChange($event)"
+			[autogrow]="true"
+			[dirty-tracker]="true"
+			(onkeydown)="onKeyDown($event)"
+			[id]="'editor-demo' + instanceId + index"></ids-textarea>
+
+		<!-- <textarea soho-textarea name="modifiable" formControlName="text"></textarea> -->
+	</div>
+	<div class="button-container">
+		<ids-button appearance="tertiary" (click)="onCancel()">
+			{{ "cancel" | t }}
+		</ids-button>
+		<ids-button appearance="secondary" type="submit" (click)="onSave()">
+			{{ "save" | t }}
+		</ids-button>
+	</div>
+</div>
+<!-- <ids-editor
+	[id]="'editor-demo' + instanceId + index"
+	label="Demo Editor"
+	[sourceFormatter]="true"
+	role="textbox"
+	view="editor"
+	aria-multiline="true"
+	(change)="onChange($event)"
+	label-state="collapsed">
+</ids-editor>-->

@@ -1,0 +1,64 @@
+<form
+	[id]="'test-result-form-' + instanceId"
+	[formGroup]="form"
+	style="display: flex; flex-direction: column; height: 100%">
+	<div
+		class="lm-padding-lg-l lm-padding-lg-r"
+		style="
+			flex: 1;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		">
+		<ids-input
+			[id]="'name' + instanceId"
+			[label]="'textBlockId' | t"
+			[value]="textBlockHeaderId"
+			readonly>
+		</ids-input>
+
+		<ids-input
+			[id]="'description' + instanceId"
+			[label]="lang.get('description')"
+			[value]="textBlockHeaderDescription"
+			readonly>
+		</ids-input>
+
+		<div
+			class="field"
+			style="
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				min-height: 200px;
+				max-width: 300px;
+			">
+			<label soho-label>{{ "text" | t }}</label>
+			<textarea
+				soho-textarea
+				style="flex: 1; min-height: 150px"
+				[autoGrow]="false"
+				name="modifiable"
+				formControlName="text"></textarea>
+		</div>
+	</div>
+
+	<div
+		class="button-container lm-margin-lg-r lm-margin-lg-l lm-margin-sm-b lm-margin-sm-t"
+		style="flex-shrink: 0; margin-top: auto">
+		<ids-button
+			appearance="secondary"
+			type="button"
+			(click)="completed.emit(null)">
+			{{ lang.get("cancel") }}
+		</ids-button>
+		<ids-button
+			appearance="primary"
+			type="submit"
+			(click)="onSubmit()"
+			icon="save">
+			<span>{{ submitButtonText | t }}</span>
+		</ids-button>
+	</div>
+</form>

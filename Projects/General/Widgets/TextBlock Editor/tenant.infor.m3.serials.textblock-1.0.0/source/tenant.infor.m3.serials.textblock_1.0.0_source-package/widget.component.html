@@ -1,0 +1,89 @@
+<!-- <div class="flex-container"> -->
+
+@if (editingTextVersion()) {
+	<new-textblock
+		[contextMap]="contextMap"
+		[textVersion]="editingTextVersion()"
+		(completed)="onTextBlockCompleted($event)"></new-textblock>
+}
+@if (textBlocks().length && !editingTextVersion()) {
+	<ids-accordion
+		[id]="'accordion' + instanceId"
+		#accordion
+		[allowOnePane]="true"
+		(expanded)="setExpanded($event)"
+		(collapsed)="setExpanded($event)">
+		@for (block of textBlocks(); track block; let i = $index) {
+			<ids-accordion-panel
+				[id]="block.TXVR + '-' + instanceId"
+				[expanded]="i === 0 && textBlocks().length === 1 ? true : false">
+				<ids-accordion-header slot="header">
+					<ids-text font-size="16">{{ block.TX40 || block.TXVR }}</ids-text>
+					@if (editEnabled) {
+						<ids-button
+							icon="edit"
+							appearance="tertiary"
+							size="sm"
+							style="margin-left: auto"
+							[title]="'editText' | t"
+							(click)="onEditBlock(block, $event)">
+						</ids-button>
+					}
+					@if (deleteEnabled) {
+						<ids-button
+							icon="delete"
+							appearance="tertiary"
+							size="sm"
+							style="margin-left: auto"
+							[title]="'deleteText' | t"
+							(click)="onDeleteTextBlock(block)">
+						</ids-button>
+					}
+				</ids-accordion-header>
+				<div slot="content">
+					<table
+						class="text-line-table"
+						[class.compact-lines]="compactMode"
+						style="width: 100%">
+						<thead>
+							<tr>
+								<th style="text-align: left; width: 80px">No</th>
+								<th style="text-align: left">Text</th>
+								@if (deleteEnabled) {
+									<th style="text-align: right; width: 80px">Action</th>
+								}
+							</tr>
+						</thead>
+						<tbody>
+							@for (line of block.textLines; track line; let idx = $index) {
+								<tr>
+									<td>{{ line.LINO || idx + 1 }}</td>
+									<td style="white-space: pre-wrap">{{ line.TX60 }}</td>
+									@if (deleteEnabled) {
+										<td style="text-align: right">
+											<ids-button
+												icon="delete"
+												appearance="tertiary"
+												size="sm"
+												[title]="'deleteText' | t"
+												(click)="onDeleteTextLine(block, line, $event)">
+											</ids-button>
+										</td>
+									}
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</ids-accordion-panel>
+		}
+	</ids-accordion>
+}
+<!-- 	} @else {
+			<new-textblock
+				[contextMap]="contextMap"
+				[textVersion]="editingTextVersion()"
+				(completed)="onTextBlockCompleted($event)"
+				(textChange)="onTextChange($event)"></new-textblock>
+		} -->
+<!-- </div> -->
