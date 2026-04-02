@@ -546,39 +546,65 @@ var POReceiptShortcutV5 = class {
   // Extract user-friendly error message from MI response
   extractErrorMessage(error, operation = 'operation') {
     let errorMsg = `${operation} failed`;
-    let technicalDetails = '';
+    
+    if (!error) return errorMsg;
 
-    if (error) {
-      // Primary error message (user-friendly)
-      if (error.errorMessage) {
-        errorMsg = error.errorMessage;
-      } else if (error.message) {
-        errorMsg = error.message;
-      }
+    // Get primary error message (user-friendly)
+    errorMsg = this.getPrimaryErrorMessage(error, errorMsg);
 
-      // Technical details for troubleshooting
-      const errorCode = error.errorCode || '';
-      const errorMessage = error.errorMessage || '';
-      const errorField = error.errorField || '';
-      const program = error.program || '';
-      const transaction = error.transaction || '';
-
-      if (errorCode || errorMessage || errorField || program) {
-        technicalDetails = '\n\nTechnical Details:';
-        if (program && transaction)
-          technicalDetails += `\n• API: ${program}/${transaction}`;
-        if (errorCode && errorMessage) {
-          technicalDetails += `\n• Error: ${errorCode}: ${errorMessage}`;
-        } else if (errorMessage) {
-          technicalDetails += `\n• Error: ${errorMessage}`;
-        } else if (errorCode) {
-          technicalDetails += `\n• Error Code: ${errorCode}`;
-        }
-        if (errorField) technicalDetails += `\n• Field: ${errorField}`;
-      }
-    }
+    // Get technical details for troubleshooting
+    const technicalDetails = this.getTechnicalDetails(error);
 
     return errorMsg + technicalDetails;
+  }
+
+  getPrimaryErrorMessage(error, defaultMsg) {
+    if (error.errorMessage) return error.errorMessage;
+    if (error.message) return error.message;
+    return defaultMsg;
+  }
+
+  getTechnicalDetails(error) {
+    const errorCode = error.errorCode || '';
+    const errorMessage = error.errorMessage || '';
+    const errorField = error.errorField || '';
+    const program = error.program || '';
+    const transaction = error.transaction || '';
+
+    if (!this.hasErrorDetails(errorCode, errorMessage, errorField, program)) {
+      return '';
+    }
+
+    let details = '\n\nTechnical Details:';
+    
+    if (program && transaction) {
+      details += `\n• API: ${program}/${transaction}`;
+    }
+    
+    details += this.formatErrorCode(errorCode, errorMessage);
+    
+    if (errorField) {
+      details += `\n• Field: ${errorField}`;
+    }
+
+    return details;
+  }
+
+  hasErrorDetails(errorCode, errorMessage, errorField, program) {
+    return errorCode || errorMessage || errorField || program;
+  }
+
+  formatErrorCode(errorCode, errorMessage) {
+    if (errorCode && errorMessage) {
+      return `\n• Error: ${errorCode}: ${errorMessage}`;
+    }
+    if (errorMessage) {
+      return `\n• Error: ${errorMessage}`;
+    }
+    if (errorCode) {
+      return `\n• Error Code: ${errorCode}`;
+    }
+    return '';
   }
 
   /*───────────────── PROGRESS UI (Enterprise Pattern) ─────────────────*/
