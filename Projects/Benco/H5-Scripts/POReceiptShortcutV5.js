@@ -546,7 +546,7 @@ var POReceiptShortcutV5 = class {
   // Extract user-friendly error message from MI response
   extractErrorMessage(error, operation = 'operation') {
     let errorMsg = `${operation} failed`;
-    
+
     if (!error) return errorMsg;
 
     // Get primary error message (user-friendly)
@@ -576,13 +576,13 @@ var POReceiptShortcutV5 = class {
     }
 
     let details = '\n\nTechnical Details:';
-    
+
     if (program && transaction) {
       details += `\n• API: ${program}/${transaction}`;
     }
-    
+
     details += this.formatErrorCode(errorCode, errorMessage);
-    
+
     if (errorField) {
       details += `\n• Field: ${errorField}`;
     }
@@ -1313,6 +1313,16 @@ var POReceiptShortcutV5 = class {
       const dialogContent = $(formHtml);
 
       // Method to show validation errors within the dialog context
+      // Helper to remove error div after fade out
+      const removeErrorDiv = (errorDiv) => {
+        errorDiv.remove();
+      };
+
+      // Helper to fade out error message
+      const fadeOutError = (errorDiv) => {
+        errorDiv.fadeOut(() => removeErrorDiv(errorDiv));
+      };
+
       // Error message appears above the scrollable area for visibility
       dialogContent.showValidationError = function (message) {
         // Remove any existing error messages
@@ -1338,7 +1348,7 @@ var POReceiptShortcutV5 = class {
         dialogContent.find(`#${serialInputsContainerId}`).before(errorDiv);
 
         // Auto-remove after 5 seconds
-        setTimeout(() => errorDiv.fadeOut(() => errorDiv.remove()), 5000);
+        setTimeout(() => fadeOutError(errorDiv), 5000);
       };
 
       // Bind the validation error method to the correct context
@@ -1368,6 +1378,18 @@ var POReceiptShortcutV5 = class {
             );
           }
         });
+
+      // Helper function to remove success message
+      const fadeOutAndRemove = (element) => {
+        element.fadeOut(300, function () {
+          $(this).remove();
+        });
+      };
+
+      // Helper function to reset button style
+      const resetGenerateButtonStyle = (btn, originalText) => {
+        btn.text(originalText).css('background', '#2C8C3E');
+      };
 
       // Add auto-generate functionality for sequential serials
       dialogContent
@@ -1405,21 +1427,13 @@ var POReceiptShortcutV5 = class {
           dialogContent.find(`#${serialInputsContainerId}`).before(successMsg);
 
           // Auto-remove success message after 3 seconds
-          setTimeout(
-            () =>
-              successMsg.fadeOut(300, function () {
-                $(this).remove();
-              }),
-            3000
-          );
+          setTimeout(() => fadeOutAndRemove(successMsg), 3000);
 
           // Visual feedback on button
           const btn = $(this);
           const originalText = btn.text();
           btn.text('✓ Done!').css('background', '#28a745');
-          setTimeout(() => {
-            btn.text(originalText).css('background', '#2C8C3E');
-          }, 1500);
+          setTimeout(() => resetGenerateButtonStyle(btn, originalText), 1500);
 
           // Focus on the first input for immediate review/editing
           dialogContent.find(`#${serialInputId(0)}`).focus();
@@ -1622,7 +1636,6 @@ var POReceiptShortcutV5 = class {
   promptLot() {
     return new Promise((resolve, reject) => {
       let closedByButton = false;
-      let dialogModel = null;
       const dialogId = this.createScopedId('lotDlg');
       const poNumberDisplayId = `poNumberDisplay_${dialogId}`;
       const copyPoNumberId = `copyPoNumber_${dialogId}`;
@@ -1687,7 +1700,8 @@ var POReceiptShortcutV5 = class {
         dialogContent.find('form').prepend(errorDiv);
 
         // Auto-remove after 5 seconds
-        setTimeout(() => errorDiv.fadeOut(() => errorDiv.remove()), 5000);
+        const removeErrorDiv = () => errorDiv.remove();
+        setTimeout(() => errorDiv.fadeOut(removeErrorDiv), 5000);
       };
 
       // Bind the validation error method to the correct context
@@ -1736,30 +1750,13 @@ var POReceiptShortcutV5 = class {
       const validateLotInputs = () => {
         const $lot = dialogContent.find(`#${lotNumberId}`);
         const lot = $lot.val().trim();
-        let expi = null;
-        let errors = [];
+        const expi = expirationDateRequired
+          ? dialogContent.find(`#${expirationDateId}`).val() || null
+          : null;
+        const errors = [];
 
-        if (!lot || lot.length > 20 || !/^[A-Z0-9-]+$/.test(lot)) {
-          $lot.css('border', '2px solid red');
-          errors.push('Lot number required (alphanumeric, max 20 chars)');
-        }
-
-        if (expirationDateRequired) {
-          const $exp = dialogContent.find(`#${expirationDateId}`);
-          const expDate = $exp.val();
-          if (expDate) {
-            expi = expDate.replaceAll('-', ''); // Convert YYYY-MM-DD to YYYYMMDD
-            if (expi === this.today()) {
-              $exp.css('border', '2px solid red');
-              errors.push(
-                'Expiration date cannot be today. Please use a future date.'
-              );
-            }
-          } else {
-            $exp.css('border', '2px solid red');
-            errors.push('Expiration date required');
-          }
-        }
+        this.validateLotNumber(lot, $lot, errors);
+        this.validateExpirationDate(expi, errors);
 
         if (errors.length) {
           showValidationError(errors.join('\n'));
@@ -1769,49 +1766,26 @@ var POReceiptShortcutV5 = class {
         return { lot, expi };
       };
 
+      const handleLotFieldKeyDown = (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const currentFieldId = e.currentTarget?.id;
+        if (currentFieldId === lotNumberId && expirationDateRequired) {
+          dialogContent.find(`#${expirationDateId}`).focus();
+          return;
+        }
+        this.handleLotSaveAction(
+          dialogContent,
+          lotNumberId,
+          expirationDateRequired,
+          validateLotInputs
+        );
+      };
+
       // Add Enter key handling for lot inputs
       dialogContent
         .find(`#${lotNumberId}, #${expirationDateId}`)
-        .on(`keydown${this.eventNamespace}`, (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            const currentFieldId = e.currentTarget?.id;
-            if (currentFieldId === lotNumberId && expirationDateRequired) {
-              // Move to expiration date if it exists
-              dialogContent.find(`#${expirationDateId}`).focus();
-            } else {
-              // Trigger Save button
-              const saveButton = dialogContent
-                .closest('.ui-dialog-content')
-                .siblings('.ui-dialog-buttonpane')
-                .find('button')
-                .filter(function () {
-                  return $(this).text().trim() === 'Save';
-                });
-              if (saveButton.length > 0) {
-                saveButton.click();
-              } else {
-                const lotData = validateLotInputs();
-                if (!lotData) {
-                  return;
-                }
-
-                // Close dialog and return lot data
-                closedByButton = true;
-                if (
-                  ScriptUtil.version >= 2.0 &&
-                  dialogModel &&
-                  typeof dialogModel.close === 'function'
-                ) {
-                  dialogModel.close(true);
-                } else {
-                  $(dialogContent).inforDialog('close');
-                }
-                resolve(lotData);
-              }
-            }
-          }
-        });
+        .on(`keydown${this.eventNamespace}`, handleLotFieldKeyDown);
 
       const dialogButtons = [
         {
@@ -1870,7 +1844,7 @@ var POReceiptShortcutV5 = class {
 
       // Show dialog with proper version handling (H5SampleCustomDialog pattern)
       if (ScriptUtil.version >= 2.0) {
-        dialogModel = H5ControlUtil.H5Dialog.CreateDialogElement(
+        H5ControlUtil.H5Dialog.CreateDialogElement(
           dialogContent[0],
           dialogOptions
         );
@@ -1949,6 +1923,47 @@ var POReceiptShortcutV5 = class {
         throw e;
       }
     );
+  }
+
+  validateLotNumber(lot, $lot, errors) {
+    if (!lot) {
+      $lot.css('border', '2px solid red');
+      errors.push('Lot number is required');
+    } else if (!/^[A-Z0-9-]+$/.test(lot)) {
+      $lot.css('border', '2px solid red');
+      errors.push(
+        'Lot number must contain only A-Z, 0-9, or hyphen'
+      );
+    } else {
+      $lot.css('border', '');
+    }
+  }
+
+  validateExpirationDate(expi, errors) {
+    if (this.EXPD === '1') {
+      if (!expi) {
+        errors.push('Expiration date is required');
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      if (expi <= today) {
+        errors.push('Expiration date cannot be today or in the past');
+      }
+    }
+  }
+
+  handleLotSaveAction(dialogContent) {
+    // Trigger Save button click (matches serial dialog Enter-key pattern)
+    const saveButton = dialogContent
+      .closest('.ui-dialog-content')
+      .siblings('.ui-dialog-buttonpane')
+      .find('button')
+      .filter(function () {
+        return $(this).text().trim() === 'Save';
+      });
+    if (saveButton.length > 0) {
+      saveButton.click();
+    }
   }
 
   /**
@@ -2107,210 +2122,10 @@ var POReceiptShortcutV5 = class {
   /*───────────────── RECEIPT ENGINE ─────────────────*/
   async process(lines) {
     try {
-      // ───────────── AddWhsHead ─────────────
-      // Create warehouse transaction header for Interface processing
-      const head = Object.assign(new MIRequest(), {
-        program: 'MHS850MI', // Interface Transaction Processing API
-        transaction: 'AddWhsHead', // Create transaction header
-        maxReturnedRecords: 1,
-        record: this.applyCompanyDivisionContext({
-          WHLO: this.WHLO, // Warehouse
-          QLFR: '20', // Qualifier (20 = Purchase Receipt)
-          E0PA: 'WS', // WS Partner (MMS865)
-          E0PB: 'WS', // WS Partner (MMS865)
-          E007: '20', // Qualifier (20 = Purchase Receipt)
-          E065: 'PPS300', // Message Type (MMS865)
-        }),
-      });
-
-      const h = await this.mi.executeRequest(head);
-
-      // Validate header creation was successful
-      if (!h?.item?.MSGN) {
-        const errorMessage = this.extractErrorMessage(
-          h,
-          'Warehouse transaction header creation'
-        );
-        throw new Error(errorMessage);
-      }
-
-      // Store message number for subsequent WMS transactions
-      this.MSGN = h.item.MSGN;
-
-      // ───────────── AddWhsPack + AddWhsLine ─────────────
-      // Create single pack for all items (serial, lot, or non-lotted)
-      const packNumber = `${this.PUNO}_${this.PNLI}`; // Use PUNO_PNLI format for all scenarios
-
-      const pack = new MIRequest();
-      pack.program = 'MHS850MI';
-      pack.transaction = 'AddWhsPack';
-      pack.maxReturnedRecords = 1;
-      pack.record = this.applyCompanyDivisionContext({
-        WHLO: this.WHLO,
-        MSGN: this.MSGN,
-        PACN: packNumber, // Pack Number = PUNO_PNLI
-        QLFR: '20',
-      });
-
-      const packResult = await this.mi.executeRequest(pack);
-      if (
-        packResult?.errorCode ||
-        packResult?.errorMessage ||
-        !packResult?.item?.PACN
-      ) {
-        const errorMessage = this.extractErrorMessage(
-          packResult,
-          'Warehouse package creation'
-        );
-        throw new Error(errorMessage);
-      }
-
-      const resolvedPackNumber = packResult.item.PACN || packNumber;
-
-      // Add all line items to the single pack — sequential to prevent MHS850MI job lock contention (CR_0093)
-      for (const rec of lines) {
-        const line = new MIRequest();
-        line.program = 'MHS850MI';
-        line.transaction = 'AddWhsLine';
-        line.maxReturnedRecords = 100;
-        line.record = this.applyCompanyDivisionContext({
-          WHLO: this.WHLO,
-          MSGN: this.MSGN,
-          PACN: resolvedPackNumber, // All lines use same pack number (PUNO_PNLI)
-          QLFR: '20',
-          ITNO: this.ITNO, // Item Number
-          RVQA: rec.RVQA, // Received Quantity (1 for serials, full qty for others)
-          PUUN: this.PUUN,
-          RIDN: this.PUNO, // Reference ID (PO Number)
-          RIDL: this.PNLI, // Reference Line (PO Line)
-          RIDX: this.PNLS, // Reference Suffix (PO Line Suffix)
-          OEND: this.OEND, // Flag Completed signifier
-        });
-
-        // Add warehouse location only for material items (non-material items don't use WHSL)
-        if (!this.isNonMaterial) {
-          line.record.WHSL = this.WHSL; // Warehouse Location
-        }
-
-        // Conditionally add batch/lot/serial and expiration data
-        if (rec.BANO) {
-          line.record.BANO = rec.BANO; // Batch/Serial/Lot Number
-          line.record.BREM = `Orig Loc: ${this.WHSL}`;
-        }
-        if (rec.EXPI) line.record.EXPI = rec.EXPI; // Expiration Date
-
-        const lineResult = await this.mi.executeRequest(line);
-        if (lineResult?.errorCode || lineResult?.errorMessage) {
-          const lineId = rec.BANO || rec.RVQA || 'unknown';
-          throw new Error(
-            this.extractErrorMessage(
-              lineResult,
-              `Warehouse transaction line ${lineId}`
-            )
-          );
-        }
-      }
-
-      // Allow lines to settle before processing, especially important for multiple serials
-      if (lines.length > 1) {
-        await this.sleep(200);
-      }
-
-      // ───────────── PrcWhsTran ─────────────
-      // Execute the warehouse transaction to complete the receipt
-      const pr = new MIRequest();
-      pr.program = 'MHS850MI';
-      pr.transaction = 'PrcWhsTran'; // Process Warehouse Transaction
-      pr.maxReturnedRecords = 1;
-      pr.record = this.applyCompanyContext({
-        MSGN: this.MSGN, // Message Number from header creation
-        PRFL: '*EXE', // Process Flag (*EXE = Execute immediately)
-      });
-
-      // Execute with retry/backoff to mitigate transient lock/busy errors
-      const prc = await this.prcWhsTranWithRetry(pr);
-
-      // PrcWhsTran is a processor call and does not return item payloads on success.
-      // Only explicit MI error fields should fail the request at this stage.
-      if (prc?.errorCode || prc?.errorMessage) {
-        const errorMessage = this.extractErrorMessage(
-          prc,
-          'Transaction processing'
-        );
-        throw new Error(errorMessage);
-      }
-
-      // ───────────── Final Status Validation ─────────────
-      // Check actual processing status using GetWhsHead to ensure transaction completed successfully
-      await this.sleep(100); // Brief delay to ensure status is updated
-
-      const statusCheck = new MIRequest();
-      statusCheck.program = 'MHS850MI';
-      statusCheck.transaction = 'GetWhsHead';
-      statusCheck.maxReturnedRecords = 1;
-      statusCheck.outputFields = ['STAT', 'TRSL', 'TRSH'];
-      statusCheck.record = this.applyCompanyContext({
-        MSGN: this.MSGN,
-      });
-
-      const statusResult = await this.mi.executeRequest(statusCheck);
-
-      if (!statusResult?.item) {
-        throw new Error('Failed to retrieve transaction status for validation');
-      }
-
-      const transactionStatus = statusResult.item.STAT;
-
-      // Only status 90 (Processed, no errors) indicates success
-      if (transactionStatus !== '90') {
-        const lineFailureDetail = ['25', '30', '35', '40', '45'].includes(
-          transactionStatus
-        )
-          ? await this.getWhsLineFailureDetail(resolvedPackNumber)
-          : '';
-        const troubleshootingInfo = this._getTroubleshootingInfo(
-          transactionStatus,
-          resolvedPackNumber,
-          lineFailureDetail
-        );
-        const statusDesc =
-          this.getTransactionStatusDescription(transactionStatus);
-
-        const statusLines = [];
-        const trimmedTroubleshooting = troubleshootingInfo
-          ? troubleshootingInfo.trim()
-          : '';
-        if (trimmedTroubleshooting) {
-          statusLines.push(trimmedTroubleshooting);
-        }
-        statusLines.push(
-          `Status: ${transactionStatus} (${statusDesc})`,
-          `Message no: ${this.MSGN}`
-        );
-        if (resolvedPackNumber !== undefined) {
-          statusLines.push(`Package no: ${resolvedPackNumber}`);
-        }
-        if (statusResult.item.TRSL) {
-          statusLines.push(`Lowest line status: ${statusResult.item.TRSL}`);
-        }
-        if (statusResult.item.TRSH) {
-          statusLines.push(`Highest line status: ${statusResult.item.TRSH}`);
-        }
-        const errorMessage = statusLines.join('\n');
-
-        this.log.Error(
-          `process: Transaction failed with status ${transactionStatus} (${statusDesc})`
-        );
-
-        // Initiate rollback for failed transaction
-        if (this.createdEquipment?.length > 0) {
-          this.log.Warning('Transaction failed, initiating equipment rollback');
-          await this.rollbackEquipment();
-        }
-
-        throw new Error(errorMessage);
-      }
-
+      this.MSGN = await this._createWarehouseHeader();
+      const resolvedPackNumber = await this._createWarehousePackage();
+      await this._addWarehouseLines(lines, resolvedPackNumber);
+      await this._processAndValidateTransaction(resolvedPackNumber);
       this.log.Info('Receipt processing completed successfully');
     } catch (e) {
       this.log.Error(`process: Receipt processing failed: ${e.message || e}`);
@@ -2318,16 +2133,234 @@ var POReceiptShortcutV5 = class {
     }
   }
 
+  async _createWarehouseHeader() {
+    const head = Object.assign(new MIRequest(), {
+      program: 'MHS850MI',
+      transaction: 'AddWhsHead',
+      maxReturnedRecords: 1,
+      record: this.applyCompanyDivisionContext({
+        WHLO: this.WHLO,
+        QLFR: '20',
+        E0PA: 'WS',
+        E0PB: 'WS',
+        E007: '20',
+        E065: 'PPS300',
+      }),
+    });
+
+    const h = await this.mi.executeRequest(head);
+    if (!h?.item?.MSGN) {
+      throw new Error(
+        this.extractErrorMessage(h, 'Warehouse transaction header creation')
+      );
+    }
+    return h.item.MSGN;
+  }
+
+  async _createWarehousePackage() {
+    const packNumber = `${this.PUNO}_${this.PNLI}`;
+    const pack = new MIRequest();
+    pack.program = 'MHS850MI';
+    pack.transaction = 'AddWhsPack';
+    pack.maxReturnedRecords = 1;
+    pack.record = this.applyCompanyDivisionContext({
+      WHLO: this.WHLO,
+      MSGN: this.MSGN,
+      PACN: packNumber,
+      QLFR: '20',
+    });
+
+    const packResult = await this.mi.executeRequest(pack);
+    if (
+      packResult?.errorCode ||
+      packResult?.errorMessage ||
+      !packResult?.item?.PACN
+    ) {
+      throw new Error(
+        this.extractErrorMessage(packResult, 'Warehouse package creation')
+      );
+    }
+    return packResult.item.PACN || packNumber;
+  }
+
+  async _addWarehouseLines(lines, resolvedPackNumber) {
+    for (const rec of lines) {
+      const line = new MIRequest();
+      line.program = 'MHS850MI';
+      line.transaction = 'AddWhsLine';
+      line.maxReturnedRecords = 100;
+      line.record = this.applyCompanyDivisionContext({
+        WHLO: this.WHLO,
+        MSGN: this.MSGN,
+        PACN: resolvedPackNumber,
+        QLFR: '20',
+        ITNO: this.ITNO,
+        RVQA: rec.RVQA,
+        PUUN: this.PUUN,
+        RIDN: this.PUNO,
+        RIDL: this.PNLI,
+        RIDX: this.PNLS,
+        OEND: this.OEND,
+      });
+
+      this._addOptionalLineFields(line, rec);
+
+      const lineResult = await this.mi.executeRequest(line);
+      if (lineResult?.errorCode || lineResult?.errorMessage) {
+        const lineId = rec.BANO || rec.RVQA || 'unknown';
+        throw new Error(
+          this.extractErrorMessage(
+            lineResult,
+            `Warehouse transaction line ${lineId}`
+          )
+        );
+      }
+    }
+
+    if (lines.length > 1) {
+      await this.sleep(200);
+    }
+  }
+
+  _addOptionalLineFields(line, rec) {
+    if (!this.isNonMaterial) {
+      line.record.WHSL = this.WHSL;
+    }
+    if (rec.BANO) {
+      line.record.BANO = rec.BANO;
+      line.record.BREM = `Orig Loc: ${this.WHSL}`;
+    }
+    if (rec.EXPI) {
+      line.record.EXPI = rec.EXPI;
+    }
+  }
+
+  async _processAndValidateTransaction(resolvedPackNumber) {
+    const pr = new MIRequest();
+    pr.program = 'MHS850MI';
+    pr.transaction = 'PrcWhsTran';
+    pr.maxReturnedRecords = 1;
+    pr.record = this.applyCompanyContext({
+      MSGN: this.MSGN,
+      PRFL: '*EXE',
+    });
+
+    const prc = await this.prcWhsTranWithRetry(pr);
+    if (prc?.errorCode || prc?.errorMessage) {
+      throw new Error(this.extractErrorMessage(prc, 'Transaction processing'));
+    }
+
+    await this.sleep(100);
+    const statusResult = await this._getTransactionStatus();
+    const transactionStatus = statusResult.item.STAT;
+
+    if (transactionStatus !== '90') {
+      await this._handleTransactionFailure(
+        transactionStatus,
+        resolvedPackNumber,
+        statusResult
+      );
+    }
+  }
+
+  async _getTransactionStatus() {
+    const statusCheck = new MIRequest();
+    statusCheck.program = 'MHS850MI';
+    statusCheck.transaction = 'GetWhsHead';
+    statusCheck.maxReturnedRecords = 1;
+    statusCheck.outputFields = ['STAT', 'TRSL', 'TRSH'];
+    statusCheck.record = this.applyCompanyContext({
+      MSGN: this.MSGN,
+    });
+
+    const statusResult = await this.mi.executeRequest(statusCheck);
+    if (!statusResult?.item) {
+      throw new Error('Failed to retrieve transaction status for validation');
+    }
+    return statusResult;
+  }
+
+  async _handleTransactionFailure(
+    transactionStatus,
+    resolvedPackNumber,
+    statusResult
+  ) {
+    const lineFailureDetail = ['25', '30', '35', '40', '45'].includes(
+      transactionStatus
+    )
+      ? await this.getWhsLineFailureDetail(resolvedPackNumber)
+      : '';
+    const errorMessage = this._buildStatusErrorMessage(
+      transactionStatus,
+      resolvedPackNumber,
+      lineFailureDetail,
+      statusResult
+    );
+
+    const statusDesc = this.getTransactionStatusDescription(transactionStatus);
+    this.log.Error(
+      `process: Transaction failed with status ${transactionStatus} (${statusDesc})`
+    );
+
+    if (this.createdEquipment?.length > 0) {
+      this.log.Warning('Transaction failed, initiating equipment rollback');
+      await this.rollbackEquipment();
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  _buildStatusErrorMessage(
+    transactionStatus,
+    resolvedPackNumber,
+    lineFailureDetail,
+    statusResult
+  ) {
+    const statusDesc = this.getTransactionStatusDescription(transactionStatus);
+    const troubleshootingInfo = this._getTroubleshootingInfo(
+      transactionStatus,
+      resolvedPackNumber,
+      lineFailureDetail
+    );
+
+    const statusLines = [];
+    const trimmedTroubleshooting = troubleshootingInfo?.trim();
+    if (trimmedTroubleshooting) {
+      statusLines.push(trimmedTroubleshooting);
+    }
+
+    statusLines.push(
+      `Status: ${transactionStatus} (${statusDesc})`,
+      `Message no: ${this.MSGN}`
+    );
+
+    if (resolvedPackNumber !== undefined) {
+      statusLines.push(`Package no: ${resolvedPackNumber}`);
+    }
+    if (statusResult.item.TRSL) {
+      statusLines.push(`Lowest line status: ${statusResult.item.TRSL}`);
+    }
+    if (statusResult.item.TRSH) {
+      statusLines.push(`Highest line status: ${statusResult.item.TRSH}`);
+    }
+
+    return statusLines.join('\n');
+  }
+
   /*───────────────── HELPER METHODS (Enterprise H5 Patterns) ─────────────────*/
   // Enterprise-grade alert using H5ControlUtil.H5Dialog
   alert(title, message, shouldRefresh = false) {
     this.log.Info(`Displaying alert: ${title} - ${message}`);
 
-    // Enhanced message formatting for better readability
-    const formattedMessage = message.replaceAll('\n', '<br>');
+    // Build dialog content using DOM methods to avoid injecting raw text as HTML
     const dialogContent = $(
-      `<div style="max-width: 500px; word-wrap: break-word;"><label class="inforLabel noColon">${formattedMessage}</label></div>`
+      '<div style="max-width: 500px; word-wrap: break-word;"><label class="inforLabel noColon"></label></div>'
     );
+    const label = dialogContent.find('label');
+    message.split('\n').forEach((line, idx) => {
+      if (idx > 0) label.append('<br>');
+      label.append(document.createTextNode(line));
+    });
 
     const dialogButtons = [
       {
