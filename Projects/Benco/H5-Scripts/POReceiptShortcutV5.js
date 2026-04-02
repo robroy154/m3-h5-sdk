@@ -1,5 +1,5 @@
 /*─────────────────────────────────────────────────────────────────────────────
-    POReceiptShortcutV4.js
+    POReceiptShortcutV5.js
     H5 script for PO receipt processing with extended serial support
     Author: Rob Roy   Date: 02-Dec-2025
     Version: 8.0
@@ -22,10 +22,10 @@
 ─────────────────────────────────────────────────────────────────────────────*/
 
 /*──────────────────────────────────────────────────────────────────────────*/
-var POReceiptShortcutV4 = class {
+var POReceiptShortcutV5 = class {
   constructor(args) {
     // Initialize base properties following H5 SDK patterns
-    this.typeName = 'POReceiptShortcutV4';
+    this.typeName = 'POReceiptShortcutV5';
     // Event namespace for safe attach/remove lifecycle handling
     this.eventNamespace = '.poReceiptV4';
     this.dialogInstanceIdCounter = 0;
@@ -72,20 +72,20 @@ var POReceiptShortcutV4 = class {
     };
 
     // Log initialization following SDK patterns
-    this.log.Info('POReceiptShortcutV4 initialized successfully');
+    this.log.Info('POReceiptShortcutV5 initialized successfully');
   }
 
   static Init(args) {
     // Entry point: Initialize script (supports fallbacks for < 2.0)
     try {
-      const self = new POReceiptShortcutV4(args);
+      const self = new POReceiptShortcutV5(args);
       self.busy(true); // Show loading indicator during processing
       // Execute main workflow with cleanup regardless of success/failure
       self.run().finally(() => self.busy(false));
     } catch (error) {
       if (args?.log) {
         args.log.Error(
-          `POReceiptShortcutV4 initialization failed: ${error.message || error}`
+          `POReceiptShortcutV5 initialization failed: ${error.message || error}`
         );
       }
       // Re-throw so H5 system knows there was an error
