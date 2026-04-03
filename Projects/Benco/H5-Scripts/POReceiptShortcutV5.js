@@ -793,22 +793,44 @@ var POReceiptShortcutV5 = class {
           throw processError;
         }
 
+        this.receiptSummary = {
+          type: 'serial',
+          banos: serialEntries.map((e) => e.derivedSerial),
+          whsl: this.WHSL,
+        };
         await this.advance('Finalizing message');
       } else if (this.INDI === '3') {
         // Lot controlled items
         const { lot, expi } = await this.promptLot(); // User interaction - NO busy
         await this.checkLot(lot); // Validate lot doesn't already exist
         await this.process([{ BANO: lot, RVQA: this.RVQA, EXPI: expi }]);
+        this.receiptSummary = {
+          type: 'lot',
+          bano: lot,
+          expi,
+          qty: this.RVQA,
+          whsl: this.WHSL,
+        };
       } else {
         await this.promptConfirm(); // Simple confirmation dialog - NO busy
         await this.process([{ BANO: null, RVQA: this.RVQA, EXPI: null }]);
+        this.receiptSummary = {
+          type: 'plain',
+          qty: this.RVQA,
+          whsl: this.WHSL,
+        };
       }
 
       await this.advance('Process');
       this.progressDone();
 
-      // Show success dialog with enterprise pattern
+      // Show receipt summary success dialog
       this.showSuccessDialog();
+
+      // FRE3 prompt: additional serial entry required for certain serialized items
+      if (this.INDI === '2' && Number(this.FRE3) > 1) {
+        this.showFre3Prompt(this.receiptSummary.banos);
+      }
     } catch (e) {
       this.closeProgress();
       // Enhanced error dialog with MI error details
@@ -821,7 +843,36 @@ var POReceiptShortcutV5 = class {
 
   /*───────────────── SUCCESS/ERROR DIALOGS (Original Pattern) ─────────────────*/
   showSuccessDialog() {
-    this.alert('Success', 'PO line received!', true); // Refresh screen on success
+    const s = this.receiptSummary;
+    let lines;
+
+    if (s?.type === 'serial') {
+      const count = s.banos?.length || 0;
+      lines = [
+        `${count} serial${count === 1 ? '' : 's'} received to ${s.whsl || '(no location)'}`,
+        ...(s.banos?.length > 0 ? [`Serials: ${s.banos.join(', ')}`] : []),
+      ];
+    } else if (s?.type === 'lot') {
+      const qty = this.num(s.qty);
+      lines = [
+        `${qty} unit${qty === 1 ? '' : 's'} received to ${s.whsl || '(no location)'}`,
+        `Lot: ${s.bano}`,
+        ...(s.expi ? [`Expiry: ${s.expi}`] : []),
+      ];
+    } else {
+      const qty = this.num(s?.qty);
+      lines = [
+        `${qty} unit${qty === 1 ? '' : 's'} received to ${s?.whsl || '(no location)'}`,
+      ];
+    }
+
+    this.alert('Success', lines.join('\n'), true); // Refresh screen on success
+  }
+
+  showFre3Prompt(banos) {
+    const banoList = (banos || []).join(', ');
+    const message = `Additional serial entry required for item ${this.ITNO}\n(SN: ${banoList})\nProceed to MMS240 to finish receiving.`;
+    this.alert('Additional Action Required', message);
   }
 
   showErrorDialog(message, error = null) {
@@ -886,10 +937,11 @@ var POReceiptShortcutV5 = class {
       'PUPR',
       'RORC',
       'RORN',
-      'RORL',
       'ITDS',
       'GETY',
       'PUUN',
+      'FACI',
+      'RGDT',
     ];
 
     try {
@@ -907,10 +959,11 @@ var POReceiptShortcutV5 = class {
         PUPR: response.item.PUPR,
         RORC: response.item.RORC,
         RORN: response.item.RORN,
-        RORL: response.item.RORL,
         ITDS: response.item.ITDS,
         GETY: response.item.GETY,
         PUUN: response.item.PUUN,
+        FACI: response.item.FACI,
+        RGDT: response.item.RGDT,
       };
 
       Object.assign(this, poLineData);
@@ -924,31 +977,7 @@ var POReceiptShortcutV5 = class {
 
   async lookups() {
     try {
-      /* header - Get PO header information */
-      const headerRequest = new MIRequest();
-      headerRequest.program = 'PPS200MI';
-      headerRequest.transaction = 'GetHead';
-      headerRequest.record = { PUNO: this.PUNO };
-      headerRequest.maxReturnedRecords = 1;
-      headerRequest.outputFields = ['PUDT', 'CUCD', 'FACI'];
-
-      const header = await this.mi.executeRequest(headerRequest);
-
-      if (!header?.item) {
-        const errorMessage = this.extractErrorMessage(
-          header,
-          'PO header retrieval'
-        );
-        throw new Error(errorMessage);
-      }
-      // Store key header fields for downstream processing
-      Object.assign(this, {
-        PUDT: header.item.PUDT, // Order Date
-        CUCD: header.item.CUCD, // Currency Code
-        FACI: header.item.FACI, // Facility
-      });
-
-      /* whs - Check if warehouse is WMS-managed */
+      /* Run three independent lookups in parallel */
       const whsRequest = new MIRequest();
       whsRequest.program = 'MMS009MI';
       whsRequest.transaction = 'Get';
@@ -956,21 +985,30 @@ var POReceiptShortcutV5 = class {
       whsRequest.maxReturnedRecords = 1;
       whsRequest.outputFields = ['WHLO'];
 
-      const whs = await this.mi.executeRequest(whsRequest);
-
-      // If record exists, warehouse is WMS-managed
-      this.isWmsWhs = !!whs?.item;
-
-      /* item - Get lot control method and expiration method */
       const itemRequest = new MIRequest();
       itemRequest.program = 'MMS200MI';
-      itemRequest.transaction = 'GetItmBasic';
-      itemRequest.record = { ITNO: this.ITNO, ALFM: '1' };
+      itemRequest.transaction = 'Get';
+      itemRequest.record = { ITNO: this.ITNO };
       itemRequest.maxReturnedRecords = 1;
-      itemRequest.outputFields = ['EXPD', 'INDI', 'TPCD'];
+      itemRequest.outputFields = ['EXPD', 'INDI', 'TPCD', 'FRE3'];
 
-      const itm = await this.mi.executeRequest(itemRequest);
+      const remRequest = new MIRequest();
+      remRequest.program = 'PPS001MI';
+      remRequest.transaction = 'GetBasicData2';
+      remRequest.record = { PUNO: this.PUNO, PNLI: this.PNLI, PNLS: this.PNLS };
+      remRequest.maxReturnedRecords = 1;
+      remRequest.outputFields = ['RSTQ'];
 
+      const [whs, itm, rem] = await Promise.all([
+        this.mi.executeRequest(whsRequest),
+        this.mi.executeRequest(itemRequest),
+        this.mi.executeRequest(remRequest),
+      ]);
+
+      // WMS check - if record exists, warehouse is WMS-managed
+      this.isWmsWhs = !!whs?.item;
+
+      // Item - validate and store control method, expiration flags, and multiple serial indicator
       if (!itm?.item) {
         const errorMessage = this.extractErrorMessage(
           itm,
@@ -978,11 +1016,11 @@ var POReceiptShortcutV5 = class {
         );
         throw new Error(errorMessage);
       }
-      // Store control method and expiration flags
       Object.assign(this, {
         EXPD: itm.item.EXPD, // Expiration Date Required (0/1)
         INDI: itm.item.INDI, // Lot Control Method (0=None, 1=Manual, 2=Serial, 3=Lot)
         TPCD: itm.item.TPCD, // Item Category (13=Non-material)
+        FRE3: itm.item.FRE3, // Multiple serial indicator (>1 = additional serial entry required)
       });
 
       // Additional validation: Check if WHSL is required based on item type
@@ -997,16 +1035,7 @@ var POReceiptShortcutV5 = class {
         `Item validation completed - INDI: ${this.INDI}, TPCD: ${this.TPCD}, isNonMaterial: ${this.isNonMaterial}`
       );
 
-      /* remaining qty - Get outstanding quantity on PO line */
-      const remRequest = new MIRequest();
-      remRequest.program = 'PPS001MI';
-      remRequest.transaction = 'GetBasicData2';
-      remRequest.record = { PUNO: this.PUNO, PNLI: this.PNLI, PNLS: this.PNLS };
-      remRequest.maxReturnedRecords = 1;
-      remRequest.outputFields = ['RSTQ'];
-
-      const rem = await this.mi.executeRequest(remRequest);
-
+      // Remaining qty
       if (!rem?.item) {
         const errorMessage = this.extractErrorMessage(
           rem,
@@ -1897,32 +1926,29 @@ var POReceiptShortcutV5 = class {
   }
 
   async checkLot(lot) {
-    // Similar validation for lot numbers
+    // Use LstItmLot: returns empty list when lot doesn't exist (no 400 error handling needed)
     const rq = Object.assign(new MIRequest(), {
       program: 'MMS235MI',
-      transaction: 'GetItmLot',
+      transaction: 'LstItmLot',
       record: { ITNO: this.ITNO, BANO: lot },
       maxReturnedRecords: 1,
+      outputFields: ['ITNO', 'BANO'],
     });
-    return this.mi.executeRequest(rq).then(
-      (r) => {
-        // Check both ITNO and BANO match - if found, lot already exists
-        if (r?.item?.ITNO === this.ITNO && r?.item?.BANO === lot) {
-          const error = `Lot ${lot} for item ${this.ITNO} already exists.`;
-          this.log.Warning(`checkLot: ${error}`);
-          throw new Error(error);
-        }
-      },
-      (e) => {
-        if (e.statusCode === 400) {
-          return;
-        }
-        this.log.Error(
-          `checkLot: Error checking lot ${lot}: ${e.message || e}`
-        );
-        throw e;
-      }
-    );
+
+    const response = await this.mi.executeRequest(rq);
+    let items = [];
+    if (Array.isArray(response?.items)) {
+      items = response.items;
+    } else if (response?.item) {
+      items = [response.item];
+    }
+
+    const exists = items.some((r) => r?.ITNO === this.ITNO && r?.BANO === lot);
+    if (exists) {
+      const error = `Lot ${lot} for item ${this.ITNO} already exists.`;
+      this.log.Warning(`checkLot: ${error}`);
+      throw new Error(error);
+    }
   }
 
   validateLotNumber(lot, $lot, errors) {
@@ -1931,9 +1957,7 @@ var POReceiptShortcutV5 = class {
       errors.push('Lot number is required');
     } else if (!/^[A-Z0-9-]+$/.test(lot)) {
       $lot.css('border', '2px solid red');
-      errors.push(
-        'Lot number must contain only A-Z, 0-9, or hyphen'
-      );
+      errors.push('Lot number must contain only A-Z, 0-9, or hyphen');
     } else {
       $lot.css('border', '');
     }
@@ -1995,8 +2019,8 @@ var POReceiptShortcutV5 = class {
           STAT: '20', // Status (20 = In Stock)
           CUNO: this.CUNO, // Customer Number (hard referenced for order initiated orders)
           PUPR: this.PUPR, // Purchase Price
-          CUCD: this.CUCD, // Currency Code
-          PPDT: this.today(), // Purchase Date (today)
+          CUCD: 'USD', // Currency Code
+          PPDT: this.RGDT, // Purchase Date (PO entry date)
           FACI: this.FACI, // Facility
           CUOW: this.CUNO, // Current Owner
           OWTP: '0', // Owner Type (0 = Company)
