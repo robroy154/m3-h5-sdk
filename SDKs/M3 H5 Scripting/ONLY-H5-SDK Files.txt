@@ -1,0 +1,660 @@
+robertroy@macbookair ~ % tree /Users/robertroy/Documents/Infor/m3-h5-sdk/SDKs/M3\ H5\ Scripting output.txt
+/Users/robertroy/Documents/Infor/m3-h5-sdk/SDKs/M3 H5 Scripting
+├── Documentation
+│   ├── CHANGELOG.txt
+│   ├── H5ScriptDevelopersGuide.docx
+│   ├── H5ScriptDevelopersGuide.md
+│   └── H5ScriptDevelopersGuide.pdf
+├── m3-H5-SDK Files.txt
+├── README.md
+├── Samples
+│   ├── InstallWebServer.cmd
+│   ├── Nodejs
+│   │   ├── node_modules
+│   │   │   ├── connect
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   ├── README.md
+│   │   │   │   └── SECURITY.md
+│   │   │   ├── debug
+│   │   │   │   ├── CHANGELOG.md
+│   │   │   │   ├── component.json
+│   │   │   │   ├── karma.conf.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── Makefile
+│   │   │   │   ├── node.js
+│   │   │   │   ├── package.json
+│   │   │   │   ├── README.md
+│   │   │   │   └── src
+│   │   │   │       ├── browser.js
+│   │   │   │       ├── debug.js
+│   │   │   │       ├── index.js
+│   │   │   │       ├── inspector-log.js
+│   │   │   │       └── node.js
+│   │   │   ├── depd
+│   │   │   │   ├── History.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── lib
+│   │   │   │   │   └── browser
+│   │   │   │   │       └── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── Readme.md
+│   │   │   ├── ee-first
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── encodeurl
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── escape-html
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── Readme.md
+│   │   │   ├── etag
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── finalhandler
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── fresh
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── http-errors
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── node_modules
+│   │   │   │   │   └── statuses
+│   │   │   │   │       ├── codes.json
+│   │   │   │   │       ├── HISTORY.md
+│   │   │   │   │       ├── index.js
+│   │   │   │   │       ├── LICENSE
+│   │   │   │   │       ├── package.json
+│   │   │   │   │       └── README.md
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── inherits
+│   │   │   │   ├── inherits_browser.js
+│   │   │   │   ├── inherits.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── mime-db
+│   │   │   │   ├── db.json
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── mime-types
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── mimeScore.js
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── ms
+│   │   │   │   ├── index.js
+│   │   │   │   ├── license.md
+│   │   │   │   ├── package.json
+│   │   │   │   └── readme.md
+│   │   │   ├── on-finished
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── parseurl
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── range-parser
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── send
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── node_modules
+│   │   │   │   │   ├── debug
+│   │   │   │   │   │   ├── LICENSE
+│   │   │   │   │   │   ├── package.json
+│   │   │   │   │   │   ├── README.md
+│   │   │   │   │   │   └── src
+│   │   │   │   │   │       ├── browser.js
+│   │   │   │   │   │       ├── common.js
+│   │   │   │   │   │       ├── index.js
+│   │   │   │   │   │       └── node.js
+│   │   │   │   │   ├── encodeurl
+│   │   │   │   │   │   ├── index.js
+│   │   │   │   │   │   ├── LICENSE
+│   │   │   │   │   │   ├── package.json
+│   │   │   │   │   │   └── README.md
+│   │   │   │   │   ├── ms
+│   │   │   │   │   │   ├── index.js
+│   │   │   │   │   │   ├── license.md
+│   │   │   │   │   │   ├── package.json
+│   │   │   │   │   │   └── readme.md
+│   │   │   │   │   ├── on-finished
+│   │   │   │   │   │   ├── HISTORY.md
+│   │   │   │   │   │   ├── index.js
+│   │   │   │   │   │   ├── LICENSE
+│   │   │   │   │   │   ├── package.json
+│   │   │   │   │   │   └── README.md
+│   │   │   │   │   └── statuses
+│   │   │   │   │       ├── codes.json
+│   │   │   │   │       ├── HISTORY.md
+│   │   │   │   │       ├── index.js
+│   │   │   │   │       ├── LICENSE
+│   │   │   │   │       ├── package.json
+│   │   │   │   │       └── README.md
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── serve-static
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── node_modules
+│   │   │   │   │   └── encodeurl
+│   │   │   │   │       ├── index.js
+│   │   │   │   │       ├── LICENSE
+│   │   │   │   │       ├── package.json
+│   │   │   │   │       └── README.md
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── setprototypeof
+│   │   │   │   ├── index.d.ts
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   ├── README.md
+│   │   │   │   └── test
+│   │   │   │       └── index.js
+│   │   │   ├── statuses
+│   │   │   │   ├── codes.json
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── toidentifier
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   ├── unpipe
+│   │   │   │   ├── HISTORY.md
+│   │   │   │   ├── index.js
+│   │   │   │   ├── LICENSE
+│   │   │   │   ├── package.json
+│   │   │   │   └── README.md
+│   │   │   └── utils-merge
+│   │   │       ├── index.js
+│   │   │       ├── LICENSE
+│   │   │       ├── package.json
+│   │   │       └── README.md
+│   │   ├── package-lock.json
+│   │   ├── package.json
+│   │   └── webserver.js
+│   ├── Samples
+│   │   ├── H5SampleAddElements.js
+│   │   ├── H5SampleAddElements.js.map
+│   │   ├── H5SampleAddElements.ts
+│   │   ├── H5SampleCancelRequest.js
+│   │   ├── H5SampleCancelRequest.js.map
+│   │   ├── H5SampleCancelRequest.ts
+│   │   ├── H5SampleCurrencyXML.js
+│   │   ├── H5SampleCurrencyXML.js.map
+│   │   ├── H5SampleCurrencyXML.ts
+│   │   ├── H5SampleCustomColumns.js
+│   │   ├── H5SampleCustomColumns.js.map
+│   │   ├── H5SampleCustomColumns.ts
+│   │   ├── H5SampleCustomDialog.js
+│   │   ├── H5SampleCustomDialog.js.map
+│   │   ├── H5SampleCustomDialog.ts
+│   │   ├── H5SampleDrillback.js
+│   │   ├── H5SampleDrillback.js.map
+│   │   ├── H5SampleDrillback.ts
+│   │   ├── H5SampleExportToExcel.js
+│   │   ├── H5SampleExportToExcel.js.map
+│   │   ├── H5SampleExportToExcel.ts
+│   │   ├── H5SampleHelloWorld.js
+│   │   ├── H5SampleHelloWorld.js.map
+│   │   ├── H5SampleHelloWorld.ts
+│   │   ├── H5SampleHideColumns.js
+│   │   ├── H5SampleHideColumns.js.map
+│   │   ├── H5SampleHideColumns.ts
+│   │   ├── H5SampleImageFromList.js
+│   │   ├── H5SampleImageFromList.js.map
+│   │   ├── H5SampleImageFromList.ts
+│   │   ├── H5SampleIonApiService.js
+│   │   ├── H5SampleIonApiService.js.map
+│   │   ├── H5SampleIonApiService.ts
+│   │   ├── H5SampleMFormsAutomation.js
+│   │   ├── H5SampleMFormsAutomation.js.map
+│   │   ├── H5SampleMFormsAutomation.ts
+│   │   ├── H5SampleMIService.js
+│   │   ├── H5SampleMIService.js.map
+│   │   ├── H5SampleMIService.ts
+│   │   ├── H5SampleMIServiceV2.js
+│   │   ├── H5SampleMIServiceV2.js.map
+│   │   ├── H5SampleMIServiceV2.ts
+│   │   ├── H5SampleOpenFieldHelp.js
+│   │   ├── H5SampleOpenFieldHelp.js.map
+│   │   ├── H5SampleOpenFieldHelp.ts
+│   │   ├── H5SampleOptionButton.js
+│   │   ├── H5SampleOptionButton.js.map
+│   │   ├── H5SampleOptionButton.ts
+│   │   ├── H5SamplePreviewListHeader.js
+│   │   ├── H5SamplePreviewListHeader.js.map
+│   │   ├── H5SamplePreviewListHeader.ts
+│   │   ├── H5SampleRegexValidator.js
+│   │   ├── H5SampleRegexValidator.js.map
+│   │   ├── H5SampleRegexValidator.ts
+│   │   ├── H5SampleRequestTracer.js
+│   │   ├── H5SampleRequestTracer.js.map
+│   │   ├── H5SampleRequestTracer.ts
+│   │   ├── H5SampleScriptTemplate.js
+│   │   ├── H5SampleScriptTemplate.js.map
+│   │   ├── H5SampleScriptTemplate.ts
+│   │   ├── H5SampleSelectionChanged.js
+│   │   ├── H5SampleSelectionChanged.js.map
+│   │   ├── H5SampleSelectionChanged.ts
+│   │   ├── H5SampleShowOnMap.js
+│   │   ├── H5SampleShowOnMap.js.map
+│   │   ├── H5SampleShowOnMap.ts
+│   │   ├── H5SampleShowXml.js
+│   │   ├── H5SampleShowXml.js.map
+│   │   ├── H5SampleShowXml.ts
+│   │   ├── H5SampleUserDetails.js
+│   │   ├── H5SampleUserDetails.js.map
+│   │   ├── H5SampleUserDetails.ts
+│   │   ├── Samples.csproj
+│   │   ├── tsconfig.json
+│   │   ├── typings
+│   │   │   ├── es6-promise.d.ts
+│   │   │   ├── h5.script.d.ts
+│   │   │   ├── infor.controls.d.ts
+│   │   │   ├── jquery.d.ts
+│   │   │   └── jquery.json.d.ts
+│   │   ├── web.config
+│   │   ├── web.Debug.config
+│   │   └── web.Release.config
+│   ├── Samples.sln
+│   ├── scantool
+│   │   ├── 1089.4d47d923c39cce22.js
+│   │   ├── 1089.cc132360e43aae51.js
+│   │   ├── 1102.32a6358abe32d7f0.js
+│   │   ├── 1102.9f58273b8f567fbf.js
+│   │   ├── 1105.e46c998034eaaf35.js
+│   │   ├── 1105.fd6002f2276608f0.js
+│   │   ├── 1172.6339f72ad92e6e37.js
+│   │   ├── 1172.68c0340d8933c9c5.js
+│   │   ├── 1248.4459e0284ce72064.js
+│   │   ├── 1248.e4043e4774fe9408.js
+│   │   ├── 1406.496356211f14ecff.js
+│   │   ├── 1406.d007240c33f70321.js
+│   │   ├── 159.1a0e1bc222cf3ff2.js
+│   │   ├── 159.b1fe48f5b01e198f.js
+│   │   ├── 1779.b2c4e24b95bdd8af.js
+│   │   ├── 1779.d5e1ce16e1b9ad5c.js
+│   │   ├── 1854.1eac77d14ea2e38b.js
+│   │   ├── 1854.c057adc0709bdeb4.js
+│   │   ├── 1879.6be45950f97da6dd.js
+│   │   ├── 1879.8e23839a27f50585.js
+│   │   ├── 1953.0a824fed0b6c4adc.js
+│   │   ├── 1953.d1116c673a38ffc9.js
+│   │   ├── 1990.6ad5cc0dbf4ba148.js
+│   │   ├── 1990.793052b8d6916602.js
+│   │   ├── 204.0b82f19823061b03.js
+│   │   ├── 204.e6aa548dba798f25.js
+│   │   ├── 22.1b1412ebf11c65d5.js
+│   │   ├── 22.1ea82dc17d7b521f.js
+│   │   ├── 2337.2153c4915811683a.js
+│   │   ├── 2337.e9f0d08bc3a3d54a.js
+│   │   ├── 2382.784c0d0cbc820744.js
+│   │   ├── 2382.9680b7ce243edbb0.js
+│   │   ├── 2402.4317750fc96ac113.js
+│   │   ├── 2402.c2dcc7df57e51fcb.js
+│   │   ├── 2453.1420e38bdd88a29f.js
+│   │   ├── 2453.75aa41ed1078ce0e.js
+│   │   ├── 2628.6c6c44b752018c0f.js
+│   │   ├── 2628.bdd3e12656ca69d3.js
+│   │   ├── 2633.a93c00718e958dfd.js
+│   │   ├── 2633.b63ffd745a24e63a.js
+│   │   ├── 2670.032b3fe586481686.js
+│   │   ├── 2670.23940fc07a3602e4.js
+│   │   ├── 2755.66ce2511609dfed1.js
+│   │   ├── 2755.ab9fb22373757e4f.js
+│   │   ├── 292.4e7bcac25b664858.js
+│   │   ├── 292.7d3e008aa73ccd5b.js
+│   │   ├── 3026.4960d1bf41fde9d3.js
+│   │   ├── 3026.f8191aed05dc9c9e.js
+│   │   ├── 3153.42df2cd6821d710b.js
+│   │   ├── 3153.71d77f5d74a444e6.js
+│   │   ├── 3182.387616fededb83d3.js
+│   │   ├── 3182.bc3f3d0decb0a64b.js
+│   │   ├── 3238.6c2c9e2663624484.js
+│   │   ├── 3238.7b7003ef0ad52a0c.js
+│   │   ├── 3430.71d1909e56f83e20.js
+│   │   ├── 3430.dde4ced211015f47.js
+│   │   ├── 3504.0312ce3628540593.js
+│   │   ├── 3504.b402673ec80c5416.js
+│   │   ├── 3605.0c1feb21028ffc37.js
+│   │   ├── 3605.fe3c6ba227749fbd.js
+│   │   ├── 3737.57f4f650a708db1e.js
+│   │   ├── 3737.969237311a9dff14.js
+│   │   ├── 3912.6391210d4b9095e0.js
+│   │   ├── 3912.d2d70feb521f724a.js
+│   │   ├── 3926.94a2cdcc12d0983f.js
+│   │   ├── 3926.a9e6367a903f372c.js
+│   │   ├── 3999.b7d0f8ea6c9c8cd2.js
+│   │   ├── 3999.e88610b416983e25.js
+│   │   ├── 3rdpartylicenses.txt
+│   │   ├── 4121.655c0d04ba1cbcf1.js
+│   │   ├── 4121.ff5e62dc8aa3e435.js
+│   │   ├── 4197.b56fad3712715e8e.js
+│   │   ├── 4197.f10f3e21e648063b.js
+│   │   ├── 422.6e5655055e1c17a2.js
+│   │   ├── 422.7311c681a973dd17.js
+│   │   ├── 4395.b4e0e961d65bef21.js
+│   │   ├── 4395.ca282b8fa80c0e17.js
+│   │   ├── 445.310ea24d80eacf40.js
+│   │   ├── 445.eae99870c5472637.js
+│   │   ├── 4529.015760997f73533f.js
+│   │   ├── 4529.95cccf2bc1ce015d.js
+│   │   ├── 4562.1c774feaaafc7962.js
+│   │   ├── 4562.e7596c5ff6f18cb7.js
+│   │   ├── 4612.096b9daddf6c307f.js
+│   │   ├── 4612.880c86462d10747e.js
+│   │   ├── 4624.79b88df14dae926c.js
+│   │   ├── 4624.c8cd33cd63fd39d6.js
+│   │   ├── 4721.6386df65d7fef397.js
+│   │   ├── 4721.d8fa83f809fd9641.js
+│   │   ├── 49.4171ac8126b056b7.js
+│   │   ├── 49.81e7cfe6a5b47b0c.js
+│   │   ├── 5167.45dc0bfd5c18ed7d.js
+│   │   ├── 5167.bbaf99ad314da382.js
+│   │   ├── 5547.390d0b24436a3b44.js
+│   │   ├── 5547.4629a186ef1bddcb.js
+│   │   ├── 5550.432b718a2d560b00.js
+│   │   ├── 5550.7bbc1c0f8bf45892.js
+│   │   ├── 5592.1485cb445ee4428e.js
+│   │   ├── 5592.f49a56954d4499ef.js
+│   │   ├── 5610.3d9d4c2786940c73.js
+│   │   ├── 5610.57dbed6e5fbf1059.js
+│   │   ├── 5631.4bcf6f21c2933feb.js
+│   │   ├── 5631.9494317c906f8a4c.js
+│   │   ├── 571.eb2b2808f4696324.js
+│   │   ├── 571.ec36fd8a31cd7042.js
+│   │   ├── 5958.2f25f64b3054806e.js
+│   │   ├── 5958.a73725ad58383de5.js
+│   │   ├── 6085.37bd5bf0235a2c73.js
+│   │   ├── 6085.5cb036c52fc46df8.js
+│   │   ├── 6133.2b65924c7854bc65.js
+│   │   ├── 6133.b635b90c56fd5390.js
+│   │   ├── 621.7605ab03576d619e.js
+│   │   ├── 621.e74b29e3a59942b9.js
+│   │   ├── 6219.7acbd2afe8053230.js
+│   │   ├── 6219.c3db5767efdafb1f.js
+│   │   ├── 6302.5bf831604f923d16.js
+│   │   ├── 6302.e6f221712dcb77f0.js
+│   │   ├── 6485.06866a80a42ea2ba.js
+│   │   ├── 6485.b66d2cff9b897a04.js
+│   │   ├── 6499.67564e1f82bc6b28.js
+│   │   ├── 6499.8b014925ba06a836.js
+│   │   ├── 6542.2216dc7f5483be38.js
+│   │   ├── 6542.b1f6ba4dd1be95d6.js
+│   │   ├── 6546.3d5ee8b803e9b1e8.js
+│   │   ├── 6546.598d7784f3e0fdf3.js
+│   │   ├── 6648.7823a21746b7c05a.js
+│   │   ├── 6648.8ffaa7c5ecc39b4d.js
+│   │   ├── 6765.8c303aee5e2f4703.js
+│   │   ├── 6765.c7f665260cae06f3.js
+│   │   ├── 6783.5adbf308622efc17.js
+│   │   ├── 6783.b1ce529f18e1b97d.js
+│   │   ├── 6820.d92fbafd563406ed.js
+│   │   ├── 6820.dc8d4e30c0b7dab5.js
+│   │   ├── 6924.3b373c0bc4cc8da7.js
+│   │   ├── 6924.e1a4b7bae97203a5.js
+│   │   ├── 7007.078d2c2a269da522.js
+│   │   ├── 7007.1dd02a6ce095cf5f.js
+│   │   ├── 7113.878709192c3249b4.js
+│   │   ├── 7113.b1547e6108306cb9.js
+│   │   ├── 712.0e6c8acc034319da.js
+│   │   ├── 712.630a02c556b286a0.js
+│   │   ├── 7165.32a69d493fa87b64.js
+│   │   ├── 7165.5151caa5a59e4de9.js
+│   │   ├── 7221.30a123101d8e868a.js
+│   │   ├── 7221.6b83e69f50526ab4.js
+│   │   ├── 7253.823b1feb6c2c9a0b.js
+│   │   ├── 7253.89965fb9734a14d3.js
+│   │   ├── 7277.2fdf3b57509b1bcb.js
+│   │   ├── 7277.b2c920344cf8062c.js
+│   │   ├── 7299.432357b04fdebb79.js
+│   │   ├── 7299.db7b5a9d0d0fb8c4.js
+│   │   ├── 7517.c3a1f2bfb2d16672.js
+│   │   ├── 7517.f0f3f74db4259e30.js
+│   │   ├── 7530.0ddef2bdcdf1365a.js
+│   │   ├── 7530.1bb4d1ff40626876.js
+│   │   ├── 7683.0767202e458b6b7b.js
+│   │   ├── 7683.5d7a1c2f3843fd8a.js
+│   │   ├── 7923.60b5ae5e75614070.js
+│   │   ├── 7923.84d64791dd6f3954.js
+│   │   ├── 8056.48d6b9f618151bf3.js
+│   │   ├── 8056.641be1ebb977af75.js
+│   │   ├── 8114.974f488642834d85.js
+│   │   ├── 8114.ee734fe895049e84.js
+│   │   ├── 8139.1bc02620d8eae92e.js
+│   │   ├── 8139.73ba746755501827.js
+│   │   ├── 8158.068df4abb57d9a30.js
+│   │   ├── 8158.fd0e65105412056f.js
+│   │   ├── 8193.a814239985e10353.js
+│   │   ├── 8193.f762a2a193051018.js
+│   │   ├── 820.b0d38608aedd8ab8.js
+│   │   ├── 820.f97f8104fbfd97f2.js
+│   │   ├── 826.26ee982e396ec09a.js
+│   │   ├── 826.79c7a927cc6fc469.js
+│   │   ├── 827.1fea5cc8ecf2d912.js
+│   │   ├── 827.409df8446a807892.js
+│   │   ├── 8573.bc4f01d850b1b8d6.js
+│   │   ├── 8573.ca86900b00727fb6.js
+│   │   ├── 8582.54e888a2287623ff.js
+│   │   ├── 8582.645e82885dfe471c.js
+│   │   ├── 8700.366ceb4d342fe1db.js
+│   │   ├── 8700.c92601cefc6394e6.js
+│   │   ├── 8736.0c5bb06f88b9d6b3.js
+│   │   ├── 8736.9815e916230d8808.js
+│   │   ├── 8793.1d285189d535fca9.js
+│   │   ├── 8793.befceb17282feba1.js
+│   │   ├── 8897.8de97d878571dbf0.js
+│   │   ├── 8897.eac641ea515a4c02.js
+│   │   ├── 8967.af94ecd496700e5e.js
+│   │   ├── 8967.d436d612a4ae2855.js
+│   │   ├── 903.5eb5553ffcabeab9.js
+│   │   ├── 903.d5855b4fd9c8b62a.js
+│   │   ├── 9038.98e3d3a4965dacd3.js
+│   │   ├── 9038.e586e31e5b0a40e5.js
+│   │   ├── 9220.8215802f0f6b0ac9.js
+│   │   ├── 9220.f4958f5e00b7f4b1.js
+│   │   ├── 9300.2415beb88e87e77c.js
+│   │   ├── 9300.28a7f9c4a49db102.js
+│   │   ├── 931.5d9c7d4adcb5cd64.js
+│   │   ├── 931.97a2494af6de2c7c.js
+│   │   ├── 934.1f60e8e231982551.js
+│   │   ├── 934.93c876e75f866ba2.js
+│   │   ├── 9488.183054a949595387.js
+│   │   ├── 9488.9f340ef89bdacaa1.js
+│   │   ├── 9842.fe202ed5963de936.js
+│   │   ├── 9842.fed9d1f44f0593f6.js
+│   │   ├── 9948.d8b79e2c3fb19bdf.js
+│   │   ├── 9948.e2bc89f93419cc65.js
+│   │   ├── 9980.530c36e6cabd2abb.js
+│   │   ├── 9980.a7de5e2f157cff19.js
+│   │   ├── favicon.ico
+│   │   ├── index.html
+│   │   ├── locale-data
+│   │   │   ├── af-messages.js
+│   │   │   ├── af-ZA.js
+│   │   │   ├── ar-EG.js
+│   │   │   ├── ar-messages.js
+│   │   │   ├── ar-SA.js
+│   │   │   ├── bg-BG.js
+│   │   │   ├── bg-messages.js
+│   │   │   ├── cs-CZ.js
+│   │   │   ├── cs-messages.js
+│   │   │   ├── da-DK.js
+│   │   │   ├── da-messages.js
+│   │   │   ├── de-DE.js
+│   │   │   ├── de-messages.js
+│   │   │   ├── el-GR.js
+│   │   │   ├── el-messages.js
+│   │   │   ├── en-AU.js
+│   │   │   ├── en-GB.js
+│   │   │   ├── en-IN.js
+│   │   │   ├── en-messages.js
+│   │   │   ├── en-NZ.js
+│   │   │   ├── en-US.js
+│   │   │   ├── en-ZA.js
+│   │   │   ├── es-419.js
+│   │   │   ├── es-AR.js
+│   │   │   ├── es-ES.js
+│   │   │   ├── es-messages.js
+│   │   │   ├── es-MX.js
+│   │   │   ├── es-US.js
+│   │   │   ├── et-EE.js
+│   │   │   ├── et-messages.js
+│   │   │   ├── fi-FI.js
+│   │   │   ├── fi-messages.js
+│   │   │   ├── fr-CA-messages.js
+│   │   │   ├── fr-CA.js
+│   │   │   ├── fr-FR-messages.js
+│   │   │   ├── fr-FR.js
+│   │   │   ├── fr-messages.js
+│   │   │   ├── he-IL.js
+│   │   │   ├── he-messages.js
+│   │   │   ├── hi-IN.js
+│   │   │   ├── hi-messages.js
+│   │   │   ├── hr-HR.js
+│   │   │   ├── hr-messages.js
+│   │   │   ├── hu-HU.js
+│   │   │   ├── hu-messages.js
+│   │   │   ├── id-ID.js
+│   │   │   ├── id-messages.js
+│   │   │   ├── it-IT.js
+│   │   │   ├── it-messages.js
+│   │   │   ├── ja-JP.js
+│   │   │   ├── ja-messages.js
+│   │   │   ├── ko-KR.js
+│   │   │   ├── ko-messages.js
+│   │   │   ├── lt-LT.js
+│   │   │   ├── lt-messages.js
+│   │   │   ├── lv-LV.js
+│   │   │   ├── lv-messages.js
+│   │   │   ├── ms-bn.js
+│   │   │   ├── ms-messages.js
+│   │   │   ├── ms-my.js
+│   │   │   ├── nb-messages.js
+│   │   │   ├── nb-NO.js
+│   │   │   ├── nl-messages.js
+│   │   │   ├── nl-NL.js
+│   │   │   ├── nn-messages.js
+│   │   │   ├── nn-NO.js
+│   │   │   ├── no-messages.js
+│   │   │   ├── no-NO.js
+│   │   │   ├── pl-messages.js
+│   │   │   ├── pl-PL.js
+│   │   │   ├── pt-BR-messages.js
+│   │   │   ├── pt-BR.js
+│   │   │   ├── pt-messages.js
+│   │   │   ├── pt-PT-messages.js
+│   │   │   ├── pt-PT.js
+│   │   │   ├── ro-messages.js
+│   │   │   ├── ro-RO.js
+│   │   │   ├── ru-messages.js
+│   │   │   ├── ru-RU.js
+│   │   │   ├── sk-messages.js
+│   │   │   ├── sk-SK.js
+│   │   │   ├── sl-messages.js
+│   │   │   ├── sl-SI.js
+│   │   │   ├── sv-messages.js
+│   │   │   ├── sv-SE.js
+│   │   │   ├── th-messages.js
+│   │   │   ├── th-TH.js
+│   │   │   ├── tl-messages.js
+│   │   │   ├── tl-PH.js
+│   │   │   ├── tr-messages.js
+│   │   │   ├── tr-TR.js
+│   │   │   ├── uk-messages.js
+│   │   │   ├── uk-UA.js
+│   │   │   ├── vi-messages.js
+│   │   │   ├── vi-VN.js
+│   │   │   ├── zh-CN-messages.js
+│   │   │   ├── zh-CN.js
+│   │   │   ├── zh-Hans-messages.js
+│   │   │   ├── zh-Hans.js
+│   │   │   ├── zh-Hant-messages.js
+│   │   │   ├── zh-Hant.js
+│   │   │   ├── zh-messages.js
+│   │   │   ├── zh-TW-messages.js
+│   │   │   └── zh-TW.js
+│   │   ├── main.0994471f61b802a2.js
+│   │   ├── main.572570ace85d784f.js
+│   │   ├── polyfills.887ae3e8e5eed983.js
+│   │   ├── polyfills.f2e3d26c5eae1567.js
+│   │   ├── runtime.1e8fadcf65fc04da.js
+│   │   ├── runtime.8558c874a3900ff2.js
+│   │   ├── scripts.a32939d5a05a52aa.js
+│   │   ├── StartScanTool.cmd
+│   │   ├── styles.ef46db3751d8e999.css
+│   │   └── themes
+│   │       ├── ids-theme-default-colors.css
+│   │       ├── ids-theme-default-contrast.css
+│   │       ├── ids-theme-default-core.css
+│   │       ├── ids-theme-default-dark.css
+│   │       └── ids-theme-default-light.css
+│   └── StartWebServer.cmd
+└── Templates
+    └── H5ScriptsProjectTemplate
+        ├── H5ScriptsProjectTemplate
+        │   ├── H5SampleScriptTemplate.js
+        │   ├── H5SampleScriptTemplate.ts
+        │   ├── H5ScriptsProjectTemplate.csproj
+        │   ├── tsconfig.json
+        │   ├── typings
+        │   │   ├── es6-promise.d.ts
+        │   │   ├── h5.script.d.ts
+        │   │   ├── infor.controls.d.ts
+        │   │   ├── jquery.d.ts
+        │   │   └── jquery.json.d.ts
+        │   ├── web.config
+        │   ├── web.Debug.config
+        │   └── web.Release.config
+        ├── H5ScriptsProjectTemplate.sln
+        ├── InstallWebServer.cmd
+        ├── Nodejs
+        │   └── webserver.js
+        └── StartWebServer.cmd

@@ -1,0 +1,2432 @@
+robertroy@macbookair ~ % tree /Users/robertroy/Documents/Infor/m3-h5-sdk output.txt        
+/Users/robertroy/Documents/Infor/m3-h5-sdk
+├── AGENTS.md
+├── eslint.config.mjs
+├── logs
+│   └── xvba_debug.log
+├── Projects
+│   ├── Benco
+│   │   ├── APIs
+│   │   │   └── MHS850MI.json
+│   │   ├── H5-Scripts
+│   │   │   ├── AddLotControlColumn_v2.js
+│   │   │   ├── AddLotControlColumn.js
+│   │   │   ├── BEN_H5_AutoComplete.js
+│   │   │   ├── BEN_H5_CTS100B1.js
+│   │   │   ├── POReceiptShortcut_UsingConsole.js
+│   │   │   ├── POReceiptShortcut.js
+│   │   │   ├── POReceiptShortcutV2_Claude.js
+│   │   │   ├── POReceiptShortcutV2.js
+│   │   │   ├── POReceiptShortcutV3.js
+│   │   │   ├── POReceiptShortcutV4.js
+│   │   │   ├── POReceiptShortcutV5.js
+│   │   │   └── README.md
+│   │   └── README.md
+│   └── General
+│       └── Widgets
+│           └── TextBlock Editor
+│               ├── tenant.infor.m3.demo.textblock-1.0.1
+│               │   ├── documentation
+│               │   │   ├── GDIS EULA Long 2022-05-23.pdf
+│               │   │   └── Text_Block_Solution_Overview.pdf
+│               │   ├── manifest.json
+│               │   ├── runtime
+│               │   │   ├── demo-ids-input-value-accessor-directive.js
+│               │   │   ├── demo-m3-user-context.js
+│               │   │   ├── demo-setting-title-field.js
+│               │   │   ├── demo-translate-pipe.js
+│               │   │   ├── tenant.infor.m3.demo.textblock-1.0.1.20260121-165510
+│               │   │   ├── tenant.infor.m3.demo.textblock-1.0.1.20260121-165510.zip
+│               │   │   ├── tenant.infor.m3.demo.textblock-1.0.1.20260121-165510.zip.broken-nested-backup
+│               │   │   ├── tenant.infor.m3.demo.textblock.widget.js
+│               │   │   └── widget.manifest
+│               │   └── source
+│               │       ├── tenant.infor.m3.demo.textblock_1.0.1_source-package
+│               │       │   ├── components
+│               │       │   │   ├── autocomplete-input
+│               │       │   │   │   ├── autocomplete-input.component.html
+│               │       │   │   │   └── autocomplete-input.component.ts
+│               │       │   │   ├── config-form.component.html
+│               │       │   │   ├── custom-dropdown-control
+│               │       │   │   │   ├── custom-dropdown-control.component.html
+│               │       │   │   │   └── custom-dropdown-control.component.ts
+│               │       │   │   ├── dropdown-reactive
+│               │       │   │   │   ├── dropdown-reactive.component.html
+│               │       │   │   │   └── dropdown-reactive.component.ts
+│               │       │   │   ├── index.ts
+│               │       │   │   ├── new-textblock
+│               │       │   │   │   ├── new-textblock.component.css
+│               │       │   │   │   ├── new-textblock.component.html
+│               │       │   │   │   └── new-textblock.component.ts
+│               │       │   │   ├── search-form
+│               │       │   │   │   ├── search-form.component.css
+│               │       │   │   │   ├── search-form.component.html
+│               │       │   │   │   └── search-form.component.ts
+│               │       │   │   ├── settings
+│               │       │   │   │   └── settings-config-form
+│               │       │   │   │       ├── config-form.component.css
+│               │       │   │   │       ├── config-form.component.html
+│               │       │   │   │       └── config-form.component.ts
+│               │       │   │   ├── settings-template
+│               │       │   │   │   ├── settings-data.service.ts
+│               │       │   │   │   ├── settings-template.component.css
+│               │       │   │   │   ├── settings-template.component.html
+│               │       │   │   │   └── settings-template.component.ts
+│               │       │   │   ├── text-area-edit
+│               │       │   │   │   ├── text-area-edit.component.css
+│               │       │   │   │   ├── text-area-edit.component.html
+│               │       │   │   │   └── text-area-edit.component.ts
+│               │       │   │   ├── text-edit
+│               │       │   │   │   ├── text-edit.component.css
+│               │       │   │   │   ├── text-edit.component.html
+│               │       │   │   │   └── text-edit.component.ts
+│               │       │   │   ├── title-setting.ts
+│               │       │   │   └── widget
+│               │       │   ├── constant
+│               │       │   │   ├── empty-states.const.ts
+│               │       │   │   ├── index.ts
+│               │       │   │   ├── mock-data.const.ts
+│               │       │   │   ├── text-block-separators.const.ts
+│               │       │   │   └── user-dropdown-options.const.ts
+│               │       │   ├── directives
+│               │       │   │   ├── base.directive.ts
+│               │       │   │   └── value-accessor.directive.ts
+│               │       │   ├── enums.ts
+│               │       │   ├── pipes
+│               │       │   │   └── demo-translate-pipe.ts
+│               │       │   ├── services
+│               │       │   │   ├── business-context.service.ts
+│               │       │   │   ├── index.ts
+│               │       │   │   ├── mi-util.service.ts
+│               │       │   │   ├── text-block-parameter.service.ts
+│               │       │   │   ├── textblock.service.ts
+│               │       │   │   └── user.service.ts
+│               │       │   ├── types
+│               │       │   │   ├── business-context.type.ts
+│               │       │   │   ├── index.ts
+│               │       │   │   ├── item.type.ts
+│               │       │   │   ├── mi-entity.type.ts
+│               │       │   │   ├── spec-test.type.ts
+│               │       │   │   ├── test-result.type.ts
+│               │       │   │   └── text-block.type.ts
+│               │       │   ├── utils.ts
+│               │       │   ├── widget.component.css
+│               │       │   ├── widget.component.html
+│               │       │   ├── widget.component.ts
+│               │       │   ├── widget.manifest
+│               │       │   └── widget.ts
+│               │       └── tenant.infor.m3.demo.textblock_1.0.1_source-package.zip
+│               └── tenant.infor.m3.serials.textblock-1.0.0
+│                   ├── documentation
+│                   │   ├── GDIS EULA Long 2022-05-23.pdf
+│                   │   └── Text_Block_Solution_Overview.pdf
+│                   ├── manifest.json
+│                   ├── runtime
+│                   │   ├── tenant.infor.m3.serials.textblock-1.0.0.20260329-000000.zip
+│                   │   └── tenant.infor.m3.serials.textblock-1.0.0.20260329-000000.zip.pre-fix-backup
+│                   └── source
+│                       ├── tenant.infor.m3.serials.textblock_1.0.0_source-package
+│                       │   ├── components
+│                       │   │   ├── autocomplete-input
+│                       │   │   │   ├── autocomplete-input.component.html
+│                       │   │   │   └── autocomplete-input.component.ts
+│                       │   │   ├── config-form.component.html
+│                       │   │   ├── custom-dropdown-control
+│                       │   │   │   ├── custom-dropdown-control.component.html
+│                       │   │   │   └── custom-dropdown-control.component.ts
+│                       │   │   ├── dropdown-reactive
+│                       │   │   │   ├── dropdown-reactive.component.html
+│                       │   │   │   └── dropdown-reactive.component.ts
+│                       │   │   ├── index.ts
+│                       │   │   ├── new-textblock
+│                       │   │   │   ├── new-textblock.component.css
+│                       │   │   │   ├── new-textblock.component.html
+│                       │   │   │   └── new-textblock.component.ts
+│                       │   │   ├── search-form
+│                       │   │   │   ├── search-form.component.css
+│                       │   │   │   ├── search-form.component.html
+│                       │   │   │   └── search-form.component.ts
+│                       │   │   ├── settings
+│                       │   │   │   └── settings-config-form
+│                       │   │   │       ├── config-form.component.css
+│                       │   │   │       ├── config-form.component.html
+│                       │   │   │       └── config-form.component.ts
+│                       │   │   ├── settings-template
+│                       │   │   │   ├── settings-data.service.ts
+│                       │   │   │   ├── settings-template.component.css
+│                       │   │   │   ├── settings-template.component.html
+│                       │   │   │   └── settings-template.component.ts
+│                       │   │   ├── text-area-edit
+│                       │   │   │   ├── text-area-edit.component.css
+│                       │   │   │   ├── text-area-edit.component.html
+│                       │   │   │   └── text-area-edit.component.ts
+│                       │   │   ├── text-edit
+│                       │   │   │   ├── text-edit.component.css
+│                       │   │   │   ├── text-edit.component.html
+│                       │   │   │   └── text-edit.component.ts
+│                       │   │   ├── title-setting.ts
+│                       │   │   └── widget
+│                       │   ├── constant
+│                       │   │   ├── empty-states.const.ts
+│                       │   │   ├── index.ts
+│                       │   │   ├── mock-data.const.ts
+│                       │   │   ├── text-block-separators.const.ts
+│                       │   │   └── user-dropdown-options.const.ts
+│                       │   ├── directives
+│                       │   │   ├── base.directive.ts
+│                       │   │   └── value-accessor.directive.ts
+│                       │   ├── enums.ts
+│                       │   ├── pipes
+│                       │   │   └── demo-translate-pipe.ts
+│                       │   ├── services
+│                       │   │   ├── business-context.service.ts
+│                       │   │   ├── index.ts
+│                       │   │   ├── mi-util.service.ts
+│                       │   │   ├── text-block-parameter.service.ts
+│                       │   │   ├── textblock.service.ts
+│                       │   │   └── user.service.ts
+│                       │   ├── types
+│                       │   │   ├── business-context.type.ts
+│                       │   │   ├── index.ts
+│                       │   │   ├── item.type.ts
+│                       │   │   ├── mi-entity.type.ts
+│                       │   │   ├── spec-test.type.ts
+│                       │   │   ├── test-result.type.ts
+│                       │   │   └── text-block.type.ts
+│                       │   ├── utils.ts
+│                       │   ├── widget.component.css
+│                       │   ├── widget.component.html
+│                       │   ├── widget.component.ts
+│                       │   ├── widget.manifest
+│                       │   └── widget.ts
+│                       └── tenant.infor.m3.serials.textblock_1.0.0_source-package.zip
+├── README.md
+└── SDKs
+    ├── H5 Angular
+    │   ├── CHANGELOG.md
+    │   ├── cli
+    │   │   ├── boilerplate
+    │   │   │   ├── angular
+    │   │   │   │   ├── angular.json
+    │   │   │   │   ├── package.json
+    │   │   │   │   └── src
+    │   │   │   │       ├── app
+    │   │   │   │       │   └── app.module.ts
+    │   │   │   │       └── favicon.ico
+    │   │   │   ├── angular-soho
+    │   │   │   │   ├── angular.json
+    │   │   │   │   ├── package.json
+    │   │   │   │   └── src
+    │   │   │   │       ├── app
+    │   │   │   │       │   ├── app.component.html
+    │   │   │   │       │   ├── app.component.ts
+    │   │   │   │       │   └── app.module.ts
+    │   │   │   │       ├── favicon.ico
+    │   │   │   │       ├── index.html
+    │   │   │   │       └── tsconfig.app.json
+    │   │   │   ├── basic
+    │   │   │   │   ├── favicon.ico
+    │   │   │   │   ├── index.html
+    │   │   │   │   ├── odin.json
+    │   │   │   │   ├── package.json
+    │   │   │   │   ├── README.md
+    │   │   │   │   ├── src
+    │   │   │   │   │   ├── index.ts
+    │   │   │   │   │   └── styles.scss
+    │   │   │   │   └── tsconfig.json
+    │   │   │   └── vscode
+    │   │   │       ├── extensions.json
+    │   │   │       ├── launch.json
+    │   │   │       ├── settings.json
+    │   │   │       └── tasks.json
+    │   │   ├── LICENSE
+    │   │   ├── package-lock.json
+    │   │   ├── package.json
+    │   │   ├── README-CLI.md
+    │   │   ├── README.md
+    │   │   ├── scripts
+    │   │   │   ├── common.js
+    │   │   │   ├── common.ts
+    │   │   │   ├── documentation.js
+    │   │   │   ├── documentation.ts
+    │   │   │   ├── pack-documentation.js
+    │   │   │   ├── pack-documentation.ts
+    │   │   │   ├── pack-samples.js
+    │   │   │   ├── pack-samples.ts
+    │   │   │   ├── pack-sdk.js
+    │   │   │   ├── pack-sdk.ts
+    │   │   │   ├── pack.js
+    │   │   │   ├── pack.ts
+    │   │   │   ├── publish-version.js
+    │   │   │   ├── publish-version.ts
+    │   │   │   ├── publish.js
+    │   │   │   ├── publish.ts
+    │   │   │   ├── tsconfig.json
+    │   │   │   ├── version.js
+    │   │   │   └── version.ts
+    │   │   ├── src
+    │   │   │   ├── cli.ts
+    │   │   │   ├── commands
+    │   │   │   │   ├── build.ts
+    │   │   │   │   ├── index.ts
+    │   │   │   │   ├── login
+    │   │   │   │   │   ├── login-cloud.ts
+    │   │   │   │   │   ├── models.ts
+    │   │   │   │   │   └── utils.ts
+    │   │   │   │   ├── login.ts
+    │   │   │   │   ├── new.ts
+    │   │   │   │   ├── serve.ts
+    │   │   │   │   ├── set.ts
+    │   │   │   │   └── webpack.config.ts
+    │   │   │   ├── index.ts
+    │   │   │   ├── mtauth.cts
+    │   │   │   └── utils.ts
+    │   │   └── tsconfig.json
+    │   ├── login
+    │   │   ├── LICENSE
+    │   │   ├── NOTICE
+    │   │   ├── OdinSDKMTLoginUtility.zip
+    │   │   └── README.md
+    │   ├── logs
+    │   │   └── xvba_debug.log
+    │   ├── m3-odin
+    │   │   ├── angular.json
+    │   │   ├── boilerplate
+    │   │   │   └── infor-m3-odin-sample-soho
+    │   │   │       ├── app
+    │   │   │       │   ├── app-routing.module.ts
+    │   │   │       │   ├── app.component.ts
+    │   │   │       │   ├── app.module.ts
+    │   │   │       │   └── soho-app
+    │   │   │       │       └── soho-app.component.ts
+    │   │   │       ├── index.html
+    │   │   │       └── main.ts
+    │   │   ├── docs
+    │   │   │   ├── assets
+    │   │   │   │   ├── highlight.css
+    │   │   │   │   ├── icons.js
+    │   │   │   │   ├── icons.svg
+    │   │   │   │   ├── main.js
+    │   │   │   │   ├── navigation.js
+    │   │   │   │   ├── search.js
+    │   │   │   │   └── style.css
+    │   │   │   ├── classes
+    │   │   │   │   ├── _infor_up_m3_odin_angular.ApplicationService.html
+    │   │   │   │   ├── _infor_up_m3_odin_angular.DatePipe.html
+    │   │   │   │   ├── _infor_up_m3_odin_angular.FormService.html
+    │   │   │   │   ├── _infor_up_m3_odin_angular.IonApiService.html
+    │   │   │   │   ├── _infor_up_m3_odin_angular.M3OdinModule.html
+    │   │   │   │   ├── _infor_up_m3_odin_angular.MIService.html
+    │   │   │   │   ├── _infor_up_m3_odin_angular.UserService.html
+    │   │   │   │   ├── _infor_up_m3_odin.ArrayUtil.html
+    │   │   │   │   ├── _infor_up_m3_odin.Button.html
+    │   │   │   │   ├── _infor_up_m3_odin.CheckBox.html
+    │   │   │   │   ├── _infor_up_m3_odin.ComboBox.html
+    │   │   │   │   ├── _infor_up_m3_odin.ComboBoxItem.html
+    │   │   │   │   ├── _infor_up_m3_odin.Constraint.html
+    │   │   │   │   ├── _infor_up_m3_odin.ControlType.html
+    │   │   │   │   ├── _infor_up_m3_odin.CoreBase.html
+    │   │   │   │   ├── _infor_up_m3_odin.CoreUtil.html
+    │   │   │   │   ├── _infor_up_m3_odin.DatePicker.html
+    │   │   │   │   ├── _infor_up_m3_odin.ErrorState.html
+    │   │   │   │   ├── _infor_up_m3_odin.FormatUtil.html
+    │   │   │   │   ├── _infor_up_m3_odin.FormControl.html
+    │   │   │   │   ├── _infor_up_m3_odin.FunctionKey.html
+    │   │   │   │   ├── _infor_up_m3_odin.GroupBox.html
+    │   │   │   │   ├── _infor_up_m3_odin.HttpUtil.html
+    │   │   │   │   ├── _infor_up_m3_odin.IonApiConstants.html
+    │   │   │   │   ├── _infor_up_m3_odin.IonApiServiceCore.html
+    │   │   │   │   ├── _infor_up_m3_odin.Label.html
+    │   │   │   │   ├── _infor_up_m3_odin.List.html
+    │   │   │   │   ├── _infor_up_m3_odin.ListCell.html
+    │   │   │   │   ├── _infor_up_m3_odin.ListColumn.html
+    │   │   │   │   ├── _infor_up_m3_odin.ListRow.html
+    │   │   │   │   ├── _infor_up_m3_odin.Log.html
+    │   │   │   │   ├── _infor_up_m3_odin.MIConstants.html
+    │   │   │   │   ├── _infor_up_m3_odin.MIRecord.html
+    │   │   │   │   ├── _infor_up_m3_odin.MIServiceCore.html
+    │   │   │   │   ├── _infor_up_m3_odin.NumUtil.html
+    │   │   │   │   ├── _infor_up_m3_odin.Option.html
+    │   │   │   │   ├── _infor_up_m3_odin.Panel.html
+    │   │   │   │   ├── _infor_up_m3_odin.Position.html
+    │   │   │   │   ├── _infor_up_m3_odin.StringUtil.html
+    │   │   │   │   └── _infor_up_m3_odin.TextBox.html
+    │   │   │   ├── enums
+    │   │   │   │   └── _infor_up_m3_odin.MIDataType.html
+    │   │   │   ├── hierarchy.html
+    │   │   │   ├── index.html
+    │   │   │   ├── interfaces
+    │   │   │   │   ├── _infor_up_m3_odin_angular.IIonApiConfig.html
+    │   │   │   │   ├── _infor_up_m3_odin.IApplicationService.html
+    │   │   │   │   ├── _infor_up_m3_odin.IBookmark.html
+    │   │   │   │   ├── _infor_up_m3_odin.IDateOptions.html
+    │   │   │   │   ├── _infor_up_m3_odin.IEnvironmentContext.html
+    │   │   │   │   ├── _infor_up_m3_odin.IErrorState.html
+    │   │   │   │   ├── _infor_up_m3_odin.IFormControlInfo.html
+    │   │   │   │   ├── _infor_up_m3_odin.IFormRequest.html
+    │   │   │   │   ├── _infor_up_m3_odin.IFormResponse.html
+    │   │   │   │   ├── _infor_up_m3_odin.IFormService.html
+    │   │   │   │   ├── _infor_up_m3_odin.IHttpRequest.html
+    │   │   │   │   ├── _infor_up_m3_odin.IHttpResponse.html
+    │   │   │   │   ├── _infor_up_m3_odin.IHttpService.html
+    │   │   │   │   ├── _infor_up_m3_odin.IIonApiContext.html
+    │   │   │   │   ├── _infor_up_m3_odin.IIonApiOptions.html
+    │   │   │   │   ├── _infor_up_m3_odin.IIonApiRequest.html
+    │   │   │   │   ├── _infor_up_m3_odin.IIonApiResponse.html
+    │   │   │   │   ├── _infor_up_m3_odin.IIonApiService.html
+    │   │   │   │   ├── _infor_up_m3_odin.ILogAppender.html
+    │   │   │   │   ├── _infor_up_m3_odin.IMIMetadataInfo.html
+    │   │   │   │   ├── _infor_up_m3_odin.IMIMetadataMap.html
+    │   │   │   │   ├── _infor_up_m3_odin.IMIOptions.html
+    │   │   │   │   ├── _infor_up_m3_odin.IMIRequest.html
+    │   │   │   │   ├── _infor_up_m3_odin.IMIResponse.html
+    │   │   │   │   ├── _infor_up_m3_odin.IMIService.html
+    │   │   │   │   ├── _infor_up_m3_odin.INumberFormatOptions.html
+    │   │   │   │   ├── _infor_up_m3_odin.ISearchRequest.html
+    │   │   │   │   ├── _infor_up_m3_odin.ISortOptions.html
+    │   │   │   │   ├── _infor_up_m3_odin.IUserContext.html
+    │   │   │   │   └── _infor_up_m3_odin.IUserService.html
+    │   │   │   ├── modules
+    │   │   │   │   ├── _infor_up_m3_odin_angular.html
+    │   │   │   │   └── _infor_up_m3_odin.html
+    │   │   │   └── variables
+    │   │   │       └── _infor_up_m3_odin_angular.IonApiConfig.html
+    │   │   ├── e2e
+    │   │   │   ├── protractor.conf.js
+    │   │   │   ├── src
+    │   │   │   │   ├── app.e2e-spec.ts
+    │   │   │   │   └── app.po.ts
+    │   │   │   └── tsconfig.e2e.json
+    │   │   ├── package-lock.json
+    │   │   ├── package.json
+    │   │   ├── projects
+    │   │   │   └── infor-up
+    │   │   │       ├── m3-odin
+    │   │   │       │   ├── karma.conf.js
+    │   │   │       │   ├── LICENSE
+    │   │   │       │   ├── ng-package.json
+    │   │   │       │   ├── package.json
+    │   │   │       │   ├── README.md
+    │   │   │       │   ├── src
+    │   │   │       │   │   ├── lib
+    │   │   │       │   │   │   ├── base.spec.ts
+    │   │   │       │   │   │   ├── base.ts
+    │   │   │       │   │   │   ├── form
+    │   │   │       │   │   │   │   ├── base.spec.ts
+    │   │   │       │   │   │   │   ├── base.ts
+    │   │   │       │   │   │   │   ├── constants.ts
+    │   │   │       │   │   │   │   ├── elements.ts
+    │   │   │       │   │   │   │   ├── index.ts
+    │   │   │       │   │   │   │   ├── parser.spec.ts
+    │   │   │       │   │   │   │   ├── parser.ts
+    │   │   │       │   │   │   │   ├── runtime.spec.ts
+    │   │   │       │   │   │   │   ├── runtime.ts
+    │   │   │       │   │   │   │   ├── service.spec.ts
+    │   │   │       │   │   │   │   ├── service.ts
+    │   │   │       │   │   │   │   └── types.ts
+    │   │   │       │   │   │   ├── http.spec.ts
+    │   │   │       │   │   │   ├── http.ts
+    │   │   │       │   │   │   ├── ion.spec.ts
+    │   │   │       │   │   │   ├── ion.ts
+    │   │   │       │   │   │   ├── log.spec.ts
+    │   │   │       │   │   │   ├── log.ts
+    │   │   │       │   │   │   ├── m3
+    │   │   │       │   │   │   │   ├── application-service-core.spec.ts
+    │   │   │       │   │   │   │   ├── common-util.spec.ts
+    │   │   │       │   │   │   │   ├── configuration.spec.ts
+    │   │   │       │   │   │   │   ├── format-util.spec.ts
+    │   │   │       │   │   │   │   ├── index.ts
+    │   │   │       │   │   │   │   ├── runtime.ts
+    │   │   │       │   │   │   │   ├── types.ts
+    │   │   │       │   │   │   │   └── user-service-core.spec.ts
+    │   │   │       │   │   │   ├── mi
+    │   │   │       │   │   │   │   ├── base.ts
+    │   │   │       │   │   │   │   ├── index.ts
+    │   │   │       │   │   │   │   ├── mi-metadata-info.spec.ts
+    │   │   │       │   │   │   │   ├── mi-record.spec.ts
+    │   │   │       │   │   │   │   ├── mi-response.spec.ts
+    │   │   │       │   │   │   │   ├── mi-service-core.spec.ts
+    │   │   │       │   │   │   │   ├── mi-util.spec.ts
+    │   │   │       │   │   │   │   ├── runtime.ts
+    │   │   │       │   │   │   │   └── types.ts
+    │   │   │       │   │   │   ├── types.ts
+    │   │   │       │   │   │   ├── util.spec.ts
+    │   │   │       │   │   │   └── util.ts
+    │   │   │       │   │   ├── public-api.ts
+    │   │   │       │   │   └── test.ts
+    │   │   │       │   ├── tsconfig.json
+    │   │   │       │   ├── tsconfig.lib.json
+    │   │   │       │   ├── tsconfig.lib.prod.json
+    │   │   │       │   ├── tsconfig.spec.json
+    │   │   │       │   └── typedoc.json
+    │   │   │       └── m3-odin-angular
+    │   │   │           ├── karma.conf.js
+    │   │   │           ├── ng-package.json
+    │   │   │           ├── package.json
+    │   │   │           ├── README.md
+    │   │   │           ├── src
+    │   │   │           │   ├── index.ts
+    │   │   │           │   ├── lib
+    │   │   │           │   │   ├── pipes.ts
+    │   │   │           │   │   ├── service.module.ts
+    │   │   │           │   │   ├── service.spec.ts
+    │   │   │           │   │   └── service.ts
+    │   │   │           │   └── test.ts
+    │   │   │           ├── tsconfig.lib.json
+    │   │   │           ├── tsconfig.lib.prod.json
+    │   │   │           ├── tsconfig.spec.json
+    │   │   │           ├── tslint.json
+    │   │   │           └── typedoc.json
+    │   │   ├── proxy.conf.json
+    │   │   ├── README-DEV.md
+    │   │   ├── samples
+    │   │   │   ├── infor-m3-odin-sample-material-5.0.0.zip
+    │   │   │   └── infor-m3-odin-sample-soho-5.0.0.zip
+    │   │   ├── src
+    │   │   │   ├── app
+    │   │   │   │   ├── app-routing.module.ts
+    │   │   │   │   ├── app.component.ts
+    │   │   │   │   ├── app.module.ts
+    │   │   │   │   ├── common
+    │   │   │   │   │   ├── common-app.module.ts
+    │   │   │   │   │   └── document-viewer.ts
+    │   │   │   │   └── soho-app
+    │   │   │   │       ├── sample-viewer
+    │   │   │   │       │   ├── sample-viewer-dialog.component.html
+    │   │   │   │       │   ├── sample-viewer.component.css
+    │   │   │   │       │   ├── sample-viewer.component.html
+    │   │   │   │       │   └── sample-viewer.component.ts
+    │   │   │   │       ├── samples
+    │   │   │   │       │   ├── bookmark
+    │   │   │   │       │   │   ├── bookmark.component.html
+    │   │   │   │       │   │   ├── bookmark.component.ts
+    │   │   │   │       │   │   └── panel-detail
+    │   │   │   │       │   │       ├── panel-detail.component.html
+    │   │   │   │       │   │       └── panel-detail.component.ts
+    │   │   │   │       │   ├── chart
+    │   │   │   │       │   │   ├── chart.component.html
+    │   │   │   │       │   │   └── chart.component.ts
+    │   │   │   │       │   ├── customer
+    │   │   │   │       │   │   ├── customer.component.html
+    │   │   │   │       │   │   ├── customer.component.spec.ts
+    │   │   │   │       │   │   └── customer.component.ts
+    │   │   │   │       │   ├── formatting
+    │   │   │   │       │   │   ├── formatting.component.html
+    │   │   │   │       │   │   └── formatting.component.ts
+    │   │   │   │       │   ├── home
+    │   │   │   │       │   │   ├── home.component.html
+    │   │   │   │       │   │   └── home.component.ts
+    │   │   │   │       │   ├── idm
+    │   │   │   │       │   │   ├── idm-data.service.ts
+    │   │   │   │       │   │   ├── idm.component.css
+    │   │   │   │       │   │   ├── idm.component.html
+    │   │   │   │       │   │   └── idm.component.ts
+    │   │   │   │       │   ├── infinite-paging
+    │   │   │   │       │   │   ├── customer-paging.service.ts
+    │   │   │   │       │   │   ├── infinite-paging.component.html
+    │   │   │   │       │   │   └── infinite-paging.component.ts
+    │   │   │   │       │   ├── ionapi-social
+    │   │   │   │       │   │   ├── ionapi-social.component.html
+    │   │   │   │       │   │   └── ionapi-social.component.ts
+    │   │   │   │       │   ├── launch
+    │   │   │   │       │   │   ├── launch.component.html
+    │   │   │   │       │   │   └── launch.component.ts
+    │   │   │   │       │   ├── log
+    │   │   │   │       │   │   ├── log.component.html
+    │   │   │   │       │   │   └── log.component.ts
+    │   │   │   │       │   ├── search
+    │   │   │   │       │   │   ├── search.component.css
+    │   │   │   │       │   │   ├── search.component.html
+    │   │   │   │       │   │   └── search.component.ts
+    │   │   │   │       │   ├── theme
+    │   │   │   │       │   │   ├── theme.component.html
+    │   │   │   │       │   │   └── theme.component.ts
+    │   │   │   │       │   └── user-context
+    │   │   │   │       │       ├── user-context.component.html
+    │   │   │   │       │       └── user-context.component.ts
+    │   │   │   │       ├── soho-app.component.css
+    │   │   │   │       ├── soho-app.component.html
+    │   │   │   │       ├── soho-app.component.spec.ts
+    │   │   │   │       ├── soho-app.component.ts
+    │   │   │   │       ├── soho-app.module.spec.ts
+    │   │   │   │       ├── soho-app.module.ts
+    │   │   │   │       └── soho-app.routes.ts
+    │   │   │   ├── assets
+    │   │   │   │   └── favicon.ico
+    │   │   │   ├── environments
+    │   │   │   │   ├── environment.prod.ts
+    │   │   │   │   └── environment.ts
+    │   │   │   ├── index.html
+    │   │   │   ├── karma.conf.js
+    │   │   │   ├── main.ts
+    │   │   │   ├── polyfills.ts
+    │   │   │   ├── styles.css
+    │   │   │   ├── test.ts
+    │   │   │   ├── tsconfig.app.json
+    │   │   │   ├── tsconfig.spec.json
+    │   │   │   ├── tslint.json
+    │   │   │   └── typings.d.ts
+    │   │   ├── tsconfig.json
+    │   │   ├── tslint.json
+    │   │   └── typedoc.json
+    │   ├── Odin.code-workspace
+    │   ├── README.md
+    │   └── tslint.json
+    ├── M3 H5 Scripting
+    │   ├── Documentation
+    │   │   ├── CHANGELOG.txt
+    │   │   ├── H5ScriptDevelopersGuide.docx
+    │   │   ├── H5ScriptDevelopersGuide.md
+    │   │   └── H5ScriptDevelopersGuide.pdf
+    │   ├── Files.txt
+    │   ├── README.md
+    │   ├── Samples
+    │   │   ├── InstallWebServer.cmd
+    │   │   ├── Nodejs
+    │   │   │   ├── node_modules
+    │   │   │   │   ├── connect
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   ├── README.md
+    │   │   │   │   │   └── SECURITY.md
+    │   │   │   │   ├── debug
+    │   │   │   │   │   ├── CHANGELOG.md
+    │   │   │   │   │   ├── component.json
+    │   │   │   │   │   ├── karma.conf.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── Makefile
+    │   │   │   │   │   ├── node.js
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   ├── README.md
+    │   │   │   │   │   └── src
+    │   │   │   │   │       ├── browser.js
+    │   │   │   │   │       ├── debug.js
+    │   │   │   │   │       ├── index.js
+    │   │   │   │   │       ├── inspector-log.js
+    │   │   │   │   │       └── node.js
+    │   │   │   │   ├── depd
+    │   │   │   │   │   ├── History.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── lib
+    │   │   │   │   │   │   └── browser
+    │   │   │   │   │   │       └── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── Readme.md
+    │   │   │   │   ├── ee-first
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── encodeurl
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── escape-html
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── Readme.md
+    │   │   │   │   ├── etag
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── finalhandler
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── fresh
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── http-errors
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── node_modules
+    │   │   │   │   │   │   └── statuses
+    │   │   │   │   │   │       ├── codes.json
+    │   │   │   │   │   │       ├── HISTORY.md
+    │   │   │   │   │   │       ├── index.js
+    │   │   │   │   │   │       ├── LICENSE
+    │   │   │   │   │   │       ├── package.json
+    │   │   │   │   │   │       └── README.md
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── inherits
+    │   │   │   │   │   ├── inherits_browser.js
+    │   │   │   │   │   ├── inherits.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── mime-db
+    │   │   │   │   │   ├── db.json
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── mime-types
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── mimeScore.js
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── ms
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── license.md
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── readme.md
+    │   │   │   │   ├── on-finished
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── parseurl
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── range-parser
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── send
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── node_modules
+    │   │   │   │   │   │   ├── debug
+    │   │   │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   │   │   ├── package.json
+    │   │   │   │   │   │   │   ├── README.md
+    │   │   │   │   │   │   │   └── src
+    │   │   │   │   │   │   │       ├── browser.js
+    │   │   │   │   │   │   │       ├── common.js
+    │   │   │   │   │   │   │       ├── index.js
+    │   │   │   │   │   │   │       └── node.js
+    │   │   │   │   │   │   ├── encodeurl
+    │   │   │   │   │   │   │   ├── index.js
+    │   │   │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   │   │   ├── package.json
+    │   │   │   │   │   │   │   └── README.md
+    │   │   │   │   │   │   ├── ms
+    │   │   │   │   │   │   │   ├── index.js
+    │   │   │   │   │   │   │   ├── license.md
+    │   │   │   │   │   │   │   ├── package.json
+    │   │   │   │   │   │   │   └── readme.md
+    │   │   │   │   │   │   ├── on-finished
+    │   │   │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   │   │   ├── index.js
+    │   │   │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   │   │   ├── package.json
+    │   │   │   │   │   │   │   └── README.md
+    │   │   │   │   │   │   └── statuses
+    │   │   │   │   │   │       ├── codes.json
+    │   │   │   │   │   │       ├── HISTORY.md
+    │   │   │   │   │   │       ├── index.js
+    │   │   │   │   │   │       ├── LICENSE
+    │   │   │   │   │   │       ├── package.json
+    │   │   │   │   │   │       └── README.md
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── serve-static
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── node_modules
+    │   │   │   │   │   │   └── encodeurl
+    │   │   │   │   │   │       ├── index.js
+    │   │   │   │   │   │       ├── LICENSE
+    │   │   │   │   │   │       ├── package.json
+    │   │   │   │   │   │       └── README.md
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── setprototypeof
+    │   │   │   │   │   ├── index.d.ts
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   ├── README.md
+    │   │   │   │   │   └── test
+    │   │   │   │   │       └── index.js
+    │   │   │   │   ├── statuses
+    │   │   │   │   │   ├── codes.json
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── toidentifier
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   ├── unpipe
+    │   │   │   │   │   ├── HISTORY.md
+    │   │   │   │   │   ├── index.js
+    │   │   │   │   │   ├── LICENSE
+    │   │   │   │   │   ├── package.json
+    │   │   │   │   │   └── README.md
+    │   │   │   │   └── utils-merge
+    │   │   │   │       ├── index.js
+    │   │   │   │       ├── LICENSE
+    │   │   │   │       ├── package.json
+    │   │   │   │       └── README.md
+    │   │   │   ├── package-lock.json
+    │   │   │   ├── package.json
+    │   │   │   └── webserver.js
+    │   │   ├── Samples
+    │   │   │   ├── H5SampleAddElements.js
+    │   │   │   ├── H5SampleAddElements.js.map
+    │   │   │   ├── H5SampleAddElements.ts
+    │   │   │   ├── H5SampleCancelRequest.js
+    │   │   │   ├── H5SampleCancelRequest.js.map
+    │   │   │   ├── H5SampleCancelRequest.ts
+    │   │   │   ├── H5SampleCurrencyXML.js
+    │   │   │   ├── H5SampleCurrencyXML.js.map
+    │   │   │   ├── H5SampleCurrencyXML.ts
+    │   │   │   ├── H5SampleCustomColumns.js
+    │   │   │   ├── H5SampleCustomColumns.js.map
+    │   │   │   ├── H5SampleCustomColumns.ts
+    │   │   │   ├── H5SampleCustomDialog.js
+    │   │   │   ├── H5SampleCustomDialog.js.map
+    │   │   │   ├── H5SampleCustomDialog.ts
+    │   │   │   ├── H5SampleDrillback.js
+    │   │   │   ├── H5SampleDrillback.js.map
+    │   │   │   ├── H5SampleDrillback.ts
+    │   │   │   ├── H5SampleExportToExcel.js
+    │   │   │   ├── H5SampleExportToExcel.js.map
+    │   │   │   ├── H5SampleExportToExcel.ts
+    │   │   │   ├── H5SampleHelloWorld.js
+    │   │   │   ├── H5SampleHelloWorld.js.map
+    │   │   │   ├── H5SampleHelloWorld.ts
+    │   │   │   ├── H5SampleHideColumns.js
+    │   │   │   ├── H5SampleHideColumns.js.map
+    │   │   │   ├── H5SampleHideColumns.ts
+    │   │   │   ├── H5SampleImageFromList.js
+    │   │   │   ├── H5SampleImageFromList.js.map
+    │   │   │   ├── H5SampleImageFromList.ts
+    │   │   │   ├── H5SampleIonApiService.js
+    │   │   │   ├── H5SampleIonApiService.js.map
+    │   │   │   ├── H5SampleIonApiService.ts
+    │   │   │   ├── H5SampleMFormsAutomation.js
+    │   │   │   ├── H5SampleMFormsAutomation.js.map
+    │   │   │   ├── H5SampleMFormsAutomation.ts
+    │   │   │   ├── H5SampleMIService.js
+    │   │   │   ├── H5SampleMIService.js.map
+    │   │   │   ├── H5SampleMIService.ts
+    │   │   │   ├── H5SampleMIServiceV2.js
+    │   │   │   ├── H5SampleMIServiceV2.js.map
+    │   │   │   ├── H5SampleMIServiceV2.ts
+    │   │   │   ├── H5SampleOpenFieldHelp.js
+    │   │   │   ├── H5SampleOpenFieldHelp.js.map
+    │   │   │   ├── H5SampleOpenFieldHelp.ts
+    │   │   │   ├── H5SampleOptionButton.js
+    │   │   │   ├── H5SampleOptionButton.js.map
+    │   │   │   ├── H5SampleOptionButton.ts
+    │   │   │   ├── H5SamplePreviewListHeader.js
+    │   │   │   ├── H5SamplePreviewListHeader.js.map
+    │   │   │   ├── H5SamplePreviewListHeader.ts
+    │   │   │   ├── H5SampleRegexValidator.js
+    │   │   │   ├── H5SampleRegexValidator.js.map
+    │   │   │   ├── H5SampleRegexValidator.ts
+    │   │   │   ├── H5SampleRequestTracer.js
+    │   │   │   ├── H5SampleRequestTracer.js.map
+    │   │   │   ├── H5SampleRequestTracer.ts
+    │   │   │   ├── H5SampleScriptTemplate.js
+    │   │   │   ├── H5SampleScriptTemplate.js.map
+    │   │   │   ├── H5SampleScriptTemplate.ts
+    │   │   │   ├── H5SampleSelectionChanged.js
+    │   │   │   ├── H5SampleSelectionChanged.js.map
+    │   │   │   ├── H5SampleSelectionChanged.ts
+    │   │   │   ├── H5SampleShowOnMap.js
+    │   │   │   ├── H5SampleShowOnMap.js.map
+    │   │   │   ├── H5SampleShowOnMap.ts
+    │   │   │   ├── H5SampleShowXml.js
+    │   │   │   ├── H5SampleShowXml.js.map
+    │   │   │   ├── H5SampleShowXml.ts
+    │   │   │   ├── H5SampleUserDetails.js
+    │   │   │   ├── H5SampleUserDetails.js.map
+    │   │   │   ├── H5SampleUserDetails.ts
+    │   │   │   ├── Samples.csproj
+    │   │   │   ├── tsconfig.json
+    │   │   │   ├── typings
+    │   │   │   │   ├── es6-promise.d.ts
+    │   │   │   │   ├── h5.script.d.ts
+    │   │   │   │   ├── infor.controls.d.ts
+    │   │   │   │   ├── jquery.d.ts
+    │   │   │   │   └── jquery.json.d.ts
+    │   │   │   ├── web.config
+    │   │   │   ├── web.Debug.config
+    │   │   │   └── web.Release.config
+    │   │   ├── Samples.sln
+    │   │   ├── scantool
+    │   │   │   ├── 1089.4d47d923c39cce22.js
+    │   │   │   ├── 1089.cc132360e43aae51.js
+    │   │   │   ├── 1102.32a6358abe32d7f0.js
+    │   │   │   ├── 1102.9f58273b8f567fbf.js
+    │   │   │   ├── 1105.e46c998034eaaf35.js
+    │   │   │   ├── 1105.fd6002f2276608f0.js
+    │   │   │   ├── 1172.6339f72ad92e6e37.js
+    │   │   │   ├── 1172.68c0340d8933c9c5.js
+    │   │   │   ├── 1248.4459e0284ce72064.js
+    │   │   │   ├── 1248.e4043e4774fe9408.js
+    │   │   │   ├── 1406.496356211f14ecff.js
+    │   │   │   ├── 1406.d007240c33f70321.js
+    │   │   │   ├── 159.1a0e1bc222cf3ff2.js
+    │   │   │   ├── 159.b1fe48f5b01e198f.js
+    │   │   │   ├── 1779.b2c4e24b95bdd8af.js
+    │   │   │   ├── 1779.d5e1ce16e1b9ad5c.js
+    │   │   │   ├── 1854.1eac77d14ea2e38b.js
+    │   │   │   ├── 1854.c057adc0709bdeb4.js
+    │   │   │   ├── 1879.6be45950f97da6dd.js
+    │   │   │   ├── 1879.8e23839a27f50585.js
+    │   │   │   ├── 1953.0a824fed0b6c4adc.js
+    │   │   │   ├── 1953.d1116c673a38ffc9.js
+    │   │   │   ├── 1990.6ad5cc0dbf4ba148.js
+    │   │   │   ├── 1990.793052b8d6916602.js
+    │   │   │   ├── 204.0b82f19823061b03.js
+    │   │   │   ├── 204.e6aa548dba798f25.js
+    │   │   │   ├── 22.1b1412ebf11c65d5.js
+    │   │   │   ├── 22.1ea82dc17d7b521f.js
+    │   │   │   ├── 2337.2153c4915811683a.js
+    │   │   │   ├── 2337.e9f0d08bc3a3d54a.js
+    │   │   │   ├── 2382.784c0d0cbc820744.js
+    │   │   │   ├── 2382.9680b7ce243edbb0.js
+    │   │   │   ├── 2402.4317750fc96ac113.js
+    │   │   │   ├── 2402.c2dcc7df57e51fcb.js
+    │   │   │   ├── 2453.1420e38bdd88a29f.js
+    │   │   │   ├── 2453.75aa41ed1078ce0e.js
+    │   │   │   ├── 2628.6c6c44b752018c0f.js
+    │   │   │   ├── 2628.bdd3e12656ca69d3.js
+    │   │   │   ├── 2633.a93c00718e958dfd.js
+    │   │   │   ├── 2633.b63ffd745a24e63a.js
+    │   │   │   ├── 2670.032b3fe586481686.js
+    │   │   │   ├── 2670.23940fc07a3602e4.js
+    │   │   │   ├── 2755.66ce2511609dfed1.js
+    │   │   │   ├── 2755.ab9fb22373757e4f.js
+    │   │   │   ├── 292.4e7bcac25b664858.js
+    │   │   │   ├── 292.7d3e008aa73ccd5b.js
+    │   │   │   ├── 3026.4960d1bf41fde9d3.js
+    │   │   │   ├── 3026.f8191aed05dc9c9e.js
+    │   │   │   ├── 3153.42df2cd6821d710b.js
+    │   │   │   ├── 3153.71d77f5d74a444e6.js
+    │   │   │   ├── 3182.387616fededb83d3.js
+    │   │   │   ├── 3182.bc3f3d0decb0a64b.js
+    │   │   │   ├── 3238.6c2c9e2663624484.js
+    │   │   │   ├── 3238.7b7003ef0ad52a0c.js
+    │   │   │   ├── 3430.71d1909e56f83e20.js
+    │   │   │   ├── 3430.dde4ced211015f47.js
+    │   │   │   ├── 3504.0312ce3628540593.js
+    │   │   │   ├── 3504.b402673ec80c5416.js
+    │   │   │   ├── 3605.0c1feb21028ffc37.js
+    │   │   │   ├── 3605.fe3c6ba227749fbd.js
+    │   │   │   ├── 3737.57f4f650a708db1e.js
+    │   │   │   ├── 3737.969237311a9dff14.js
+    │   │   │   ├── 3912.6391210d4b9095e0.js
+    │   │   │   ├── 3912.d2d70feb521f724a.js
+    │   │   │   ├── 3926.94a2cdcc12d0983f.js
+    │   │   │   ├── 3926.a9e6367a903f372c.js
+    │   │   │   ├── 3999.b7d0f8ea6c9c8cd2.js
+    │   │   │   ├── 3999.e88610b416983e25.js
+    │   │   │   ├── 3rdpartylicenses.txt
+    │   │   │   ├── 4121.655c0d04ba1cbcf1.js
+    │   │   │   ├── 4121.ff5e62dc8aa3e435.js
+    │   │   │   ├── 4197.b56fad3712715e8e.js
+    │   │   │   ├── 4197.f10f3e21e648063b.js
+    │   │   │   ├── 422.6e5655055e1c17a2.js
+    │   │   │   ├── 422.7311c681a973dd17.js
+    │   │   │   ├── 4395.b4e0e961d65bef21.js
+    │   │   │   ├── 4395.ca282b8fa80c0e17.js
+    │   │   │   ├── 445.310ea24d80eacf40.js
+    │   │   │   ├── 445.eae99870c5472637.js
+    │   │   │   ├── 4529.015760997f73533f.js
+    │   │   │   ├── 4529.95cccf2bc1ce015d.js
+    │   │   │   ├── 4562.1c774feaaafc7962.js
+    │   │   │   ├── 4562.e7596c5ff6f18cb7.js
+    │   │   │   ├── 4612.096b9daddf6c307f.js
+    │   │   │   ├── 4612.880c86462d10747e.js
+    │   │   │   ├── 4624.79b88df14dae926c.js
+    │   │   │   ├── 4624.c8cd33cd63fd39d6.js
+    │   │   │   ├── 4721.6386df65d7fef397.js
+    │   │   │   ├── 4721.d8fa83f809fd9641.js
+    │   │   │   ├── 49.4171ac8126b056b7.js
+    │   │   │   ├── 49.81e7cfe6a5b47b0c.js
+    │   │   │   ├── 5167.45dc0bfd5c18ed7d.js
+    │   │   │   ├── 5167.bbaf99ad314da382.js
+    │   │   │   ├── 5547.390d0b24436a3b44.js
+    │   │   │   ├── 5547.4629a186ef1bddcb.js
+    │   │   │   ├── 5550.432b718a2d560b00.js
+    │   │   │   ├── 5550.7bbc1c0f8bf45892.js
+    │   │   │   ├── 5592.1485cb445ee4428e.js
+    │   │   │   ├── 5592.f49a56954d4499ef.js
+    │   │   │   ├── 5610.3d9d4c2786940c73.js
+    │   │   │   ├── 5610.57dbed6e5fbf1059.js
+    │   │   │   ├── 5631.4bcf6f21c2933feb.js
+    │   │   │   ├── 5631.9494317c906f8a4c.js
+    │   │   │   ├── 571.eb2b2808f4696324.js
+    │   │   │   ├── 571.ec36fd8a31cd7042.js
+    │   │   │   ├── 5958.2f25f64b3054806e.js
+    │   │   │   ├── 5958.a73725ad58383de5.js
+    │   │   │   ├── 6085.37bd5bf0235a2c73.js
+    │   │   │   ├── 6085.5cb036c52fc46df8.js
+    │   │   │   ├── 6133.2b65924c7854bc65.js
+    │   │   │   ├── 6133.b635b90c56fd5390.js
+    │   │   │   ├── 621.7605ab03576d619e.js
+    │   │   │   ├── 621.e74b29e3a59942b9.js
+    │   │   │   ├── 6219.7acbd2afe8053230.js
+    │   │   │   ├── 6219.c3db5767efdafb1f.js
+    │   │   │   ├── 6302.5bf831604f923d16.js
+    │   │   │   ├── 6302.e6f221712dcb77f0.js
+    │   │   │   ├── 6485.06866a80a42ea2ba.js
+    │   │   │   ├── 6485.b66d2cff9b897a04.js
+    │   │   │   ├── 6499.67564e1f82bc6b28.js
+    │   │   │   ├── 6499.8b014925ba06a836.js
+    │   │   │   ├── 6542.2216dc7f5483be38.js
+    │   │   │   ├── 6542.b1f6ba4dd1be95d6.js
+    │   │   │   ├── 6546.3d5ee8b803e9b1e8.js
+    │   │   │   ├── 6546.598d7784f3e0fdf3.js
+    │   │   │   ├── 6648.7823a21746b7c05a.js
+    │   │   │   ├── 6648.8ffaa7c5ecc39b4d.js
+    │   │   │   ├── 6765.8c303aee5e2f4703.js
+    │   │   │   ├── 6765.c7f665260cae06f3.js
+    │   │   │   ├── 6783.5adbf308622efc17.js
+    │   │   │   ├── 6783.b1ce529f18e1b97d.js
+    │   │   │   ├── 6820.d92fbafd563406ed.js
+    │   │   │   ├── 6820.dc8d4e30c0b7dab5.js
+    │   │   │   ├── 6924.3b373c0bc4cc8da7.js
+    │   │   │   ├── 6924.e1a4b7bae97203a5.js
+    │   │   │   ├── 7007.078d2c2a269da522.js
+    │   │   │   ├── 7007.1dd02a6ce095cf5f.js
+    │   │   │   ├── 7113.878709192c3249b4.js
+    │   │   │   ├── 7113.b1547e6108306cb9.js
+    │   │   │   ├── 712.0e6c8acc034319da.js
+    │   │   │   ├── 712.630a02c556b286a0.js
+    │   │   │   ├── 7165.32a69d493fa87b64.js
+    │   │   │   ├── 7165.5151caa5a59e4de9.js
+    │   │   │   ├── 7221.30a123101d8e868a.js
+    │   │   │   ├── 7221.6b83e69f50526ab4.js
+    │   │   │   ├── 7253.823b1feb6c2c9a0b.js
+    │   │   │   ├── 7253.89965fb9734a14d3.js
+    │   │   │   ├── 7277.2fdf3b57509b1bcb.js
+    │   │   │   ├── 7277.b2c920344cf8062c.js
+    │   │   │   ├── 7299.432357b04fdebb79.js
+    │   │   │   ├── 7299.db7b5a9d0d0fb8c4.js
+    │   │   │   ├── 7517.c3a1f2bfb2d16672.js
+    │   │   │   ├── 7517.f0f3f74db4259e30.js
+    │   │   │   ├── 7530.0ddef2bdcdf1365a.js
+    │   │   │   ├── 7530.1bb4d1ff40626876.js
+    │   │   │   ├── 7683.0767202e458b6b7b.js
+    │   │   │   ├── 7683.5d7a1c2f3843fd8a.js
+    │   │   │   ├── 7923.60b5ae5e75614070.js
+    │   │   │   ├── 7923.84d64791dd6f3954.js
+    │   │   │   ├── 8056.48d6b9f618151bf3.js
+    │   │   │   ├── 8056.641be1ebb977af75.js
+    │   │   │   ├── 8114.974f488642834d85.js
+    │   │   │   ├── 8114.ee734fe895049e84.js
+    │   │   │   ├── 8139.1bc02620d8eae92e.js
+    │   │   │   ├── 8139.73ba746755501827.js
+    │   │   │   ├── 8158.068df4abb57d9a30.js
+    │   │   │   ├── 8158.fd0e65105412056f.js
+    │   │   │   ├── 8193.a814239985e10353.js
+    │   │   │   ├── 8193.f762a2a193051018.js
+    │   │   │   ├── 820.b0d38608aedd8ab8.js
+    │   │   │   ├── 820.f97f8104fbfd97f2.js
+    │   │   │   ├── 826.26ee982e396ec09a.js
+    │   │   │   ├── 826.79c7a927cc6fc469.js
+    │   │   │   ├── 827.1fea5cc8ecf2d912.js
+    │   │   │   ├── 827.409df8446a807892.js
+    │   │   │   ├── 8573.bc4f01d850b1b8d6.js
+    │   │   │   ├── 8573.ca86900b00727fb6.js
+    │   │   │   ├── 8582.54e888a2287623ff.js
+    │   │   │   ├── 8582.645e82885dfe471c.js
+    │   │   │   ├── 8700.366ceb4d342fe1db.js
+    │   │   │   ├── 8700.c92601cefc6394e6.js
+    │   │   │   ├── 8736.0c5bb06f88b9d6b3.js
+    │   │   │   ├── 8736.9815e916230d8808.js
+    │   │   │   ├── 8793.1d285189d535fca9.js
+    │   │   │   ├── 8793.befceb17282feba1.js
+    │   │   │   ├── 8897.8de97d878571dbf0.js
+    │   │   │   ├── 8897.eac641ea515a4c02.js
+    │   │   │   ├── 8967.af94ecd496700e5e.js
+    │   │   │   ├── 8967.d436d612a4ae2855.js
+    │   │   │   ├── 903.5eb5553ffcabeab9.js
+    │   │   │   ├── 903.d5855b4fd9c8b62a.js
+    │   │   │   ├── 9038.98e3d3a4965dacd3.js
+    │   │   │   ├── 9038.e586e31e5b0a40e5.js
+    │   │   │   ├── 9220.8215802f0f6b0ac9.js
+    │   │   │   ├── 9220.f4958f5e00b7f4b1.js
+    │   │   │   ├── 9300.2415beb88e87e77c.js
+    │   │   │   ├── 9300.28a7f9c4a49db102.js
+    │   │   │   ├── 931.5d9c7d4adcb5cd64.js
+    │   │   │   ├── 931.97a2494af6de2c7c.js
+    │   │   │   ├── 934.1f60e8e231982551.js
+    │   │   │   ├── 934.93c876e75f866ba2.js
+    │   │   │   ├── 9488.183054a949595387.js
+    │   │   │   ├── 9488.9f340ef89bdacaa1.js
+    │   │   │   ├── 9842.fe202ed5963de936.js
+    │   │   │   ├── 9842.fed9d1f44f0593f6.js
+    │   │   │   ├── 9948.d8b79e2c3fb19bdf.js
+    │   │   │   ├── 9948.e2bc89f93419cc65.js
+    │   │   │   ├── 9980.530c36e6cabd2abb.js
+    │   │   │   ├── 9980.a7de5e2f157cff19.js
+    │   │   │   ├── favicon.ico
+    │   │   │   ├── index.html
+    │   │   │   ├── locale-data
+    │   │   │   │   ├── af-messages.js
+    │   │   │   │   ├── af-ZA.js
+    │   │   │   │   ├── ar-EG.js
+    │   │   │   │   ├── ar-messages.js
+    │   │   │   │   ├── ar-SA.js
+    │   │   │   │   ├── bg-BG.js
+    │   │   │   │   ├── bg-messages.js
+    │   │   │   │   ├── cs-CZ.js
+    │   │   │   │   ├── cs-messages.js
+    │   │   │   │   ├── da-DK.js
+    │   │   │   │   ├── da-messages.js
+    │   │   │   │   ├── de-DE.js
+    │   │   │   │   ├── de-messages.js
+    │   │   │   │   ├── el-GR.js
+    │   │   │   │   ├── el-messages.js
+    │   │   │   │   ├── en-AU.js
+    │   │   │   │   ├── en-GB.js
+    │   │   │   │   ├── en-IN.js
+    │   │   │   │   ├── en-messages.js
+    │   │   │   │   ├── en-NZ.js
+    │   │   │   │   ├── en-US.js
+    │   │   │   │   ├── en-ZA.js
+    │   │   │   │   ├── es-419.js
+    │   │   │   │   ├── es-AR.js
+    │   │   │   │   ├── es-ES.js
+    │   │   │   │   ├── es-messages.js
+    │   │   │   │   ├── es-MX.js
+    │   │   │   │   ├── es-US.js
+    │   │   │   │   ├── et-EE.js
+    │   │   │   │   ├── et-messages.js
+    │   │   │   │   ├── fi-FI.js
+    │   │   │   │   ├── fi-messages.js
+    │   │   │   │   ├── fr-CA-messages.js
+    │   │   │   │   ├── fr-CA.js
+    │   │   │   │   ├── fr-FR-messages.js
+    │   │   │   │   ├── fr-FR.js
+    │   │   │   │   ├── fr-messages.js
+    │   │   │   │   ├── he-IL.js
+    │   │   │   │   ├── he-messages.js
+    │   │   │   │   ├── hi-IN.js
+    │   │   │   │   ├── hi-messages.js
+    │   │   │   │   ├── hr-HR.js
+    │   │   │   │   ├── hr-messages.js
+    │   │   │   │   ├── hu-HU.js
+    │   │   │   │   ├── hu-messages.js
+    │   │   │   │   ├── id-ID.js
+    │   │   │   │   ├── id-messages.js
+    │   │   │   │   ├── it-IT.js
+    │   │   │   │   ├── it-messages.js
+    │   │   │   │   ├── ja-JP.js
+    │   │   │   │   ├── ja-messages.js
+    │   │   │   │   ├── ko-KR.js
+    │   │   │   │   ├── ko-messages.js
+    │   │   │   │   ├── lt-LT.js
+    │   │   │   │   ├── lt-messages.js
+    │   │   │   │   ├── lv-LV.js
+    │   │   │   │   ├── lv-messages.js
+    │   │   │   │   ├── ms-bn.js
+    │   │   │   │   ├── ms-messages.js
+    │   │   │   │   ├── ms-my.js
+    │   │   │   │   ├── nb-messages.js
+    │   │   │   │   ├── nb-NO.js
+    │   │   │   │   ├── nl-messages.js
+    │   │   │   │   ├── nl-NL.js
+    │   │   │   │   ├── nn-messages.js
+    │   │   │   │   ├── nn-NO.js
+    │   │   │   │   ├── no-messages.js
+    │   │   │   │   ├── no-NO.js
+    │   │   │   │   ├── pl-messages.js
+    │   │   │   │   ├── pl-PL.js
+    │   │   │   │   ├── pt-BR-messages.js
+    │   │   │   │   ├── pt-BR.js
+    │   │   │   │   ├── pt-messages.js
+    │   │   │   │   ├── pt-PT-messages.js
+    │   │   │   │   ├── pt-PT.js
+    │   │   │   │   ├── ro-messages.js
+    │   │   │   │   ├── ro-RO.js
+    │   │   │   │   ├── ru-messages.js
+    │   │   │   │   ├── ru-RU.js
+    │   │   │   │   ├── sk-messages.js
+    │   │   │   │   ├── sk-SK.js
+    │   │   │   │   ├── sl-messages.js
+    │   │   │   │   ├── sl-SI.js
+    │   │   │   │   ├── sv-messages.js
+    │   │   │   │   ├── sv-SE.js
+    │   │   │   │   ├── th-messages.js
+    │   │   │   │   ├── th-TH.js
+    │   │   │   │   ├── tl-messages.js
+    │   │   │   │   ├── tl-PH.js
+    │   │   │   │   ├── tr-messages.js
+    │   │   │   │   ├── tr-TR.js
+    │   │   │   │   ├── uk-messages.js
+    │   │   │   │   ├── uk-UA.js
+    │   │   │   │   ├── vi-messages.js
+    │   │   │   │   ├── vi-VN.js
+    │   │   │   │   ├── zh-CN-messages.js
+    │   │   │   │   ├── zh-CN.js
+    │   │   │   │   ├── zh-Hans-messages.js
+    │   │   │   │   ├── zh-Hans.js
+    │   │   │   │   ├── zh-Hant-messages.js
+    │   │   │   │   ├── zh-Hant.js
+    │   │   │   │   ├── zh-messages.js
+    │   │   │   │   ├── zh-TW-messages.js
+    │   │   │   │   └── zh-TW.js
+    │   │   │   ├── main.0994471f61b802a2.js
+    │   │   │   ├── main.572570ace85d784f.js
+    │   │   │   ├── polyfills.887ae3e8e5eed983.js
+    │   │   │   ├── polyfills.f2e3d26c5eae1567.js
+    │   │   │   ├── runtime.1e8fadcf65fc04da.js
+    │   │   │   ├── runtime.8558c874a3900ff2.js
+    │   │   │   ├── scripts.a32939d5a05a52aa.js
+    │   │   │   ├── StartScanTool.cmd
+    │   │   │   ├── styles.ef46db3751d8e999.css
+    │   │   │   └── themes
+    │   │   │       ├── ids-theme-default-colors.css
+    │   │   │       ├── ids-theme-default-contrast.css
+    │   │   │       ├── ids-theme-default-core.css
+    │   │   │       ├── ids-theme-default-dark.css
+    │   │   │       └── ids-theme-default-light.css
+    │   │   └── StartWebServer.cmd
+    │   └── Templates
+    │       └── H5ScriptsProjectTemplate
+    │           ├── H5ScriptsProjectTemplate
+    │           │   ├── H5SampleScriptTemplate.js
+    │           │   ├── H5SampleScriptTemplate.ts
+    │           │   ├── H5ScriptsProjectTemplate.csproj
+    │           │   ├── tsconfig.json
+    │           │   ├── typings
+    │           │   │   ├── es6-promise.d.ts
+    │           │   │   ├── h5.script.d.ts
+    │           │   │   ├── infor.controls.d.ts
+    │           │   │   ├── jquery.d.ts
+    │           │   │   └── jquery.json.d.ts
+    │           │   ├── web.config
+    │           │   ├── web.Debug.config
+    │           │   └── web.Release.config
+    │           ├── H5ScriptsProjectTemplate.sln
+    │           ├── InstallWebServer.cmd
+    │           ├── Nodejs
+    │           │   └── webserver.js
+    │           └── StartWebServer.cmd
+    └── Widget SDKs
+        ├── Infor_WidgetSDK_3.0.1
+        │   ├── CHANGELOG.md
+        │   ├── Infor SDK Software License Agreement.pdf
+        │   ├── install-cli.mjs
+        │   ├── packed
+        │   │   ├── infor-lime-cli-3.0.1.tgz
+        │   │   ├── infor-lime-core-3.0.1.tgz
+        │   │   ├── infor-lime-eslint-plugin-3.0.1.tgz
+        │   │   └── infor-lime-runtime-3.0.1.tgz
+        │   ├── README.md
+        │   └── samples
+        │       ├── infor.portal.sample.borderless
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.portal.sample.headerless
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.portal.sample.kpi
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.portal.sample.navigation
+        │       │   ├── mock-data.ts
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.portal.sample.titleless
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.analytics
+        │       │   ├── analytics-widget.component.html
+        │       │   ├── analytics-widget.component.ts
+        │       │   ├── logger.ts
+        │       │   ├── track-click.directive.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.banner
+        │       │   ├── chart-data.directive.ts
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.cardgroupaction
+        │       │   ├── core.ts
+        │       │   ├── main.ts
+        │       │   ├── pipes.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.cardlist
+        │       │   ├── core.ts
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.contenttranslation
+        │       │   ├── core.ts
+        │       │   ├── ids-value-accessor.directive.ts
+        │       │   ├── item-dialog.ts
+        │       │   ├── main.ts
+        │       │   ├── manifest-types.d.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.dialogs
+        │       │   ├── dialog.ts
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.empty.busy
+        │       │   ├── list.service.ts
+        │       │   ├── main.ts
+        │       │   ├── scroll.directive.ts
+        │       │   ├── task.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.findwidgets
+        │       │   ├── main.ts
+        │       │   ├── search-dialog.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.helloworld
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.lifecycle
+        │       │   ├── lifecycle.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.quicknote
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.requires.config
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.responsive
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.service
+        │       │   ├── components
+        │       │   │   ├── counter.component.ts
+        │       │   │   ├── global-counter.component.ts
+        │       │   │   ├── local-counter.component.ts
+        │       │   │   ├── shared-counter.component.ts
+        │       │   │   └── widget.component.ts
+        │       │   ├── services
+        │       │   │   ├── counter.ts
+        │       │   │   ├── global-counter.service.ts
+        │       │   │   ├── local-counter.service.ts
+        │       │   │   └── shared-counter.service.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.settings.ui.metadata
+        │       │   ├── core.ts
+        │       │   ├── main.ts
+        │       │   ├── settings.ts
+        │       │   ├── title-setting.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.standalone
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.submenu
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.widgetsize
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.workspacesettings
+        │       │   ├── main.ts
+        │       │   ├── settingsConfig.json
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.angular.workspacesettingsreceiver
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.dynamic
+        │       │   ├── dynamic-one.component.ts
+        │       │   ├── dynamic-two.component.ts
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.external.app
+        │       │   └── widget.manifest
+        │       ├── infor.sample.helloworld
+        │       │   ├── custom-manifest.json
+        │       │   ├── settings.json
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.ids.test
+        │       │   ├── components
+        │       │   │   ├── autocomplete.component.ts
+        │       │   │   ├── base.component.ts
+        │       │   │   ├── checkbox.component.ts
+        │       │   │   ├── colorpicker.component.ts
+        │       │   │   ├── datepicker.component.ts
+        │       │   │   ├── dropdown.component.ts
+        │       │   │   ├── input.component.ts
+        │       │   │   ├── lookup.dataset.component.ts
+        │       │   │   ├── lookup.source.component.ts
+        │       │   │   ├── multiselect.component.ts
+        │       │   │   ├── radiobutton.component.ts
+        │       │   │   ├── textarea.component.ts
+        │       │   │   └── timepicker.component.ts
+        │       │   ├── data.ts
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.interval
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.ionapi
+        │       │   ├── interfaces.ts
+        │       │   ├── main.ts
+        │       │   ├── service.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.ionapi.m3
+        │       │   ├── interfaces.ts
+        │       │   ├── main.ts
+        │       │   ├── service.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.ionapi.social
+        │       │   ├── interfaces.ts
+        │       │   ├── main.ts
+        │       │   ├── service.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.minify
+        │       │   ├── bottom.png
+        │       │   ├── dialog
+        │       │   │   └── dialog.ts
+        │       │   ├── main.ts
+        │       │   ├── middle.png
+        │       │   ├── top.png
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.mobile
+        │       │   ├── base64Data.ts
+        │       │   ├── ids-value-accessor.directive.ts
+        │       │   ├── main.ts
+        │       │   ├── pipes.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.prerelease
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.settings.ui
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.sharedmodule
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.sharedmodule2
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.visualinsights
+        │       │   ├── widget.component.css
+        │       │   ├── widget.component.html
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.w2wreceiver
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.w2wsender
+        │       │   ├── main.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.webcomponent
+        │       │   ├── tiny-webcomponent-framework.ts
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.webcomponent.lit
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.webcomponent.settings
+        │       │   ├── settings.component.ts
+        │       │   ├── utils.ts
+        │       │   ├── widget.component.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       ├── infor.sample.workspace
+        │       │   ├── components
+        │       │   │   ├── user-list.component.ts
+        │       │   │   └── user-workspace.component.ts
+        │       │   ├── main.ts
+        │       │   ├── manifest-types.d.ts
+        │       │   ├── services
+        │       │   │   ├── user.service.ts
+        │       │   │   └── workspace.service.ts
+        │       │   ├── widget.manifest
+        │       │   └── widget.ts
+        │       └── shared
+        │           ├── sample-shared-toast-service.ts
+        │           └── sample-shared-usercontext.ts
+        ├── Infor_WidgetSDK_3.34.0
+        │   ├── ChangeLog.txt
+        │   ├── Documentation
+        │   │   ├── AngularAotAdoptionGuide.pdf
+        │   │   ├── API
+        │   │   │   ├── assets
+        │   │   │   │   ├── highlight.css
+        │   │   │   │   ├── main.js
+        │   │   │   │   ├── navigation.js
+        │   │   │   │   ├── search.js
+        │   │   │   │   └── style.css
+        │   │   │   ├── classes
+        │   │   │   │   ├── ArrayUtil.html
+        │   │   │   │   ├── CommonUtil.html
+        │   │   │   │   ├── DialogService.html
+        │   │   │   │   ├── HtmlUtil.html
+        │   │   │   │   ├── IonApiConstants.html
+        │   │   │   │   ├── IWidgetContext.html
+        │   │   │   │   ├── IWidgetInstance.html
+        │   │   │   │   ├── IWidgetSettingsContext.html
+        │   │   │   │   ├── IWidgetSettingsInstance.html
+        │   │   │   │   ├── Log.html
+        │   │   │   │   ├── NumUtil.html
+        │   │   │   │   ├── StringUtil.html
+        │   │   │   │   ├── TranslationService.html
+        │   │   │   │   ├── WidgetActivationType.html
+        │   │   │   │   ├── WidgetConstants.html
+        │   │   │   │   ├── WidgetSettingsType.html
+        │   │   │   │   └── WidgetState.html
+        │   │   │   ├── enums
+        │   │   │   │   ├── BadgeType.html
+        │   │   │   │   ├── DialogButtonType.html
+        │   │   │   │   ├── EmptyStateIcon.html
+        │   │   │   │   ├── Mode.html
+        │   │   │   │   ├── StandardDialogButtons.html
+        │   │   │   │   ├── SubMode.html
+        │   │   │   │   ├── TrackEventType.html
+        │   │   │   │   └── WidgetMessageType.html
+        │   │   │   ├── hierarchy.html
+        │   │   │   ├── index.html
+        │   │   │   ├── interfaces
+        │   │   │   │   ├── BusyStateOptions.html
+        │   │   │   │   ├── EnvironmentInfo.html
+        │   │   │   │   ├── EnvironmentInfoMap.html
+        │   │   │   │   ├── IAccelerationData.html
+        │   │   │   │   ├── IAngularWidgetConfig.html
+        │   │   │   │   ├── IAngularWidgetConfig2.html
+        │   │   │   │   ├── IApplication.html
+        │   │   │   │   ├── IAutocompleteEntity.html
+        │   │   │   │   ├── IBadgeOptions.html
+        │   │   │   │   ├── ICopyToClipboardOptions.html
+        │   │   │   │   ├── ICustomProperties.html
+        │   │   │   │   ├── IDevice.html
+        │   │   │   │   ├── IDialog.html
+        │   │   │   │   ├── IDialogButton.html
+        │   │   │   │   ├── IDialogEvent.html
+        │   │   │   │   ├── IDialogOptions.html
+        │   │   │   │   ├── IDialogResult.html
+        │   │   │   │   ├── IEmptyStateButtonOptions.html
+        │   │   │   │   ├── IEmptyStateOptions.html
+        │   │   │   │   ├── IFindWidgetOptions.html
+        │   │   │   │   ├── IGetAudioOptions.html
+        │   │   │   │   ├── IGetAudioResult.html
+        │   │   │   │   ├── IGetImageOptions.html
+        │   │   │   │   ├── IGetImageResult.html
+        │   │   │   │   ├── IGetLocationOptions.html
+        │   │   │   │   ├── IGetLocationResult.html
+        │   │   │   │   ├── IGetMediaResult.html
+        │   │   │   │   ├── IGetNetworkOptions.html
+        │   │   │   │   ├── IGetNetworkResult.html
+        │   │   │   │   ├── IGetSensorsOptions.html
+        │   │   │   │   ├── IGetSensorsResult.html
+        │   │   │   │   ├── IGetVideoOptions.html
+        │   │   │   │   ├── IGetVideoResult.html
+        │   │   │   │   ├── IGyroscopeData.html
+        │   │   │   │   ├── IIntervalOptions.html
+        │   │   │   │   ├── IIonApiContext.html
+        │   │   │   │   ├── IIonApiInfo.html
+        │   │   │   │   ├── IIonApiInfoOptions.html
+        │   │   │   │   ├── IIonApiOptions.html
+        │   │   │   │   ├── IIonApiProduct.html
+        │   │   │   │   ├── IIonApiRequestOptions.html
+        │   │   │   │   ├── IIonApiResponse.html
+        │   │   │   │   ├── ILanguage.html
+        │   │   │   │   ├── ILaunchOptions.html
+        │   │   │   │   ├── ILocaleSortOptions.html
+        │   │   │   │   ├── ILogAppender.html
+        │   │   │   │   ├── IMapCoordinates.html
+        │   │   │   │   ├── IMapLocationOptions.html
+        │   │   │   │   ├── IMapMarkerOptions.html
+        │   │   │   │   ├── IMapNavigationOptions.html
+        │   │   │   │   ├── IMarker.html
+        │   │   │   │   ├── IMessageDialogOptions.html
+        │   │   │   │   ├── IMessageOptions.html
+        │   │   │   │   ├── INumberFormatOptions.html
+        │   │   │   │   ├── IOpenDocumentOptions.html
+        │   │   │   │   ├── IOpenDocumentResult.html
+        │   │   │   │   ├── IOpenLinkOptions.html
+        │   │   │   │   ├── IOpenLinkResult.html
+        │   │   │   │   ├── IReadBarcodeOptions.html
+        │   │   │   │   ├── IReadBarcodeResult.html
+        │   │   │   │   ├── IReadQRCodeOptions.html
+        │   │   │   │   ├── IReadQRCodeResult.html
+        │   │   │   │   ├── IShowMapResult.html
+        │   │   │   │   ├── IShowSettingsOptions.html
+        │   │   │   │   ├── ISortOptions.html
+        │   │   │   │   ├── ISpotlight.html
+        │   │   │   │   ├── ISpotlightData.html
+        │   │   │   │   ├── IToastOptions.html
+        │   │   │   │   ├── ITrackEventOptions.html
+        │   │   │   │   ├── ITrackViewOptions.html
+        │   │   │   │   ├── ITranslationItem.html
+        │   │   │   │   ├── ITranslationOptions.html
+        │   │   │   │   ├── ITranslationResult.html
+        │   │   │   │   ├── ITranslationService.html
+        │   │   │   │   ├── IValueItem.html
+        │   │   │   │   ├── IVersionInfo.html
+        │   │   │   │   ├── IViewUrlOptions.html
+        │   │   │   │   ├── IWatchOption.html
+        │   │   │   │   ├── IWebComponentWidgetConfig.html
+        │   │   │   │   ├── IWidgetAction.html
+        │   │   │   │   ├── IWidgetActivationArg.html
+        │   │   │   │   ├── IWidgetComponent.html
+        │   │   │   │   ├── IWidgetContext2.html
+        │   │   │   │   ├── IWidgetDestroyArg.html
+        │   │   │   │   ├── IWidgetInstance2.html
+        │   │   │   │   ├── IWidgetInstanceInfo.html
+        │   │   │   │   ├── IWidgetMessage.html
+        │   │   │   │   ├── IWidgetModule.html
+        │   │   │   │   ├── IWidgetModule2.html
+        │   │   │   │   ├── IWidgetRefreshArg.html
+        │   │   │   │   ├── IWidgetRestoreArg.html
+        │   │   │   │   ├── IWidgetSettingMetadata.html
+        │   │   │   │   ├── IWidgetSettings.html
+        │   │   │   │   ├── IWidgetSettingsArg.html
+        │   │   │   │   ├── IWidgetSettingsCloseArg.html
+        │   │   │   │   ├── IWidgetSettingsComponent.html
+        │   │   │   │   ├── IWidgetSettingsContext2.html
+        │   │   │   │   ├── IWidgetSettingsInstance2.html
+        │   │   │   │   ├── IWidgetSize.html
+        │   │   │   │   └── IWidgetStatus.html
+        │   │   │   ├── modules.html
+        │   │   │   ├── types
+        │   │   │   │   ├── BusyStatePosition.html
+        │   │   │   │   ├── IMediaSource.html
+        │   │   │   │   ├── IShowMapOptions.html
+        │   │   │   │   ├── NetworkConnectionState.html
+        │   │   │   │   └── NetworkConnectionType.html
+        │   │   │   └── variables
+        │   │   │       ├── widgetContextInjectionToken.html
+        │   │   │       └── widgetInstanceInjectionToken.html
+        │   │   └── DevelopersGuide.pdf
+        │   ├── OpenSourceLicenses
+        │   │   ├── Angular-LICENSE.txt
+        │   │   ├── core-js-LICENSE.txt
+        │   │   ├── D3-LICENSE.txt
+        │   │   ├── jQuery-LICENSE.txt
+        │   │   ├── RxJS-LICENSE.txt
+        │   │   ├── SystemJS-LICENSE.txt
+        │   │   └── TSLIB-LICENSE.txt
+        │   └── Samples
+        │       ├── homepages.js
+        │       ├── Install.cmd
+        │       ├── LangFromManifestToResx.js
+        │       ├── LangFromResxToManifests.js
+        │       ├── package-lock.json
+        │       ├── package.json
+        │       ├── proxy.js
+        │       ├── README.md
+        │       ├── runtime
+        │       │   ├── add-component-dialog.css.map
+        │       │   ├── add-content-dialog.css.map
+        │       │   ├── add-header-dialog.css.map
+        │       │   ├── admin-container.css.map
+        │       │   ├── app.css.map
+        │       │   ├── badges-popover.css.map
+        │       │   ├── basic.css.map
+        │       │   ├── catalog-container.css.map
+        │       │   ├── catalog-detail.css.map
+        │       │   ├── catalog-featured.css.map
+        │       │   ├── catalog-item.css.map
+        │       │   ├── catalog-tags-accordion.css.map
+        │       │   ├── catalog.css.map
+        │       │   ├── chunk-HS4SNERD.js
+        │       │   ├── chunk-HS4SNERD.js.map
+        │       │   ├── chunk-T3LR5C57.js
+        │       │   ├── chunk-T3LR5C57.js.map
+        │       │   ├── chunk-TVE4QH25.js
+        │       │   ├── chunk-TVE4QH25.js.map
+        │       │   ├── chunk-YL7DWODI.js
+        │       │   ├── chunk-YL7DWODI.js.map
+        │       │   ├── container-settings-dialog.css.map
+        │       │   ├── context-host.css.map
+        │       │   ├── context-site.css.map
+        │       │   ├── context-zone.css.map
+        │       │   ├── critical.css.map
+        │       │   ├── date.css.map
+        │       │   ├── dev-menu.component.css.map
+        │       │   ├── dynamic-accordion.css.map
+        │       │   ├── dynamic-container-list.css.map
+        │       │   ├── dynamic-page-editor-rtl.css.map
+        │       │   ├── dynamic-page-editor.css.map
+        │       │   ├── edit-command-bar.css.map
+        │       │   ├── entity-access.css.map
+        │       │   ├── gallery.css.map
+        │       │   ├── home.css.map
+        │       │   ├── image.css.map
+        │       │   ├── import-dialog.css.map
+        │       │   ├── index.html
+        │       │   ├── information.css.map
+        │       │   ├── items.css.map
+        │       │   ├── lime-context.css
+        │       │   ├── lime-context.css.map
+        │       │   ├── links.css.map
+        │       │   ├── list.css.map
+        │       │   ├── main.js
+        │       │   ├── main.js.map
+        │       │   ├── maintenance-entity.css.map
+        │       │   ├── markdown-editor.component.css.map
+        │       │   ├── markdown-help.component.css.map
+        │       │   ├── markdown-renderer.component.css.map
+        │       │   ├── media-capture.component.css.map
+        │       │   ├── memo-area.css.map
+        │       │   ├── memo.css.map
+        │       │   ├── memos.css.map
+        │       │   ├── message-banner.css.map
+        │       │   ├── mobile-container-empty.css.map
+        │       │   ├── mobile-container.css.map
+        │       │   ├── mobile-widget.css.map
+        │       │   ├── operation-message-list.css.map
+        │       │   ├── page-container.css.map
+        │       │   ├── page-edit-details.css.map
+        │       │   ├── page-edit.css.map
+        │       │   ├── page-list.css.map
+        │       │   ├── page-my.css.map
+        │       │   ├── page-navigator.css.map
+        │       │   ├── page-publish.css.map
+        │       │   ├── page-user-settings.css.map
+        │       │   ├── permissions.css.map
+        │       │   ├── policy-test.css.map
+        │       │   ├── policy.css.map
+        │       │   ├── polyfills.js
+        │       │   ├── polyfills.js.map
+        │       │   ├── publish-dialog.css.map
+        │       │   ├── rule.css.map
+        │       │   ├── scripts
+        │       │   │   ├── lime
+        │       │   │   │   └── resources
+        │       │   │   │       ├── af-ZA.js
+        │       │   │   │       ├── ar-SA.js
+        │       │   │   │       ├── bg-BG.js
+        │       │   │   │       ├── cs-CZ.js
+        │       │   │   │       ├── da-DK.js
+        │       │   │   │       ├── de-DE.js
+        │       │   │   │       ├── el-GR.js
+        │       │   │   │       ├── en-GB.js
+        │       │   │   │       ├── en-US.js
+        │       │   │   │       ├── es-AR.js
+        │       │   │   │       ├── es-ES.js
+        │       │   │   │       ├── et-EE.js
+        │       │   │   │       ├── fi-FI.js
+        │       │   │   │       ├── fr-CA.js
+        │       │   │   │       ├── fr-FR.js
+        │       │   │   │       ├── he-IL.js
+        │       │   │   │       ├── hi-IN.js
+        │       │   │   │       ├── hr-HR.js
+        │       │   │   │       ├── hu-HU.js
+        │       │   │   │       ├── it-IT.js
+        │       │   │   │       ├── ja-JP.js
+        │       │   │   │       ├── ko-KR.js
+        │       │   │   │       ├── languagekeys.json
+        │       │   │   │       ├── lt-LT.js
+        │       │   │   │       ├── lv-LV.js
+        │       │   │   │       ├── nb-NO.js
+        │       │   │   │       ├── nl-NL.js
+        │       │   │   │       ├── pl-PL.js
+        │       │   │   │       ├── pt-BR.js
+        │       │   │   │       ├── pt-PT.js
+        │       │   │   │       ├── ro-RO.js
+        │       │   │   │       ├── ru-RU.js
+        │       │   │   │       ├── sk-SK.js
+        │       │   │   │       ├── sl-SI.js
+        │       │   │   │       ├── sv-SE.js
+        │       │   │   │       ├── th-TH.js
+        │       │   │   │       ├── tl-PH.js
+        │       │   │   │       ├── tr-TR.js
+        │       │   │   │       ├── uk-UA.js
+        │       │   │   │       ├── vi-VN.js
+        │       │   │   │       ├── widget-category-icons
+        │       │   │   │       │   ├── ic-application.png
+        │       │   │   │       │   ├── ic-broken-icon.png
+        │       │   │   │       │   ├── ic-business-intelligence.png
+        │       │   │   │       │   ├── ic-business-process.png
+        │       │   │   │       │   ├── ic-social.png
+        │       │   │   │       │   ├── ic-statistics-usage.png
+        │       │   │   │       │   └── ic-utilities.png
+        │       │   │   │       ├── zh-CN.js
+        │       │   │   │       └── zh-TW.js
+        │       │   │   └── xi
+        │       │   │       ├── cultures
+        │       │   │       │   ├── af-ZA.js
+        │       │   │       │   ├── af-ZA.min.js
+        │       │   │       │   ├── ar-EG.js
+        │       │   │       │   ├── ar-EG.min.js
+        │       │   │       │   ├── ar-SA.js
+        │       │   │       │   ├── ar-SA.min.js
+        │       │   │       │   ├── bg-BG.js
+        │       │   │       │   ├── bg-BG.min.js
+        │       │   │       │   ├── cs-CZ.js
+        │       │   │       │   ├── cs-CZ.min.js
+        │       │   │       │   ├── da-DK.js
+        │       │   │       │   ├── da-DK.min.js
+        │       │   │       │   ├── de-DE.js
+        │       │   │       │   ├── de-DE.min.js
+        │       │   │       │   ├── el-GR.js
+        │       │   │       │   ├── el-GR.min.js
+        │       │   │       │   ├── en-AU.js
+        │       │   │       │   ├── en-AU.min.js
+        │       │   │       │   ├── en-GB.js
+        │       │   │       │   ├── en-GB.min.js
+        │       │   │       │   ├── en-IN.js
+        │       │   │       │   ├── en-IN.min.js
+        │       │   │       │   ├── en-NZ.js
+        │       │   │       │   ├── en-NZ.min.js
+        │       │   │       │   ├── en-US.js
+        │       │   │       │   ├── en-US.min.js
+        │       │   │       │   ├── en-ZA.js
+        │       │   │       │   ├── en-ZA.min.js
+        │       │   │       │   ├── es-419.js
+        │       │   │       │   ├── es-419.min.js
+        │       │   │       │   ├── es-AR.js
+        │       │   │       │   ├── es-AR.min.js
+        │       │   │       │   ├── es-ES.js
+        │       │   │       │   ├── es-ES.min.js
+        │       │   │       │   ├── es-MX.js
+        │       │   │       │   ├── es-MX.min.js
+        │       │   │       │   ├── es-US.js
+        │       │   │       │   ├── es-US.min.js
+        │       │   │       │   ├── et-EE.js
+        │       │   │       │   ├── et-EE.min.js
+        │       │   │       │   ├── fi-FI.js
+        │       │   │       │   ├── fi-FI.min.js
+        │       │   │       │   ├── fr-CA.js
+        │       │   │       │   ├── fr-CA.min.js
+        │       │   │       │   ├── fr-FR.js
+        │       │   │       │   ├── fr-FR.min.js
+        │       │   │       │   ├── he-IL.js
+        │       │   │       │   ├── he-IL.min.js
+        │       │   │       │   ├── hi-IN.js
+        │       │   │       │   ├── hi-IN.min.js
+        │       │   │       │   ├── hr-HR.js
+        │       │   │       │   ├── hr-HR.min.js
+        │       │   │       │   ├── hu-HU.js
+        │       │   │       │   ├── hu-HU.min.js
+        │       │   │       │   ├── id-ID.js
+        │       │   │       │   ├── id-ID.min.js
+        │       │   │       │   ├── it-IT.js
+        │       │   │       │   ├── it-IT.min.js
+        │       │   │       │   ├── ja-JP.js
+        │       │   │       │   ├── ja-JP.min.js
+        │       │   │       │   ├── ko-KR.js
+        │       │   │       │   ├── ko-KR.min.js
+        │       │   │       │   ├── lt-LT.js
+        │       │   │       │   ├── lt-LT.min.js
+        │       │   │       │   ├── lv-LV.js
+        │       │   │       │   ├── lv-LV.min.js
+        │       │   │       │   ├── ms-bn.js
+        │       │   │       │   ├── ms-bn.min.js
+        │       │   │       │   ├── ms-my.js
+        │       │   │       │   ├── ms-my.min.js
+        │       │   │       │   ├── nb-NO.js
+        │       │   │       │   ├── nb-NO.min.js
+        │       │   │       │   ├── nl-NL.js
+        │       │   │       │   ├── nl-NL.min.js
+        │       │   │       │   ├── nn-NO.js
+        │       │   │       │   ├── nn-NO.min.js
+        │       │   │       │   ├── no-NO.js
+        │       │   │       │   ├── no-NO.min.js
+        │       │   │       │   ├── pl-PL.js
+        │       │   │       │   ├── pl-PL.min.js
+        │       │   │       │   ├── pt-BR.js
+        │       │   │       │   ├── pt-BR.min.js
+        │       │   │       │   ├── pt-PT.js
+        │       │   │       │   ├── pt-PT.min.js
+        │       │   │       │   ├── ro-RO.js
+        │       │   │       │   ├── ro-RO.min.js
+        │       │   │       │   ├── ru-RU.js
+        │       │   │       │   ├── ru-RU.min.js
+        │       │   │       │   ├── sk-SK.js
+        │       │   │       │   ├── sk-SK.min.js
+        │       │   │       │   ├── sl-SI.js
+        │       │   │       │   ├── sl-SI.min.js
+        │       │   │       │   ├── sv-SE.js
+        │       │   │       │   ├── sv-SE.min.js
+        │       │   │       │   ├── th-TH.js
+        │       │   │       │   ├── th-TH.min.js
+        │       │   │       │   ├── tl-PH.js
+        │       │   │       │   ├── tl-PH.min.js
+        │       │   │       │   ├── tr-TR.js
+        │       │   │       │   ├── tr-TR.min.js
+        │       │   │       │   ├── uk-UA.js
+        │       │   │       │   ├── uk-UA.min.js
+        │       │   │       │   ├── vi-VN.js
+        │       │   │       │   ├── vi-VN.min.js
+        │       │   │       │   ├── zh-CN.js
+        │       │   │       │   ├── zh-CN.min.js
+        │       │   │       │   ├── zh-Hans.js
+        │       │   │       │   ├── zh-Hans.min.js
+        │       │   │       │   ├── zh-Hant.js
+        │       │   │       │   ├── zh-Hant.min.js
+        │       │   │       │   ├── zh-TW.js
+        │       │   │       │   └── zh-TW.min.js
+        │       │   │       ├── theme-classic-contrast.css
+        │       │   │       ├── theme-classic-contrast.css.map
+        │       │   │       ├── theme-classic-contrast.min.css
+        │       │   │       ├── theme-classic-dark.css
+        │       │   │       ├── theme-classic-dark.css.map
+        │       │   │       ├── theme-classic-dark.min.css
+        │       │   │       ├── theme-classic-light.css
+        │       │   │       ├── theme-classic-light.css.map
+        │       │   │       ├── theme-classic-light.min.css
+        │       │   │       ├── theme-new-contrast.css
+        │       │   │       ├── theme-new-contrast.css.map
+        │       │   │       ├── theme-new-contrast.min.css
+        │       │   │       ├── theme-new-dark.css
+        │       │   │       ├── theme-new-dark.css.map
+        │       │   │       ├── theme-new-dark.min.css
+        │       │   │       ├── theme-new-light.css
+        │       │   │       ├── theme-new-light.css.map
+        │       │   │       ├── theme-new-light.min.css
+        │       │   │       ├── theme-soho-contrast.css
+        │       │   │       ├── theme-soho-contrast.css.map
+        │       │   │       ├── theme-soho-contrast.min.css
+        │       │   │       ├── theme-soho-dark.css
+        │       │   │       ├── theme-soho-dark.css.map
+        │       │   │       ├── theme-soho-dark.min.css
+        │       │   │       ├── theme-soho-light.css
+        │       │   │       ├── theme-soho-light.css.map
+        │       │   │       ├── theme-soho-light.min.css
+        │       │   │       ├── theme-uplift-contrast.css
+        │       │   │       ├── theme-uplift-contrast.css.map
+        │       │   │       ├── theme-uplift-contrast.min.css
+        │       │   │       ├── theme-uplift-dark.css
+        │       │   │       ├── theme-uplift-dark.css.map
+        │       │   │       ├── theme-uplift-dark.min.css
+        │       │   │       ├── theme-uplift-light.css
+        │       │   │       ├── theme-uplift-light.css.map
+        │       │   │       └── theme-uplift-light.min.css
+        │       │   ├── scripts.js
+        │       │   ├── scripts.js.map
+        │       │   ├── settings.css.map
+        │       │   ├── shortcuts.css.map
+        │       │   ├── styles.css
+        │       │   ├── styles.css.map
+        │       │   ├── system-message.component.css.map
+        │       │   ├── tenant-widgets.css.map
+        │       │   ├── themes
+        │       │   │   ├── ids-theme-default-colors.css
+        │       │   │   ├── ids-theme-default-contrast.css
+        │       │   │   ├── ids-theme-default-core.css
+        │       │   │   ├── ids-theme-default-dark.css
+        │       │   │   └── ids-theme-default-light.css
+        │       │   ├── translation-add.css.map
+        │       │   ├── translation.css.map
+        │       │   ├── unavailable-entity.css.map
+        │       │   ├── user-search-dialog.css.map
+        │       │   ├── widget-banner.css.map
+        │       │   ├── widget-container.css.map
+        │       │   ├── widget-details-dialog.css.map
+        │       │   ├── widget-message.component.css.map
+        │       │   ├── widget-publish.css.map
+        │       │   ├── widget-settings.css.map
+        │       │   └── widget-size-display.css.map
+        │       ├── server.js
+        │       ├── StartIonApiProxy.cmd
+        │       ├── StartServer.cmd
+        │       ├── Translations
+        │       │   ├── en-US-Widgets.resx
+        │       │   └── sv-SE-Widgets.resx
+        │       └── Widgets
+        │           ├── configuration.json
+        │           ├── custom.json
+        │           ├── eslint-plugin-lime-0.5.0.tgz
+        │           ├── index.html
+        │           ├── infor.sample.analytics
+        │           │   ├── analytics-widget.component.ts
+        │           │   ├── analytics.widget.module.ts
+        │           │   ├── track-click.directive.ts
+        │           │   ├── unique-id.pipe.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.banner
+        │           │   ├── chart.component.ts
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.cardgroupaction
+        │           │   ├── core.ts
+        │           │   ├── main.ts
+        │           │   ├── pipes.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.cardlist
+        │           │   ├── core.ts
+        │           │   ├── main.ts
+        │           │   ├── pipes.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.contenttranslation
+        │           │   ├── core.ts
+        │           │   ├── item-dialog.ts
+        │           │   ├── main.ts
+        │           │   ├── manifest-types.d.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.contextparameters
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.dialogs
+        │           │   ├── dialog.ts
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.empty.busy
+        │           │   ├── list.service.ts
+        │           │   ├── main.ts
+        │           │   ├── scroll.directive.ts
+        │           │   ├── task.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.findwidgets
+        │           │   ├── main.ts
+        │           │   ├── search-dialog.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.helloworld
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.lifecycle
+        │           │   ├── lifecycle.component.ts
+        │           │   ├── lifecycle.module.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.quicknote
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.requires.config
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.responsive
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.service
+        │           │   ├── components
+        │           │   │   ├── counter.component.ts
+        │           │   │   ├── dialog.component.ts
+        │           │   │   ├── global-counter.component.ts
+        │           │   │   ├── local-counter.component.ts
+        │           │   │   ├── shared-counter.component.ts
+        │           │   │   └── widget.component.ts
+        │           │   ├── services
+        │           │   │   ├── counter.ts
+        │           │   │   ├── global-counter.service.ts
+        │           │   │   ├── local-counter.service.ts
+        │           │   │   └── shared-counter.service.ts
+        │           │   ├── widget.manifest
+        │           │   ├── widget.module.ts
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.settings.ui.metadata
+        │           │   ├── core.ts
+        │           │   ├── main.ts
+        │           │   ├── settings.ts
+        │           │   ├── title-setting.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.submenu
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.angular.widgetsize
+        │           │   ├── main.ts
+        │           │   ├── styles.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.dynamic
+        │           │   ├── dynamic-one.component.ts
+        │           │   ├── dynamic-two.component.ts
+        │           │   ├── widget.component.ts
+        │           │   ├── widget.manifest
+        │           │   ├── widget.module.ts
+        │           │   └── widget.ts
+        │           ├── infor.sample.external.app
+        │           │   └── widget.manifest
+        │           ├── infor.sample.helloworld
+        │           │   ├── custom-manifest.json
+        │           │   ├── settings.json
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.ids.test
+        │           │   ├── components
+        │           │   │   ├── autocomplete.component.ts
+        │           │   │   ├── base.component.ts
+        │           │   │   ├── checkbox.component.ts
+        │           │   │   ├── colorpicker.component.ts
+        │           │   │   ├── datepicker.component.ts
+        │           │   │   ├── dropdown.component.ts
+        │           │   │   ├── input.component.ts
+        │           │   │   ├── lookup.dataset.component.ts
+        │           │   │   ├── lookup.source.component.ts
+        │           │   │   ├── multiselect.component.ts
+        │           │   │   ├── radiobutton.component.ts
+        │           │   │   ├── textarea.component.ts
+        │           │   │   └── timepicker.component.ts
+        │           │   ├── data.ts
+        │           │   ├── main.ts
+        │           │   ├── modal.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.interval
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.ionapi.m3
+        │           │   ├── interfaces.ts
+        │           │   ├── main.ts
+        │           │   ├── service.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.ionapi.social
+        │           │   ├── interfaces.ts
+        │           │   ├── main.ts
+        │           │   ├── service.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.minify
+        │           │   ├── bottom.png
+        │           │   ├── dialog
+        │           │   │   └── dialog.ts
+        │           │   ├── main.ts
+        │           │   ├── middle.png
+        │           │   ├── top.png
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.mobile
+        │           │   ├── base64Data.ts
+        │           │   ├── main.ts
+        │           │   ├── pipes.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.settings.ui
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.sharedmodule
+        │           │   ├── main.ts
+        │           │   ├── sample-shared-usercontext.ts
+        │           │   ├── shared-toast.service.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.sharedmodule2
+        │           │   ├── main.ts
+        │           │   ├── sample-shared-usercontext.ts
+        │           │   ├── shared-toast.service.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.spotlight
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.w2wreceiver
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.w2wsender
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── infor.sample.workspace
+        │           │   ├── components
+        │           │   │   ├── user-list.component.ts
+        │           │   │   └── user-workspace.component.ts
+        │           │   ├── main.ts
+        │           │   ├── manifest-types.d.ts
+        │           │   ├── services
+        │           │   │   ├── user.service.ts
+        │           │   │   └── workspace.service.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── lime-3.17.0-rc.1.tgz
+        │           ├── lime-3.34.0.tgz
+        │           ├── lime-lazy.js
+        │           ├── lime-lazy.js.map
+        │           ├── main.js
+        │           ├── main.js.map
+        │           ├── polyfills.js
+        │           ├── polyfills.js.map
+        │           ├── runtime.js
+        │           ├── runtime.js.map
+        │           ├── scripts
+        │           │   ├── lime
+        │           │   │   └── resources
+        │           │   │       ├── af-ZA.js
+        │           │   │       ├── ar-SA.js
+        │           │   │       ├── bg-BG.js
+        │           │   │       ├── cs-CZ.js
+        │           │   │       ├── da-DK.js
+        │           │   │       ├── de-DE.js
+        │           │   │       ├── el-GR.js
+        │           │   │       ├── en-GB.js
+        │           │   │       ├── en-US.js
+        │           │   │       ├── es-AR.js
+        │           │   │       ├── es-ES.js
+        │           │   │       ├── et-EE.js
+        │           │   │       ├── fi-FI.js
+        │           │   │       ├── fr-CA.js
+        │           │   │       ├── fr-FR.js
+        │           │   │       ├── he-IL.js
+        │           │   │       ├── hi-IN.js
+        │           │   │       ├── hr-HR.js
+        │           │   │       ├── hu-HU.js
+        │           │   │       ├── it-IT.js
+        │           │   │       ├── ja-JP.js
+        │           │   │       ├── ko-KR.js
+        │           │   │       ├── languagekeys.json
+        │           │   │       ├── lt-LT.js
+        │           │   │       ├── lv-LV.js
+        │           │   │       ├── nb-NO.js
+        │           │   │       ├── nl-NL.js
+        │           │   │       ├── pl-PL.js
+        │           │   │       ├── pt-BR.js
+        │           │   │       ├── pt-PT.js
+        │           │   │       ├── ro-RO.js
+        │           │   │       ├── ru-RU.js
+        │           │   │       ├── sk-SK.js
+        │           │   │       ├── sl-SI.js
+        │           │   │       ├── sv-SE.js
+        │           │   │       ├── th-TH.js
+        │           │   │       ├── tl-PH.js
+        │           │   │       ├── tr-TR.js
+        │           │   │       ├── uk-UA.js
+        │           │   │       ├── vi-VN.js
+        │           │   │       ├── widget-category-icons
+        │           │   │       │   ├── ic-application.png
+        │           │   │       │   ├── ic-broken-icon.png
+        │           │   │       │   ├── ic-business-intelligence.png
+        │           │   │       │   ├── ic-business-process.png
+        │           │   │       │   ├── ic-social.png
+        │           │   │       │   ├── ic-statistics-usage.png
+        │           │   │       │   └── ic-utilities.png
+        │           │   │       ├── zh-CN.js
+        │           │   │       └── zh-TW.js
+        │           │   └── xi
+        │           │       ├── cultures
+        │           │       │   ├── af-ZA.js
+        │           │       │   ├── af-ZA.min.js
+        │           │       │   ├── ar-EG.js
+        │           │       │   ├── ar-EG.min.js
+        │           │       │   ├── ar-SA.js
+        │           │       │   ├── ar-SA.min.js
+        │           │       │   ├── bg-BG.js
+        │           │       │   ├── bg-BG.min.js
+        │           │       │   ├── cs-CZ.js
+        │           │       │   ├── cs-CZ.min.js
+        │           │       │   ├── da-DK.js
+        │           │       │   ├── da-DK.min.js
+        │           │       │   ├── de-DE.js
+        │           │       │   ├── de-DE.min.js
+        │           │       │   ├── el-GR.js
+        │           │       │   ├── el-GR.min.js
+        │           │       │   ├── en-AU.js
+        │           │       │   ├── en-AU.min.js
+        │           │       │   ├── en-GB.js
+        │           │       │   ├── en-GB.min.js
+        │           │       │   ├── en-IN.js
+        │           │       │   ├── en-IN.min.js
+        │           │       │   ├── en-NZ.js
+        │           │       │   ├── en-NZ.min.js
+        │           │       │   ├── en-US.js
+        │           │       │   ├── en-US.min.js
+        │           │       │   ├── en-ZA.js
+        │           │       │   ├── en-ZA.min.js
+        │           │       │   ├── es-419.js
+        │           │       │   ├── es-419.min.js
+        │           │       │   ├── es-AR.js
+        │           │       │   ├── es-AR.min.js
+        │           │       │   ├── es-ES.js
+        │           │       │   ├── es-ES.min.js
+        │           │       │   ├── es-MX.js
+        │           │       │   ├── es-MX.min.js
+        │           │       │   ├── es-US.js
+        │           │       │   ├── es-US.min.js
+        │           │       │   ├── et-EE.js
+        │           │       │   ├── et-EE.min.js
+        │           │       │   ├── fi-FI.js
+        │           │       │   ├── fi-FI.min.js
+        │           │       │   ├── fr-CA.js
+        │           │       │   ├── fr-CA.min.js
+        │           │       │   ├── fr-FR.js
+        │           │       │   ├── fr-FR.min.js
+        │           │       │   ├── he-IL.js
+        │           │       │   ├── he-IL.min.js
+        │           │       │   ├── hi-IN.js
+        │           │       │   ├── hi-IN.min.js
+        │           │       │   ├── hr-HR.js
+        │           │       │   ├── hr-HR.min.js
+        │           │       │   ├── hu-HU.js
+        │           │       │   ├── hu-HU.min.js
+        │           │       │   ├── id-ID.js
+        │           │       │   ├── id-ID.min.js
+        │           │       │   ├── it-IT.js
+        │           │       │   ├── it-IT.min.js
+        │           │       │   ├── ja-JP.js
+        │           │       │   ├── ja-JP.min.js
+        │           │       │   ├── ko-KR.js
+        │           │       │   ├── ko-KR.min.js
+        │           │       │   ├── lt-LT.js
+        │           │       │   ├── lt-LT.min.js
+        │           │       │   ├── lv-LV.js
+        │           │       │   ├── lv-LV.min.js
+        │           │       │   ├── ms-bn.js
+        │           │       │   ├── ms-bn.min.js
+        │           │       │   ├── ms-my.js
+        │           │       │   ├── ms-my.min.js
+        │           │       │   ├── nb-NO.js
+        │           │       │   ├── nb-NO.min.js
+        │           │       │   ├── nl-NL.js
+        │           │       │   ├── nl-NL.min.js
+        │           │       │   ├── nn-NO.js
+        │           │       │   ├── nn-NO.min.js
+        │           │       │   ├── no-NO.js
+        │           │       │   ├── no-NO.min.js
+        │           │       │   ├── pl-PL.js
+        │           │       │   ├── pl-PL.min.js
+        │           │       │   ├── pt-BR.js
+        │           │       │   ├── pt-BR.min.js
+        │           │       │   ├── pt-PT.js
+        │           │       │   ├── pt-PT.min.js
+        │           │       │   ├── ro-RO.js
+        │           │       │   ├── ro-RO.min.js
+        │           │       │   ├── ru-RU.js
+        │           │       │   ├── ru-RU.min.js
+        │           │       │   ├── sk-SK.js
+        │           │       │   ├── sk-SK.min.js
+        │           │       │   ├── sl-SI.js
+        │           │       │   ├── sl-SI.min.js
+        │           │       │   ├── sv-SE.js
+        │           │       │   ├── sv-SE.min.js
+        │           │       │   ├── th-TH.js
+        │           │       │   ├── th-TH.min.js
+        │           │       │   ├── tl-PH.js
+        │           │       │   ├── tl-PH.min.js
+        │           │       │   ├── tr-TR.js
+        │           │       │   ├── tr-TR.min.js
+        │           │       │   ├── uk-UA.js
+        │           │       │   ├── uk-UA.min.js
+        │           │       │   ├── vi-VN.js
+        │           │       │   ├── vi-VN.min.js
+        │           │       │   ├── zh-CN.js
+        │           │       │   ├── zh-CN.min.js
+        │           │       │   ├── zh-Hans.js
+        │           │       │   ├── zh-Hans.min.js
+        │           │       │   ├── zh-Hant.js
+        │           │       │   ├── zh-Hant.min.js
+        │           │       │   ├── zh-TW.js
+        │           │       │   └── zh-TW.min.js
+        │           │       ├── theme-classic-contrast.css
+        │           │       ├── theme-classic-contrast.css.map
+        │           │       ├── theme-classic-contrast.min.css
+        │           │       ├── theme-classic-dark.css
+        │           │       ├── theme-classic-dark.css.map
+        │           │       ├── theme-classic-dark.min.css
+        │           │       ├── theme-classic-light.css
+        │           │       ├── theme-classic-light.css.map
+        │           │       ├── theme-classic-light.min.css
+        │           │       ├── theme-new-contrast.css
+        │           │       ├── theme-new-contrast.css.map
+        │           │       ├── theme-new-contrast.min.css
+        │           │       ├── theme-new-dark.css
+        │           │       ├── theme-new-dark.css.map
+        │           │       ├── theme-new-dark.min.css
+        │           │       ├── theme-new-light.css
+        │           │       ├── theme-new-light.css.map
+        │           │       ├── theme-new-light.min.css
+        │           │       ├── theme-soho-contrast.css
+        │           │       ├── theme-soho-contrast.css.map
+        │           │       ├── theme-soho-contrast.min.css
+        │           │       ├── theme-soho-dark.css
+        │           │       ├── theme-soho-dark.css.map
+        │           │       ├── theme-soho-dark.min.css
+        │           │       ├── theme-soho-light.css
+        │           │       ├── theme-soho-light.css.map
+        │           │       ├── theme-soho-light.min.css
+        │           │       ├── theme-uplift-contrast.css
+        │           │       ├── theme-uplift-contrast.css.map
+        │           │       ├── theme-uplift-contrast.min.css
+        │           │       ├── theme-uplift-dark.css
+        │           │       ├── theme-uplift-dark.css.map
+        │           │       ├── theme-uplift-dark.min.css
+        │           │       ├── theme-uplift-light.css
+        │           │       ├── theme-uplift-light.css.map
+        │           │       └── theme-uplift-light.min.css
+        │           ├── scripts.js
+        │           ├── scripts.js.map
+        │           ├── styles.css
+        │           ├── styles.css.map
+        │           ├── tenant.sample.angular.helloworld
+        │           │   ├── main.ts
+        │           │   ├── widget.manifest
+        │           │   └── widget.ts
+        │           ├── tsconfig.json
+        │           ├── vendor.js
+        │           └── vendor.js.map
+        └── README.md
