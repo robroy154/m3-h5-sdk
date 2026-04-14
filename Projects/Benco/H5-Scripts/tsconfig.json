@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "ignoreDeprecations": "6.0",
+        "sourceMap": true,
+        "outDir": ".",
+        "lib": ["es2020", "dom"],
+        "downlevelIteration": true,
+        "noEmitOnError": false,
+        "strict": false
+    },
+    "include": [
+        "typings/h5.script.d.ts",
+        "../../../SDKs/M3 H5 Scripting/Templates/H5ScriptsProjectTemplate/H5ScriptsProjectTemplate/typings/infor.controls.d.ts",
+        "../../../SDKs/M3 H5 Scripting/Templates/H5ScriptsProjectTemplate/H5ScriptsProjectTemplate/typings/jquery.d.ts",
+        "../../../SDKs/M3 H5 Scripting/Templates/H5ScriptsProjectTemplate/H5ScriptsProjectTemplate/typings/jquery.json.d.ts",
+        "typings/h5.benco.d.ts",
+        "*.ts"
+    ],
+    "exclude": ["node_modules"]
+}

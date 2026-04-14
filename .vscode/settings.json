@@ -5,7 +5,11 @@
     "projectKey": "robroy154_m3-h5-sdk"
   },
   "python-envs.defaultEnvManager": "ms-python.python:system",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.validate.enable": true,
   "cSpell.enabledFileTypes": {
-    "javascript": false
+    "javascript": false,
+    "typescript": true
   }
 }

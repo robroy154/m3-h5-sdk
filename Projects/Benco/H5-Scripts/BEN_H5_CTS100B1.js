@@ -1,5 +1,6 @@
+"use strict";
 var BEN_H5_CTS100B1 = /** @class */ (function () {
-    function BEN_H5_CTS100B1(scriptArgs) {
+    function class_1(scriptArgs) {
         this.log = scriptArgs.log;
         this.controller = scriptArgs.controller;
         this.miService = ScriptUtil.version >= 2.0 ? MIService : MIService.Current;
@@ -7,58 +8,50 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
     /**
      * Script initialization function.
      */
-    BEN_H5_CTS100B1.Init = function (scriptArgs) {
+    class_1.Init = function (scriptArgs) {
         if (ScriptUtil.version >= 2.0) {
             new BEN_H5_CTS100B1(scriptArgs).run();
-        } else {
+        }
+        else {
             console.error("Wrong H5 version, exiting script...");
         }
     };
-
-    BEN_H5_CTS100B1.prototype.run = function () {
+    class_1.prototype.run = function () {
         var dataGrid = this.controller.GetGrid();
         this.log.Info("Grid object: " + (dataGrid ? "exists" : "null"));
-        
         if (!dataGrid) {
             this.log.Error("No grid found in this view");
             return;
         }
-        
         var gridData = dataGrid.getData();
         this.log.Info("Grid data length: " + (gridData ? gridData.length : "null"));
-        
         if (!gridData || gridData.length === 0) {
             this.log.Error("No data in grid");
             return;
         }
-        
         // Run automatically - show tree view
         this.showTreeView(dataGrid);
         this.log.Info("Init End");
     };
-
-    BEN_H5_CTS100B1.prototype.showTreeView = function (grid) {
+    class_1.prototype.showTreeView = function (grid) {
         var _this = this;
         this.log.Info("showTreeView starting...");
         var data = grid.getData();
         this.log.Info("Processing " + data.length + " rows");
-
         // Fetch all locations first, then render grid in one operation
-        var promises = data.map(function(row) {
+        var promises = data.map(function (row) {
             var ITNO = row.T8ITNO || ScriptUtil.GetFieldValue('T8ITNO');
-            return _this.getWarehouseLocations('REG', ITNO).then(function(locations) {
+            return _this.getWarehouseLocations('REG', ITNO).then(function (locations) {
                 return { item: ITNO, locations: locations };
             });
         });
-
-        Promise.all(promises).then(function(results) {
+        Promise.all(promises).then(function (results) {
             _this.log.Info("All promises resolved, building grid rows");
-
             // Flatten into rows: one row per item+location combination
             var rows = [];
-            results.forEach(function(result) {
+            results.forEach(function (result) {
                 if (result.locations && result.locations.length) {
-                    result.locations.forEach(function(loc) {
+                    result.locations.forEach(function (loc) {
                         rows.push({
                             id: result.item + '_' + loc.WHSL,
                             ITNO: result.item,
@@ -66,7 +59,8 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
                             STQT: loc.STQT
                         });
                     });
-                } else {
+                }
+                else {
                     rows.push({
                         id: result.item + '_none',
                         ITNO: result.item,
@@ -75,16 +69,14 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
                     });
                 }
             });
-
             _this.log.Info("Rendering " + rows.length + " rows in dialog");
             _this.showDialog(rows);
             _this.log.Info("Done");
-        }).catch(function(error) {
+        }, function (error) {
             _this.log.Error("Error building grid: " + JSON.stringify(error));
         });
     };
-
-    BEN_H5_CTS100B1.prototype.showDialog = function (rows) {
+    class_1.prototype.showDialog = function (rows) {
         var tableHtml = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
         tableHtml += '<thead><tr style="background:#1b5e82;color:#fff;">';
         tableHtml += '<th style="padding:8px;text-align:left;">Item Number</th>';
@@ -103,9 +95,7 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
             lastItem = row.ITNO;
         });
         tableHtml += '</tbody></table>';
-
         var dialogContent = $('<div style="padding:10px;max-height:500px;overflow-y:auto;">' + tableHtml + '</div>');
-
         var dialogOptions = {
             title: 'REG Warehouse Locations',
             dialogType: 'General',
@@ -115,21 +105,21 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
             closeOnEscape: true,
             close: function () { dialogContent.remove(); },
             buttons: [{
-                text: 'Close',
-                isDefault: true,
-                width: 80,
-                click: function (event, model) { model.close(); }
-            }]
+                    text: 'Close',
+                    isDefault: true,
+                    width: 80,
+                    click: function (event, model) { model.close(); }
+                }]
         };
         if (ScriptUtil.version >= 2.0) {
             H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
-        } else {
+        }
+        else {
             dialogContent.inforMessageDialog(dialogOptions);
         }
         this.log.Info("Dialog shown with " + rows.length + " rows");
     };
-
-    BEN_H5_CTS100B1.prototype.getWarehouseLocations = function(WHLO, ITNO) {
+    class_1.prototype.getWarehouseLocations = function (WHLO, ITNO) {
         var request = {
             program: 'MMS060MI',
             transaction: 'LstSumQty',
@@ -140,27 +130,27 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
             maxReturnedRecords: 50,
             outputFields: ['WHSL', 'STQT']
         };
-        return this.createRequest(request).then(function(response) {
+        return this.createRequest(request).then(function (response) {
             if (response.items) {
-                return response.items.map(function(item) {
-                    return {
-                        WHSL: item.WHSL,
-                        STQT: item.STQT
-                    };
-                });
+                return response.items.map(function (item) { return ({
+                    WHSL: item.WHSL,
+                    STQT: item.STQT
+                }); });
             }
             return [];
         });
     };
-    BEN_H5_CTS100B1.prototype.createRequest = function (request) {
+    class_1.prototype.createRequest = function (request) {
         return this.miService.executeRequestV2(request)
             .then(function (response) {
-                if (response.hasError()) {
-                    throw response;
-                }
-                return response;
-            });
+            if (response.hasError()) {
+                throw response;
+            }
+            return response;
+        }, function (error) {
+            throw error;
+        });
     };
-
-    return BEN_H5_CTS100B1;
+    return class_1;
 }());
+//# sourceMappingURL=BEN_H5_CTS100B1.js.map

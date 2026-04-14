@@ -1,3 +1,4 @@
+"use strict";
 /*─────────────────────────────────────────────────────────────────────────────
     POReceiptShortcutV2.js
     H5-compliant script for PO receipt processing with extended serial support
@@ -30,258 +31,305 @@
   • Transient error detection with retry/backoff (up to 3 attempts)
   • Follows H5 SDK naming conventions and structure
 ─────────────────────────────────────────────────────────────────────────────*/
-
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /*──────────────────────────────────────────────────────────────────────────*/
-var POReceiptShortcutV2 = class {
-
-    constructor(args) {
+var POReceiptShortcutV2 = /** @class */ (function () {
+    function class_1(args) {
         // Initialize base properties following H5 SDK patterns
         this.typeName = 'POReceiptShortcutV2';
         // Use appropriate MIService version based on H5 compatibility
         this.mi = ScriptUtil.version >= 2.0 ? MIService : MIService.Current;
-        this.ctrl = args.controller;    // H5 controller for UI interactions
-        this.log = args.log;           // H5 logging service
-
+        this.ctrl = args.controller; // H5 controller for UI interactions
+        this.log = args.log; // H5 logging service
         // Capture user context for downstream MI calls (company/division are needed for CMS474MI)
         try {
-            const userContext = typeof ScriptUtil.GetUserContext === 'function'
+            var userContext = typeof ScriptUtil.GetUserContext === 'function'
                 ? ScriptUtil.GetUserContext()
                 : {};
             this.userContext = userContext || {};
             this.company = this.userContext.CurrentCompany || this.userContext.CONO || '';
             this.division = this.userContext.CurrentDivision || this.userContext.DIVI || '';
-        } catch (e) {
+        }
+        catch (e) {
             // User context capture failed; continue with empty values
             console.warn('[CONSTRUCTOR] User context capture failed:', e);
             this.userContext = {};
             this.company = '';
             this.division = '';
         }
-
         // Serial handling configuration
-        this.maxSerialInputLength = 60;             // Allow up to 60 characters from the operator
-        this.derivedSerialLength = 19;              // MMS240 upper limit: BSN(3) + MM(2) + DD(2) + YY(2) + hh(2) + mm(2) + ss(2) + hash(4) = 19 chars
-        this.derivedSerialPrefix = 'BSN';          // Epoch serial prefix (BSN = batch serial number)
-        this.hashSuffixLength = 4;                  // Hash suffix to guarantee uniqueness across runs
-        this.epochSeed = null;                     // Lazily generated once per batch for deterministic hashing
-
+        this.maxSerialInputLength = 60; // Allow up to 60 characters from the operator
+        this.derivedSerialLength = 19; // MMS240 upper limit: BSN(3) + MM(2) + DD(2) + YY(2) + hh(2) + mm(2) + ss(2) + hash(4) = 19 chars
+        this.derivedSerialPrefix = 'BSN'; // Epoch serial prefix (BSN = batch serial number)
+        this.hashSuffixLength = 4; // Hash suffix to guarantee uniqueness across runs
+        this.epochSeed = null; // Lazily generated once per batch for deterministic hashing
         // CMS474 custom field configuration (full serial storage)
         this.customFieldConfig = {
             enabled: true,
-            group: 'EQUIPMENT',        // Custom field group
-            field: 'FULLSERNUM',       // Custom field identifier
-            sequenceNum: '1',          // Sequence number
-            valueField: 'CFMA'         // CFMA holds the original serial
+            group: 'EQUIPMENT', // Custom field group
+            field: 'FULLSERNUM', // Custom field identifier
+            sequenceNum: '1', // Sequence number
+            valueField: 'CFMA' // CFMA holds the original serial
         };
-
         // Log initialization following SDK patterns
         this.log.Info('POReceiptShortcutV2 initialized successfully');
     }
-
-    static Init(args) {
+    class_1.Init = function (args) {
         // Entry point: Initialize script (supports fallbacks for < 2.0)
         try {
-            const self = new POReceiptShortcutV2(args);
-            self.busy(true);    // Show loading indicator during processing
+            var self_1 = new POReceiptShortcutV2(args);
+            self_1.busy(true); // Show loading indicator during processing
             // Execute main workflow with cleanup regardless of success/failure
-            self.run().finally(() => self.busy(false));
-        } catch (error) {
+            self_1.run().finally(function () { return self_1.busy(false); });
+        }
+        catch (error) {
             // Initialization failed; log to console for debugging
             console.error('[INIT-ERROR] POReceiptShortcutV2 initialization failed:', error);
             if (args && args.log) {
-                args.log.Error(`POReceiptShortcutV2 initialization failed: ${error.message || error}`);
+                args.log.Error("POReceiptShortcutV2 initialization failed: ".concat(error.message || error));
             }
             // Re-throw so H5 system knows there was an error
             throw error;
         }
-    }
-
+    };
     /*───────────────── LOGGING METHODS (H5 SDK Standard) ─────────────────*/
     // Enterprise logging following H5 SDK sample patterns
     // All samples use this.log.Info, this.log.Error, etc. directly
-    
-    logDebug(message) { 
-        console.log(`[DEBUG] ${message}`);
-        this.log.Info(`[DEBUG] ${message}`); 
-    }
-    logInfo(message) { 
-        console.log(`[INFO] ${message}`);
-        this.log.Info(message); 
-    }
-    logWarning(message) { 
-        console.log(`[WARNING] ${message}`);
-        this.log.Info(`[WARNING] ${message}`); 
-    }
-    logError(message, error = null) { 
+    class_1.prototype.logDebug = function (message) {
+        console.log("[DEBUG] ".concat(message));
+        this.log.Info("[DEBUG] ".concat(message));
+    };
+    class_1.prototype.logInfo = function (message) {
+        console.log("[INFO] ".concat(message));
+        this.log.Info(message);
+    };
+    class_1.prototype.logWarning = function (message) {
+        console.log("[WARNING] ".concat(message));
+        this.log.Info("[WARNING] ".concat(message));
+    };
+    class_1.prototype.logError = function (message, error) {
+        if (error === void 0) { error = null; }
         if (error) {
-            console.error(`[ERROR] ${message}: ${error.message || error}`, error);
-            this.log.Error(`${message}: ${error.message || error}`);
-        } else {
-            console.error(`[ERROR] ${message}`);
+            console.error("[ERROR] ".concat(message, ": ").concat(error.message || error), error);
+            this.log.Error("".concat(message, ": ").concat(error.message || error));
+        }
+        else {
+            console.error("[ERROR] ".concat(message));
             this.log.Error(message);
         }
-    }
-
+    };
     /**
      * Stores the full original serial in CMS474MI custom field (audit trail).
-     * 
+     *
      * ALWAYS writes the original user-entered serial to CFMA regardless of:
      * - Whether SERN contains pass-through (<=20) or derived BSN serial (>20)
      * - This preserves complete operator intent in the system for compliance/traceability
-     * 
+     *
      * CRITICAL: Any failure here throws immediately to trigger rollbackEquipment()
      * which will delete the already-created equipment record (MMS240MI) + this custom field record.
      * This ensures no orphaned records on failure.
      */
-    async storeFullSerialCustomField(equipmentContext) {
-        if (!this.customFieldConfig?.enabled) {
-            return;
-        }
-
-        const { originalSerial, SERN } = equipmentContext;
-
-        const addRequest = new MIRequest();
-        addRequest.program = 'CMS474MI';
-        addRequest.transaction = 'AddEqInfo';
-        addRequest.maxReturnedRecords = 1;
-        addRequest.record = this.buildCms474Record({
-            derivedSerial: SERN,
-            originalSerial
+    class_1.prototype.storeFullSerialCustomField = function (equipmentContext) {
+        return __awaiter(this, void 0, void 0, function () {
+            var originalSerial, SERN, addRequest, response, error_1;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = this.customFieldConfig) === null || _a === void 0 ? void 0 : _a.enabled)) {
+                            return [2 /*return*/];
+                        }
+                        originalSerial = equipmentContext.originalSerial, SERN = equipmentContext.SERN;
+                        addRequest = new MIRequest();
+                        addRequest.program = 'CMS474MI';
+                        addRequest.transaction = 'AddEqInfo';
+                        addRequest.maxReturnedRecords = 1;
+                        addRequest.record = this.buildCms474Record({
+                            derivedSerial: SERN,
+                            originalSerial: originalSerial
+                        });
+                        this.logMIRequest(addRequest.program, addRequest.transaction, addRequest.record);
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.mi.executeRequest(addRequest)];
+                    case 2:
+                        response = _b.sent();
+                        this.logMIResponse(addRequest.program, addRequest.transaction, response, true);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _b.sent();
+                        this.logMIResponse(addRequest.program, addRequest.transaction, error_1, false);
+                        // Any failure here should be thrown to trigger a full rollback.
+                        throw error_1;
+                    case 4: return [2 /*return*/];
+                }
+            });
         });
-
-        this.logMIRequest(addRequest.program, addRequest.transaction, addRequest.record);
-
-        try {
-            const response = await this.mi.executeRequest(addRequest);
-            this.logMIResponse(addRequest.program, addRequest.transaction, response, true);
-        } catch (error) {
-            this.logMIResponse(addRequest.program, addRequest.transaction, error, false);
-            // Any failure here should be thrown to trigger a full rollback.
-            throw error;
-        }
-    }
-
-    buildCms474Record({ derivedSerial, originalSerial }) {
+    };
+    class_1.prototype.buildCms474Record = function (_a) {
+        var _b;
+        var derivedSerial = _a.derivedSerial, originalSerial = _a.originalSerial;
         // CMS474MI/AddEqInfo API inputs
-        const record = {
-            ITNO: this.ITNO,
-            SERN: derivedSerial,
-            CFMG: this.customFieldConfig.group,
-            CFMF: this.customFieldConfig.field,
-            SQNR: this.customFieldConfig.sequenceNum,
-            [this.customFieldConfig.valueField]: originalSerial
-        };
-
+        var record = (_b = {
+                ITNO: this.ITNO,
+                SERN: derivedSerial,
+                CFMG: this.customFieldConfig.group,
+                CFMF: this.customFieldConfig.field,
+                SQNR: this.customFieldConfig.sequenceNum
+            },
+            _b[this.customFieldConfig.valueField] = originalSerial,
+            _b);
         // Add optional company/division context if available
-        if (this.company) record.CONO = this.company;
-        if (this.division) record.DIVI = this.division;
-
+        if (this.company)
+            record.CONO = this.company;
+        if (this.division)
+            record.DIVI = this.division;
         return record;
-    }
-
+    };
     //Deletes custom field record. This is not needed since equipment deletion API also deletes custom record
-    async deleteEquipmentCustomField(equipmentContext) {
-        if (!this.customFieldConfig?.enabled) {
-            return;
-        }
-
-        // Need SERN to delete the custom field record
-        const sern = equipmentContext.SERN;
-        if (!sern) {
-            return;
-        }
-
-        const deleteRequest = new MIRequest();
-        deleteRequest.program = 'CMS474MI';
-        deleteRequest.transaction = 'DelEqInfo';
-        deleteRequest.maxReturnedRecords = 1;
-        deleteRequest.record = {
-            ITNO: this.ITNO,
-            SERN: sern,
-            CFMG: this.customFieldConfig.group,
-            CFMF: this.customFieldConfig.field,
-            SQNR: this.customFieldConfig.sequenceNum
-        };
-
-        if (this.company) deleteRequest.record.CONO = this.company;
-        if (this.division) deleteRequest.record.DIVI = this.division;
-
-        this.logMIRequest(deleteRequest.program, deleteRequest.transaction, deleteRequest.record);
-
-        try {
-            const response = await this.mi.executeRequest(deleteRequest);
-            this.logMIResponse(deleteRequest.program, deleteRequest.transaction, response, true);
-        } catch (error) {
-            this.logMIResponse(deleteRequest.program, deleteRequest.transaction, error, false);
-            // Ignore not-found errors during cleanup, as the record might not have been created
-            if (!this.isRecordMissingError(error)) {
-                // For any other error during rollback, log it but do not re-throw,
-                // to allow the rest of the rollback to proceed.
-                this.logError(`deleteEquipmentCustomField failed for SERN ${sern} during rollback`, error);
-            }
-        }
-    }
-
-    isRecordMissingError(error) {
-        if (!error) return false;
-        const message = (error.errorMessage || error.message || '').toLowerCase();
+    class_1.prototype.deleteEquipmentCustomField = function (equipmentContext) {
+        return __awaiter(this, void 0, void 0, function () {
+            var sern, deleteRequest, response, error_2;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!((_a = this.customFieldConfig) === null || _a === void 0 ? void 0 : _a.enabled)) {
+                            return [2 /*return*/];
+                        }
+                        sern = equipmentContext.SERN;
+                        if (!sern) {
+                            return [2 /*return*/];
+                        }
+                        deleteRequest = new MIRequest();
+                        deleteRequest.program = 'CMS474MI';
+                        deleteRequest.transaction = 'DelEqInfo';
+                        deleteRequest.maxReturnedRecords = 1;
+                        deleteRequest.record = {
+                            ITNO: this.ITNO,
+                            SERN: sern,
+                            CFMG: this.customFieldConfig.group,
+                            CFMF: this.customFieldConfig.field,
+                            SQNR: this.customFieldConfig.sequenceNum
+                        };
+                        if (this.company)
+                            deleteRequest.record.CONO = this.company;
+                        if (this.division)
+                            deleteRequest.record.DIVI = this.division;
+                        this.logMIRequest(deleteRequest.program, deleteRequest.transaction, deleteRequest.record);
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.mi.executeRequest(deleteRequest)];
+                    case 2:
+                        response = _b.sent();
+                        this.logMIResponse(deleteRequest.program, deleteRequest.transaction, response, true);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _b.sent();
+                        this.logMIResponse(deleteRequest.program, deleteRequest.transaction, error_2, false);
+                        // Ignore not-found errors during cleanup, as the record might not have been created
+                        if (!this.isRecordMissingError(error_2)) {
+                            // For any other error during rollback, log it but do not re-throw,
+                            // to allow the rest of the rollback to proceed.
+                            this.logError("deleteEquipmentCustomField failed for SERN ".concat(sern, " during rollback"), error_2);
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    class_1.prototype.isRecordMissingError = function (error) {
+        if (!error)
+            return false;
+        var message = (error.errorMessage || error.message || '').toLowerCase();
         return error.statusCode === 400 || message.includes('no record') || message.includes('not found');
-    }
-
+    };
     /**
      * Prepares serial entries for processing.
-     * 
+     *
      * SERIAL STRATEGY (New in V7.2):
      * - If input length <= 20: Use original serial as-is (pass-through to SERN and CFMA)
      * - If input length > 20: Generate BSN[MM][DD][YY][hh][mm][ss][hash] serial for SERN; store original in CFMA
-     * 
+     *
      * This ensures M3 MMS240 compatibility while preserving full user-entered serial in custom field audit trail.
      */
-    prepareSerialEntries(userSerials) {
+    class_1.prototype.prepareSerialEntries = function (userSerials) {
+        var _this = this;
         if (!Array.isArray(userSerials) || userSerials.length === 0) {
             throw new Error('No serials to prepare');
         }
-
         // Generate epoch seed once per batch to ensure consistent (but unique per run) hashing
         if (!this.epochSeed) {
             this.epochSeed = this.generateEpochSeed();
-            console.log(`[SERIAL-PREP] Generated epoch seed for this run: ${this.epochSeed}`);
+            console.log("[SERIAL-PREP] Generated epoch seed for this run: ".concat(this.epochSeed));
         }
-
-        const entries = userSerials.map((rawSerial, index) => {
-            const trimmed = (rawSerial || '').trim();
-            const serialLimit = 20; // MMS240 limit for SERN
-            const needsDerive = trimmed.length > serialLimit;
+        var entries = userSerials.map(function (rawSerial, index) {
+            var trimmed = (rawSerial || '').trim();
+            var serialLimit = 20; // MMS240 limit for SERN
+            var needsDerive = trimmed.length > serialLimit;
             // RULE: If input <=20 chars, pass through as-is; if >20 chars, derive BSN epoch serial
-            const derivedSerial = needsDerive ? this.deriveBoundedSerial(trimmed, index) : trimmed;
-
+            var derivedSerial = needsDerive ? _this.deriveBoundedSerial(trimmed, index) : trimmed;
             return {
                 originalSerial: trimmed,
-                derivedSerial,
-                index
+                derivedSerial: derivedSerial,
+                index: index
             };
         });
-
         // Verify uniqueness of derived serials
-        const uniqueDerived = new Set(entries.map(e => e.derivedSerial));
+        var uniqueDerived = new Set(entries.map(function (e) { return e.derivedSerial; }));
         if (uniqueDerived.size !== entries.length) {
             throw new Error('Hash collision: derived serials are not unique. Try again or contact support.');
         }
-
-        console.log(`[SERIAL-PREP] Prepared ${entries.length} serial entries with bounded derivation`);
+        console.log("[SERIAL-PREP] Prepared ".concat(entries.length, " serial entries with bounded derivation"));
         return entries;
-    }
-
-    generateEpochSeed() {
+    };
+    class_1.prototype.generateEpochSeed = function () {
         // Generate a seed for hashing using current epoch time
         // This ensures unique hash suffixes across different receipt runs
-        const now = Date.now();
-        const seedValue = (now % 1000000).toString().padStart(6, '0');
-        console.log(`[EPOCH-SEED] Generated from ${now}: ${seedValue}`);
+        var now = Date.now();
+        var seedValue = (now % 1000000).toString().padStart(6, '0');
+        console.log("[EPOCH-SEED] Generated from ".concat(now, ": ").concat(seedValue));
         return seedValue;
-    }
-
-    deriveBoundedSerial(originalSerial, index) {
+    };
+    class_1.prototype.deriveBoundedSerial = function (originalSerial, index) {
         // Epoch format: BSN[MM][DD][YY][hh][mm][ss][hash]
         // Generates a deterministic, compact serial for items with input >20 chars
         // Used ONLY when input length exceeds MMS240 limit (20 chars)
@@ -294,167 +342,155 @@ var POReceiptShortcutV2 = class {
         // ss = second (2 chars, 00-59)
         // hash = 4-char hash for uniqueness
         // Total: 3 + 2 + 2 + 2 + 2 + 2 + 2 + 4 = 19 chars
-
-        const now = new Date();
-        const prefix = this.derivedSerialPrefix;  // 'BSN'
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const year = String(now.getFullYear()).slice(-2).padStart(2, '0');
-        const hour = String(now.getHours()).padStart(2, '0');
-        const minute = String(now.getMinutes()).padStart(2, '0');
-        const second = String(now.getSeconds()).padStart(2, '0');
-        const hashSuffix = this.computeHashSuffix(originalSerial, index);
-
-        const derived = `${prefix}${month}${day}${year}${hour}${minute}${second}${hashSuffix}`;
-
+        var now = new Date();
+        var prefix = this.derivedSerialPrefix; // 'BSN'
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var day = String(now.getDate()).padStart(2, '0');
+        var year = String(now.getFullYear()).slice(-2).padStart(2, '0');
+        var hour = String(now.getHours()).padStart(2, '0');
+        var minute = String(now.getMinutes()).padStart(2, '0');
+        var second = String(now.getSeconds()).padStart(2, '0');
+        var hashSuffix = this.computeHashSuffix(originalSerial, index);
+        var derived = "".concat(prefix).concat(month).concat(day).concat(year).concat(hour).concat(minute).concat(second).concat(hashSuffix);
         // Sanity check: must fit within MMS240 limit
         if (derived.length > this.derivedSerialLength) {
-            throw new Error(
-                `Derived serial exceeds ${this.derivedSerialLength} chars: ${derived} (len=${derived.length})`
-            );
+            throw new Error("Derived serial exceeds ".concat(this.derivedSerialLength, " chars: ").concat(derived, " (len=").concat(derived.length, ")"));
         }
-
-        console.log(`[SERIAL-DERIVE] #${index + 1}: "${originalSerial.substring(0, 20)}..." => "${derived}" (${derived.length} chars)`);
+        console.log("[SERIAL-DERIVE] #".concat(index + 1, ": \"").concat(originalSerial.substring(0, 20), "...\" => \"").concat(derived, "\" (").concat(derived.length, " chars)"));
         return derived;
-    }
-
-    computeHashSuffix(originalSerial, index) {
+    };
+    class_1.prototype.computeHashSuffix = function (originalSerial, index) {
         // Deterministic hash: combine epoch seed, serial content, and index
         // Produces a 4-digit numeric suffix for uniqueness across the batch
         // Ensures no collisions even if two operators enter similar serials in the same minute
-        const combined = `${this.epochSeed}|${originalSerial}|${index}`;
-        const hash = this.simpleHash(combined);
-        const hashValue = hash % 10000;
+        var combined = "".concat(this.epochSeed, "|").concat(originalSerial, "|").concat(index);
+        var hash = this.simpleHash(combined);
+        var hashValue = hash % 10000;
         return hashValue.toString().padStart(4, '0');
-    }
-
-    simpleHash(str) {
+    };
+    class_1.prototype.simpleHash = function (str) {
         // Deterministic hash function (djb2 variant)
-        let hash = 5381;
-        for (let i = 0; i < str.length; i++) {
+        var hash = 5381;
+        for (var i = 0; i < str.length; i++) {
             hash = ((hash << 5) + hash) + str.charCodeAt(i);
             hash = hash & hash; // Convert to 32-bit integer
         }
         return Math.abs(hash);
-    }
-
+    };
     // Enhanced MI transaction logging
-    logMIRequest(program, transaction, record) {
-        console.log(`[MI-REQUEST] ${program}/${transaction}:`, JSON.stringify(record, null, 2));
-        this.logDebug(`MI Request: ${program}/${transaction} - ${JSON.stringify(record)}`);
-    }
-
-    logMIResponse(program, transaction, response, success = true) {
+    class_1.prototype.logMIRequest = function (program, transaction, record) {
+        console.log("[MI-REQUEST] ".concat(program, "/").concat(transaction, ":"), JSON.stringify(record, null, 2));
+        this.logDebug("MI Request: ".concat(program, "/").concat(transaction, " - ").concat(JSON.stringify(record)));
+    };
+    class_1.prototype.logMIResponse = function (program, transaction, response, success) {
+        if (success === void 0) { success = true; }
         if (success) {
-            console.log(`[MI-RESPONSE] ${program}/${transaction} SUCCESS:`, JSON.stringify(response, null, 2));
-            this.logDebug(`MI Response: ${program}/${transaction} - ${JSON.stringify(response)}`);
-        } else {
-            console.error(`[MI-RESPONSE] ${program}/${transaction} ERROR:`, JSON.stringify(response, null, 2));
-            this.logError(`MI Response Error: ${program}/${transaction} - ${JSON.stringify(response)}`);
+            console.log("[MI-RESPONSE] ".concat(program, "/").concat(transaction, " SUCCESS:"), JSON.stringify(response, null, 2));
+            this.logDebug("MI Response: ".concat(program, "/").concat(transaction, " - ").concat(JSON.stringify(response)));
         }
-    }
-
+        else {
+            console.error("[MI-RESPONSE] ".concat(program, "/").concat(transaction, " ERROR:"), JSON.stringify(response, null, 2));
+            this.logError("MI Response Error: ".concat(program, "/").concat(transaction, " - ").concat(JSON.stringify(response)));
+        }
+    };
     // Extract user-friendly error message from MI response
-    extractErrorMessage(error, operation = 'operation') {
-        let errorMsg = `${operation} failed`;
-        let technicalDetails = '';
-
+    class_1.prototype.extractErrorMessage = function (error, operation) {
+        if (operation === void 0) { operation = 'operation'; }
+        var errorMsg = "".concat(operation, " failed");
+        var technicalDetails = '';
         if (error) {
             // Primary error message (user-friendly)
             if (error.errorMessage) {
                 errorMsg = error.errorMessage;
-            } else if (error.message) {
+            }
+            else if (error.message) {
                 errorMsg = error.message;
             }
-
             // Technical details for troubleshooting
-            const errorCode = error.errorCode || '';
-            const errorMessage = error.errorMessage || '';
-            const errorField = error.errorField || '';
-            const program = error.program || '';
-            const transaction = error.transaction || '';
-
+            var errorCode = error.errorCode || '';
+            var errorMessage = error.errorMessage || '';
+            var errorField = error.errorField || '';
+            var program = error.program || '';
+            var transaction = error.transaction || '';
             if (errorCode || errorMessage || errorField || program) {
                 technicalDetails = '\n\nTechnical Details:';
-                if (program && transaction) technicalDetails += `\n• API: ${program}/${transaction}`;
+                if (program && transaction)
+                    technicalDetails += "\n\u2022 API: ".concat(program, "/").concat(transaction);
                 if (errorCode && errorMessage) {
-                    technicalDetails += `\n• Error: ${errorCode}: ${errorMessage}`;
-                } else if (errorMessage) {
-                    technicalDetails += `\n• Error: ${errorMessage}`;
-                } else if (errorCode) {
-                    technicalDetails += `\n• Error Code: ${errorCode}`;
+                    technicalDetails += "\n\u2022 Error: ".concat(errorCode, ": ").concat(errorMessage);
                 }
-                if (errorField) technicalDetails += `\n• Field: ${errorField}`;
+                else if (errorMessage) {
+                    technicalDetails += "\n\u2022 Error: ".concat(errorMessage);
+                }
+                else if (errorCode) {
+                    technicalDetails += "\n\u2022 Error Code: ".concat(errorCode);
+                }
+                if (errorField)
+                    technicalDetails += "\n\u2022 Field: ".concat(errorField);
             }
         }
-
         return errorMsg + technicalDetails;
-    }
-
+    };
     /*───────────────── PROGRESS UI (Enterprise Pattern) ─────────────────*/
-    initProgress(steps) {
-        this.steps = steps;           // array of labels
+    class_1.prototype.initProgress = function (steps) {
+        this.steps = steps; // array of labels
         this.idx = 0;
-        this.log.Info(`Starting progress tracking with ${steps.length} steps: ${steps.join(', ')}`);
-
+        this.log.Info("Starting progress tracking with ".concat(steps.length, " steps: ").concat(steps.join(', ')));
         // Create progress dialog content
-        const progressHtml = `
-            <div style="padding: 20px;">
-                <div id="progressWrap" style="width: 100%; height: 18px; background: #ddd; border-radius: 4px; overflow: hidden;">
-                    <div id="progressFill" style="height: 100%; width: 0; background: #0072C6; transition: width .25s;"></div>
-                </div>
-                <div id="progressMsg" style="text-align: center; margin-top: 8px; font-size: 13px;">Starting…</div>
-            </div>
-        `;
-        
+        var progressHtml = "\n            <div style=\"padding: 20px;\">\n                <div id=\"progressWrap\" style=\"width: 100%; height: 18px; background: #ddd; border-radius: 4px; overflow: hidden;\">\n                    <div id=\"progressFill\" style=\"height: 100%; width: 0; background: #0072C6; transition: width .25s;\"></div>\n                </div>\n                <div id=\"progressMsg\" style=\"text-align: center; margin-top: 8px; font-size: 13px;\">Starting\u2026</div>\n            </div>\n        ";
         this.progressContent = $(progressHtml);
-        
-        const dialogOptions = {
+        var dialogOptions = {
             title: "Processing PO Line...",
             dialogType: "General",
-            modal: true,  // Disallow background interaction
+            modal: true, // Disallow background interaction
             width: 400,
             minHeight: 150,
             icon: "info",
-            closeOnEscape: false,  // Prevent manual closing during processing
+            closeOnEscape: false, // Prevent manual closing during processing
             close: function () {
                 // Don't allow manual closing during processing
             },
-            buttons: []  // No buttons during processing
+            buttons: [] // No buttons during processing
         };
-
         // Show progress dialog with proper version handling
         if (ScriptUtil.version >= 2.0) {
             this.progressDialog = H5ControlUtil.H5Dialog.CreateDialogElement(this.progressContent[0], dialogOptions);
-        } else {
+        }
+        else {
             this.progressDialog = this.progressContent.inforMessageDialog(dialogOptions);
         }
-        
         this.updateProgress('Starting…');
-    }
-    
-    addProgressStep(label) { this.steps.push(label); }
-    
-    updateProgress(msg) {
-        const pct = Math.round((this.idx / this.steps.length) * 100);
+    };
+    class_1.prototype.addProgressStep = function (label) { this.steps.push(label); };
+    class_1.prototype.updateProgress = function (msg) {
+        var pct = Math.round((this.idx / this.steps.length) * 100);
         $('#progressFill').css('width', pct + '%');
-        if (msg) $('#progressMsg').text(msg);
-    }
-    
-    async advance(label) {
-        this.updateProgress(label + ' ✓');
-        this.idx++;
-        await this.sleep(60);            // tiny delay so UI repaints
-    }
-    
-    progressDone() {
+        if (msg)
+            $('#progressMsg').text(msg);
+    };
+    class_1.prototype.advance = function (label) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.updateProgress(label + ' ✓');
+                        this.idx++;
+                        return [4 /*yield*/, this.sleep(60)];
+                    case 1:
+                        _a.sent(); // tiny delay so UI repaints
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    class_1.prototype.progressDone = function () {
+        var _this = this;
         $('#progressFill').css('width', '100%');
         $('#progressMsg').text('Done!');
         this.log.Info('Progress completed successfully');
-        setTimeout(() => this.closeProgress(), 300);
-    }
-    
-    closeProgress() { 
+        setTimeout(function () { return _this.closeProgress(); }, 300);
+    };
+    class_1.prototype.closeProgress = function () {
         // Close the underlying H5 dialog and clean up the DOM. Without this
         // explicit close call the modal/backdrop created by H5Dialog will
         // remain on screen, which is why the "Processing PO Line…" dialog
@@ -464,11 +500,13 @@ var POReceiptShortcutV2 = class {
                 // H5 2.0+ dialogs expose a close() function on the model
                 if (ScriptUtil.version >= 2.0 && typeof this.progressDialog.close === 'function') {
                     this.progressDialog.close(true);
-                } else {
+                }
+                else {
                     // For pre‑2.0 dialogs use the inforDialog API on the element
                     try {
                         $(this.progressDialog).inforDialog('close');
-                    } catch (e) {
+                    }
+                    catch (e) {
                         // Fallback: attempt to close using the content element
                         if (this.progressContent && this.progressContent.inforDialog) {
                             this.progressContent.inforDialog('close');
@@ -477,473 +515,466 @@ var POReceiptShortcutV2 = class {
                 }
                 this.progressDialog = null;
             }
-        } catch (err) {
-            // Log any errors but continue cleaning up content
-            this.log.Info(`closeProgress: error closing progress dialog: ${err.message}`);
         }
-
+        catch (err) {
+            // Log any errors but continue cleaning up content
+            this.log.Info("closeProgress: error closing progress dialog: ".concat(err.message));
+        }
         // Remove the content element from the DOM
         if (this.progressContent) {
             this.progressContent.remove();
             this.progressContent = null;
         }
         this.log.Info('Progress dialog closed');
-    }
-    
-    sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
+    };
+    class_1.prototype.sleep = function (ms) { return new Promise(function (r) { return setTimeout(r, ms); }); };
     /*───────────────── MAIN FLOW ─────────────────*/
-    async run() {
-        try {
-            // Initialize progress tracking with predefined steps
-            this.initProgress(['Validate', 'Get PO line', 'Lookups', 'Warnings', 'Process']);
-
-            // Step 1: Validate required input fields
-            const t0 = performance.now();
-            await this.validateFields();
-            const t1 = performance.now();
-            await this.advance('Validate');
-            console.log(`[Timing] validateFields: ${(t1-t0).toFixed(1)} ms`);
-
-            // Step 2: Retrieve PO line details from M3
-            const t2 = performance.now();
-            await this.getPOLine();
-            const t3 = performance.now();
-            await this.advance('Get PO line');
-            console.log(`[Timing] getPOLine: ${(t3-t2).toFixed(1)} ms`);
-
-            // Step 3: Gather supporting data (header, warehouse, item, etc.)
-            const t4 = performance.now();
-            await this.lookups();
-            const t5 = performance.now();
-            await this.advance('Lookups');
-            console.log(`[Timing] lookups: ${(t5-t4).toFixed(1)} ms`);
-
-            // Step 4: Check for business warnings (WMS, over-receipt)
-            const t6 = performance.now();
-            await this.warnings();
-            const t7 = performance.now();
-            await this.advance('Warnings');
-            console.log(`[Timing] warnings: ${(t7-t6).toFixed(1)} ms`);
-
-            /* ─── Branch by control method ─── */
-            // Process based on item lot control method (INDI field)
-            console.log(`[CONTROL-METHOD] Processing item with INDI=${this.INDI} (${this.INDI === '2' ? 'Serial' : this.INDI === '3' ? 'Lot' : 'Non-lotted'})`);
-            
-            if (this.INDI === '2') {        // Serial controlled items
-                console.log('[SERIAL-CONTROL] Starting serial processing workflow');
-                const userSerials = await this.promptSerials();  // User interaction - NO busy
-                console.log('[SERIAL-INPUT] User provided serials:', userSerials);
-
-                // Prepare derived serial/BANO values that comply with MMS240 limits
-                const serialEntries = this.prepareSerialEntries(userSerials);
-                console.log('[SERIAL-MAP] Derived serial mapping:', serialEntries);
-                
-                // Add additional progress steps for serial processing
-                this.addProgressStep('Adding equipment records');
-                this.addProgressStep('Queueing transactions');
-                this.addProgressStep('Finalizing message');
-
-                const t8 = performance.now();
-                console.log('[SERIAL-VALIDATION] Starting serial validation and equipment creation');
-                await this.checkSer(serialEntries);  // Validate derived serials don't already exist
-                console.log('[SERIAL-VALIDATION] ✓ All derived serials validated successfully');
-                
-                await this.addEquip(serialEntries);  // Create equipment records in M3
-                console.log('[EQUIPMENT-CREATION] ✓ All equipment records created successfully');
-                await this.advance('Adding equipment records');
-                const t9 = performance.now();
-                console.log(`[Timing] checkSer+addEquip: ${(t9-t8).toFixed(1)} ms`);
-
-                try {
-                    await this.sleep(50);
-                    const t10 = performance.now();
-                    console.log('[SERIAL-RECEIPT] Starting receipt transaction processing');
-                    // Create single pack with multiple lines (one per serial)
-                    const serialLines = serialEntries.map(entry => ({ BANO: entry.derivedSerial, RVQA: '1', EXPI: null }));
-                    console.log('[SERIAL-LINES] Processing lines:', JSON.stringify(serialLines, null, 2));
-                    await this.process(serialLines, false);
-                    await this.advance('Queueing transactions');
-                    const t11 = performance.now();
-                    console.log(`[Timing] process (serial): ${(t11-t10).toFixed(1)} ms`);
-
-                    // Clear equipment tracking since process succeeded
-                    console.log('[SERIAL-SUCCESS] Receipt completed successfully, clearing equipment tracking');
-                    this.createdEquipment = [];
-                } catch (processError) {
-                    // Receipt processing failed - rollback equipment records to maintain data consistency
-                    console.error('[SERIAL-FAILURE] Receipt processing failed after equipment creation, initiating rollback:', processError);
-                    this.log.Error('Receipt processing failed after equipment creation, initiating rollback', processError);
-                    await this.rollbackEquipment();
-                    throw processError;
+    class_1.prototype.run = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var t0, t1, t2, t3, t4, t5, t6, t7, userSerials, serialEntries, t8, t9, t10, serialLines, t11, processError_1, _a, lot, expi, t8, t9, t8, t9, e_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 30, , 31]);
+                        // Initialize progress tracking with predefined steps
+                        this.initProgress(['Validate', 'Get PO line', 'Lookups', 'Warnings', 'Process']);
+                        t0 = performance.now();
+                        return [4 /*yield*/, this.validateFields()];
+                    case 1:
+                        _b.sent();
+                        t1 = performance.now();
+                        return [4 /*yield*/, this.advance('Validate')];
+                    case 2:
+                        _b.sent();
+                        console.log("[Timing] validateFields: ".concat((t1 - t0).toFixed(1), " ms"));
+                        t2 = performance.now();
+                        return [4 /*yield*/, this.getPOLine()];
+                    case 3:
+                        _b.sent();
+                        t3 = performance.now();
+                        return [4 /*yield*/, this.advance('Get PO line')];
+                    case 4:
+                        _b.sent();
+                        console.log("[Timing] getPOLine: ".concat((t3 - t2).toFixed(1), " ms"));
+                        t4 = performance.now();
+                        return [4 /*yield*/, this.lookups()];
+                    case 5:
+                        _b.sent();
+                        t5 = performance.now();
+                        return [4 /*yield*/, this.advance('Lookups')];
+                    case 6:
+                        _b.sent();
+                        console.log("[Timing] lookups: ".concat((t5 - t4).toFixed(1), " ms"));
+                        t6 = performance.now();
+                        return [4 /*yield*/, this.warnings()];
+                    case 7:
+                        _b.sent();
+                        t7 = performance.now();
+                        return [4 /*yield*/, this.advance('Warnings')];
+                    case 8:
+                        _b.sent();
+                        console.log("[Timing] warnings: ".concat((t7 - t6).toFixed(1), " ms"));
+                        /* ─── Branch by control method ─── */
+                        // Process based on item lot control method (INDI field)
+                        console.log("[CONTROL-METHOD] Processing item with INDI=".concat(this.INDI, " (").concat(this.INDI === '2' ? 'Serial' : this.INDI === '3' ? 'Lot' : 'Non-lotted', ")"));
+                        if (!(this.INDI === '2')) return [3 /*break*/, 21];
+                        console.log('[SERIAL-CONTROL] Starting serial processing workflow');
+                        return [4 /*yield*/, this.promptSerials()];
+                    case 9:
+                        userSerials = _b.sent();
+                        console.log('[SERIAL-INPUT] User provided serials:', userSerials);
+                        serialEntries = this.prepareSerialEntries(userSerials);
+                        console.log('[SERIAL-MAP] Derived serial mapping:', serialEntries);
+                        // Add additional progress steps for serial processing
+                        this.addProgressStep('Adding equipment records');
+                        this.addProgressStep('Queueing transactions');
+                        this.addProgressStep('Finalizing message');
+                        t8 = performance.now();
+                        console.log('[SERIAL-VALIDATION] Starting serial validation and equipment creation');
+                        return [4 /*yield*/, this.checkSer(serialEntries)];
+                    case 10:
+                        _b.sent(); // Validate derived serials don't already exist
+                        console.log('[SERIAL-VALIDATION] ✓ All derived serials validated successfully');
+                        return [4 /*yield*/, this.addEquip(serialEntries)];
+                    case 11:
+                        _b.sent(); // Create equipment records in M3
+                        console.log('[EQUIPMENT-CREATION] ✓ All equipment records created successfully');
+                        return [4 /*yield*/, this.advance('Adding equipment records')];
+                    case 12:
+                        _b.sent();
+                        t9 = performance.now();
+                        console.log("[Timing] checkSer+addEquip: ".concat((t9 - t8).toFixed(1), " ms"));
+                        _b.label = 13;
+                    case 13:
+                        _b.trys.push([13, 17, , 19]);
+                        return [4 /*yield*/, this.sleep(50)];
+                    case 14:
+                        _b.sent();
+                        t10 = performance.now();
+                        console.log('[SERIAL-RECEIPT] Starting receipt transaction processing');
+                        serialLines = serialEntries.map(function (entry) { return ({ BANO: entry.derivedSerial, RVQA: '1', EXPI: null }); });
+                        console.log('[SERIAL-LINES] Processing lines:', JSON.stringify(serialLines, null, 2));
+                        return [4 /*yield*/, this.process(serialLines, false)];
+                    case 15:
+                        _b.sent();
+                        return [4 /*yield*/, this.advance('Queueing transactions')];
+                    case 16:
+                        _b.sent();
+                        t11 = performance.now();
+                        console.log("[Timing] process (serial): ".concat((t11 - t10).toFixed(1), " ms"));
+                        // Clear equipment tracking since process succeeded
+                        console.log('[SERIAL-SUCCESS] Receipt completed successfully, clearing equipment tracking');
+                        this.createdEquipment = [];
+                        return [3 /*break*/, 19];
+                    case 17:
+                        processError_1 = _b.sent();
+                        // Receipt processing failed - rollback equipment records to maintain data consistency
+                        console.error('[SERIAL-FAILURE] Receipt processing failed after equipment creation, initiating rollback:', processError_1);
+                        this.log.Error('Receipt processing failed after equipment creation, initiating rollback', processError_1);
+                        return [4 /*yield*/, this.rollbackEquipment()];
+                    case 18:
+                        _b.sent();
+                        throw processError_1;
+                    case 19: return [4 /*yield*/, this.advance('Finalizing message')];
+                    case 20:
+                        _b.sent();
+                        return [3 /*break*/, 28];
+                    case 21:
+                        if (!(this.INDI === '3')) return [3 /*break*/, 25];
+                        console.log('[LOT-CONTROL] Starting lot processing workflow');
+                        return [4 /*yield*/, this.promptLot()];
+                    case 22:
+                        _a = _b.sent(), lot = _a.lot, expi = _a.expi;
+                        console.log('[LOT-INPUT] User provided lot:', { lot: lot, expi: expi });
+                        t8 = performance.now();
+                        return [4 /*yield*/, this.checkLot(lot)];
+                    case 23:
+                        _b.sent(); // Validate lot doesn't already exist
+                        console.log('[LOT-VALIDATION] ✓ Lot validated successfully');
+                        return [4 /*yield*/, this.process([{ BANO: lot, RVQA: this.RVQA, EXPI: expi }], false)];
+                    case 24:
+                        _b.sent();
+                        console.log('[LOT-SUCCESS] ✓ Lot receipt completed successfully');
+                        t9 = performance.now();
+                        console.log("[Timing] checkLot+process (lot): ".concat((t9 - t8).toFixed(1), " ms"));
+                        return [3 /*break*/, 28];
+                    case 25:
+                        console.log('[NON-LOTTED] Starting non-lotted item processing workflow');
+                        return [4 /*yield*/, this.promptConfirm()];
+                    case 26:
+                        _b.sent(); // Simple confirmation dialog - NO busy
+                        console.log("[NON-LOTTED-CONFIRMED] User confirmed receipt");
+                        t8 = performance.now();
+                        return [4 /*yield*/, this.process([{ BANO: null, RVQA: this.RVQA, EXPI: null }], false)];
+                    case 27:
+                        _b.sent();
+                        console.log("[NON-LOTTED-SUCCESS] ✓ Non-lotted receipt completed successfully");
+                        t9 = performance.now();
+                        console.log("[Timing] process (non-lotted): ".concat((t9 - t8).toFixed(1), " ms"));
+                        _b.label = 28;
+                    case 28: return [4 /*yield*/, this.advance('Process')];
+                    case 29:
+                        _b.sent();
+                        this.progressDone();
+                        // Show success dialog with enterprise pattern
+                        this.showSuccessDialog();
+                        return [3 /*break*/, 31];
+                    case 30:
+                        e_1 = _b.sent();
+                        this.closeProgress();
+                        // Enhanced error dialog with MI error details
+                        this.showErrorDialog(e_1.message || 'An unexpected error occurred during processing', e_1);
+                        return [3 /*break*/, 31];
+                    case 31: return [2 /*return*/];
                 }
-
-                await this.advance('Finalizing message');
-            } else if (this.INDI === '3') { // Lot controlled items
-                console.log('[LOT-CONTROL] Starting lot processing workflow');
-                const { lot, expi } = await this.promptLot();  // User interaction - NO busy
-                console.log('[LOT-INPUT] User provided lot:', { lot, expi });
-                
-                const t8 = performance.now();
-                await this.checkLot(lot);  // Validate lot doesn't already exist
-                console.log('[LOT-VALIDATION] ✓ Lot validated successfully');
-                await this.process([{ BANO: lot, RVQA: this.RVQA, EXPI: expi }], false);
-                console.log('[LOT-SUCCESS] ✓ Lot receipt completed successfully');
-                const t9 = performance.now();
-                console.log(`[Timing] checkLot+process (lot): ${(t9-t8).toFixed(1)} ms`);
-            } else {                        
-                console.log('[NON-LOTTED] Starting non-lotted item processing workflow');
-                await this.promptConfirm(); // Simple confirmation dialog - NO busy
-                console.log("[NON-LOTTED-CONFIRMED] User confirmed receipt");
-                
-                const t8 = performance.now();
-                await this.process([{ BANO: null, RVQA: this.RVQA, EXPI: null }], false);
-                console.log(
-                  "[NON-LOTTED-SUCCESS] ✓ Non-lotted receipt completed successfully"
-                );
-                const t9 = performance.now();
-                console.log(`[Timing] process (non-lotted): ${(t9-t8).toFixed(1)} ms`);
-            }
-
-            await this.advance('Process');
-            this.progressDone();
-            
-            // Show success dialog with enterprise pattern
-            this.showSuccessDialog();
-        } catch (e) {
-            this.closeProgress();
-            // Enhanced error dialog with MI error details
-            this.showErrorDialog(e.message || 'An unexpected error occurred during processing', e);
-        }
-    }
-
+            });
+        });
+    };
     /*───────────────── SUCCESS/ERROR DIALOGS (Original Pattern) ─────────────────*/
-    showSuccessDialog() {
-        this.alert('Success', 'PO line received!', true);  // Refresh screen on success
-    }
-
-    showErrorDialog(message, error = null) {
+    class_1.prototype.showSuccessDialog = function () {
+        this.alert('Success', 'PO line received!', true); // Refresh screen on success
+    };
+    class_1.prototype.showErrorDialog = function (message, error) {
+        if (error === void 0) { error = null; }
         // Enhanced error dialog with MI error details
-        let displayMessage = message || 'An unexpected error occurred during processing';
-        
+        var displayMessage = message || 'An unexpected error occurred during processing';
         // If we have an error object, extract detailed information
         if (error) {
-            const detailedMessage = this.extractErrorMessage(error, 'Processing');
+            var detailedMessage = this.extractErrorMessage(error, 'Processing');
             displayMessage = detailedMessage;
         }
-        
         this.alert('Error', displayMessage);
-    }
-
-    alert(t, m, refresh) {
-        // Display non-modal dialog with title, message, and optional refresh
-        const dialogContent = $(`<div><label class='inforLabel noColon'>${m}</label></div>`);
-        
-        const dialogButtons = [
-            {
-                text: "OK",
-                isDefault: true,
-                width: 80,
-                click: function (event, model) {
-                    if (ScriptUtil.version >= 2.0) {
-                        model.close(true);
-                    } else {
-                        $(this).inforDialog("close");
-                    }
-                    if (refresh) this.refresh();  // Refresh H5 screen if requested
-                }.bind(this)
-            }
-        ];
-        
-        const dialogOptions = {
-            title: t,
-            dialogType: "General",
-            modal: false,  // Allow user to interact with other windows
-            width: 360,
-            minHeight: 150,
-            icon: t === "Error" ? "error" : "info",
-            closeOnEscape: true,
-            close: function () {
-                dialogContent.remove();
-            },
-            buttons: dialogButtons
-        };
-
-        // Show dialog with proper version handling
-        if (ScriptUtil.version >= 2.0) {
-            H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
-        } else {
-            dialogContent.inforMessageDialog(dialogOptions);
-        }
-    }
-
+    };
     /*───────────────── FIELD VALIDATION ─────────────────*/
-    async validateFields() {
-        this.log.Info('Starting field validation');
-        
-        // Extract key PO receipt fields from H5 screen
-        this.PUNO = ScriptUtil.GetFieldValue('WWPUNO');  // Purchase Order Number
-        this.SUNO = ScriptUtil.GetFieldValue('WWSUNO');  // Supplier Number
-        this.WHLO = ScriptUtil.GetFieldValue('WWWHLO');  // Warehouse
-        this.PNLI = ScriptUtil.GetFieldValue('PNLI');    // PO Line Number
-        this.PNLS = ScriptUtil.GetFieldValue('PNLS');    // PO Line Suffix
-        this.RVQA = this.ctrl.GetValue('RVQA');          // Received Quantity
-        this.WHSL = ScriptUtil.GetFieldValue('WHSL');    // Location
-        this.ITNO = ScriptUtil.GetFieldValue('ITNO');    // Item Number
-        this.OEND = ScriptUtil.GetFieldValue('OEND');    // Flag Completed
-
-        // Log all extracted field values
-        const fieldValues = {
-            PUNO: this.PUNO, SUNO: this.SUNO, WHLO: this.WHLO,
-            PNLI: this.PNLI, PNLS: this.PNLS, RVQA: this.RVQA,
-            WHSL: this.WHSL, ITNO: this.ITNO, OEND: this.OEND
-        };
-        console.log('[FIELD-VALUES] Extracted from H5 screen:', JSON.stringify(fieldValues, null, 2));
-        this.logDebug(`Field values extracted: ${JSON.stringify(fieldValues)}`);
-
-        // Validate mandatory fields are populated
-        // Note: WHSL validation is deferred to lookups() after item type determination
-        const missingFields = [
-            !this.PUNO && 'PUNO', !this.PNLI && 'PNLI',
-            !this.PNLS && 'PNLS', !this.RVQA && 'RVQA',
-            !this.ITNO && 'ITNO', !this.WHLO && 'WHLO',
-            !this.SUNO && 'SUNO', !this.OEND && 'OEND'
-        ].filter(Boolean);
-        
-        if (missingFields.length > 0) {
-            const error = `Missing required fields: ${missingFields.join(', ')}`;
-            console.error('[VALIDATION-ERROR]', error);
-            this.log.Error(error);
-            throw new Error(error);
-        }
-        
-        console.log('[VALIDATION-SUCCESS] All required fields present');
-        this.log.Info('Field validation completed successfully');
-    }
-
-    /*───────────────── MI LOOK‑UPS (Enterprise Error Handling) ─────────────────*/
-    async getPOLine() {
-        this.log.Info('Starting PO line lookup');
-        
-        const request = new MIRequest();
-        request.program = 'PPS200MI';
-        request.transaction = 'GetLine';
-        request.record = { 
-            PUNO: this.PUNO, 
-            PNLI: this.PNLI, 
-            PNLS: this.PNLS 
-        };
-        request.maxReturnedRecords = 1;
-
-        this.logMIRequest(request.program, request.transaction, request.record);
-
-        try {
-            const response = await this.mi.executeRequest(request);
-            this.logMIResponse(request.program, request.transaction, response, true);
-            
-            if (!response || !response.item) {
-                const errorMessage = this.extractErrorMessage(response, 'PO line retrieval');
-                throw new Error(errorMessage);
-            }
-            
-            const poLineData = {
-              PUPR: response.item.PUPR,
-              RORC: response.item.RORC,
-              RORN: response.item.RORN,
-              RORL: response.item.RORL,
-              ITDS: response.item.ITDS,
-              GETY: response.item.GETY,
-              PUUN: response.item.PUUN
-            };
-            
-            Object.assign(this, poLineData);
-            
-            console.log('[PO-LINE-DATA] Retrieved:', JSON.stringify(poLineData, null, 2));
-            this.log.Info('PO line data retrieved successfully');
-        } catch (error) {
-            this.logMIResponse(request.program, request.transaction, error, false);
-            this.log.Error('Failed to retrieve PO line data', error);
-            throw error;
-        }
-    }
-
-    async lookups() {
-        try {
-            this.log.Info('Starting comprehensive data lookups');
-            
-            /* header - Get PO header information */
-            const headerRequest = new MIRequest();
-            headerRequest.program = 'PPS200MI';
-            headerRequest.transaction = 'GetHead';
-            headerRequest.record = { PUNO: this.PUNO };
-            headerRequest.maxReturnedRecords = 1;
-            
-            this.logMIRequest(headerRequest.program, headerRequest.transaction, headerRequest.record);
-            const header = await this.mi.executeRequest(headerRequest);
-            this.logMIResponse(headerRequest.program, headerRequest.transaction, header, true);
-            
-            if (!header || !header.item) {
-                const errorMessage = this.extractErrorMessage(header, 'PO header retrieval');
-                throw new Error(errorMessage);
-            }
-            // Store key header fields for downstream processing
-            const headerData = {
-                PUDT: header.item.PUDT,  // Order Date
-                CUCD: header.item.CUCD,  // Currency Code
-                FACI: header.item.FACI   // Facility
-            };
-            Object.assign(this, headerData);
-            console.log('[HEADER-DATA] Retrieved:', JSON.stringify(headerData, null, 2));
-            
-            /* whs - Check if warehouse is WMS-managed */
-            const whsRequest = new MIRequest();
-            whsRequest.program = 'MMS009MI';
-            whsRequest.transaction = 'Get';
-            whsRequest.record = { WHGR: 'WMSWHSE', WHLO: this.WHLO };
-            whsRequest.maxReturnedRecords = 1;
-            
-            this.logMIRequest(whsRequest.program, whsRequest.transaction, whsRequest.record);
-            const whs = await this.mi.executeRequest(whsRequest);
-            this.logMIResponse(whsRequest.program, whsRequest.transaction, whs, true);
-            
-            // If record exists, warehouse is WMS-managed
-            this.isWmsWhs = !!(whs && whs.item);
-            console.log(`[WMS-CHECK] Warehouse ${this.WHLO} is WMS-managed: ${this.isWmsWhs}`);
-            this.log.Info(`WMS warehouse check completed - isWmsWhs: ${this.isWmsWhs}`);
-            
-            /* item - Get lot control method and expiration method */
-            const itemRequest = new MIRequest();
-            itemRequest.program = 'MMS200MI';
-            itemRequest.transaction = 'GetItmBasic';
-            itemRequest.record = { ITNO: this.ITNO, ALFM: '1' };
-            itemRequest.maxReturnedRecords = 1;
-            
-            this.logMIRequest(itemRequest.program, itemRequest.transaction, itemRequest.record);
-            const itm = await this.mi.executeRequest(itemRequest);
-            this.logMIResponse(itemRequest.program, itemRequest.transaction, itm, true);
-            
-            if (!itm || !itm.item) {
-                const errorMessage = this.extractErrorMessage(itm, 'Item details retrieval');
-                throw new Error(errorMessage);
-            }
-            // Store control method and expiration flags
-            const itemData = {
-                EXPD: itm.item.EXPD,  // Expiration Date Required (0/1)
-                INDI: itm.item.INDI,  // Lot Control Method (0=None, 1=Manual, 2=Serial, 3=Lot)
-                TPCD: itm.item.TPCD   // Item Category (13=Non-material)
-            };
-            Object.assign(this, itemData);
-            console.log('[ITEM-DATA] Retrieved:', JSON.stringify(itemData, null, 2));
-            
-            // Additional validation: Check if WHSL is required based on item type
-            // Non-material items (INDI=0 and TPCD=13) don't require warehouse location
-            const isNonMaterial = this.INDI === '0' && this.TPCD === '13';
-            console.log(`[ITEM-ANALYSIS] isNonMaterial: ${isNonMaterial}, WHSL: ${this.WHSL}`);
-            if (!isNonMaterial && !this.WHSL) {
-                throw new Error('Warehouse location (WHSL) is required for material items');
-            }
-            
-            this.log.Info(`Item validation completed - INDI: ${this.INDI}, TPCD: ${this.TPCD}, isNonMaterial: ${isNonMaterial}`);
-            
-            /* remaining qty - Get outstanding quantity on PO line */
-            const remRequest = new MIRequest();
-            remRequest.program = 'PPS001MI';
-            remRequest.transaction = 'GetBasicData2';
-            remRequest.record = { PUNO: this.PUNO, PNLI: this.PNLI, PNLS: this.PNLS };
-            remRequest.maxReturnedRecords = 1;
-            
-            this.logMIRequest(remRequest.program, remRequest.transaction, remRequest.record);
-            const rem = await this.mi.executeRequest(remRequest);
-            this.logMIResponse(remRequest.program, remRequest.transaction, rem, true);
-            
-            if (!rem || !rem.item) {
-                const errorMessage = this.extractErrorMessage(rem, 'Remaining quantity retrieval');
-                throw new Error(errorMessage);
-            }
-            this.RMQA = rem.item.RSTQ;  // Remaining Quantity
-            console.log(`[REMAINING-QTY] RMQA: ${this.RMQA}, RVQA: ${this.RVQA}`);
-            
-            /* Order initiated COs (optional) - Only for COs */
-            if (this.RORC === '3' && this.RORN) {  // RORC=3 indicates link to customer order
-                const customerRequest = new MIRequest();
-                customerRequest.program = 'OIS100MI';
-                customerRequest.transaction = 'GetOrderHead';
-                customerRequest.record = { ORNO: this.RORN };  // Related Order Number
-                customerRequest.maxReturnedRecords = 1;
-                
-                this.logMIRequest(customerRequest.program, customerRequest.transaction, customerRequest.record);
-                const c = await this.mi.executeRequest(customerRequest);
-                this.logMIResponse(customerRequest.program, customerRequest.transaction, c, true);
-                
-                if (!c || !c.item) {
-                    const errorMessage = this.extractErrorMessage(c, 'Customer order details retrieval');
-                    throw new Error(errorMessage);
+    class_1.prototype.validateFields = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var fieldValues, missingFields, error;
+            return __generator(this, function (_a) {
+                this.log.Info('Starting field validation');
+                // Extract key PO receipt fields from H5 screen
+                this.PUNO = ScriptUtil.GetFieldValue('WWPUNO'); // Purchase Order Number
+                this.SUNO = ScriptUtil.GetFieldValue('WWSUNO'); // Supplier Number
+                this.WHLO = ScriptUtil.GetFieldValue('WWWHLO'); // Warehouse
+                this.PNLI = ScriptUtil.GetFieldValue('PNLI'); // PO Line Number
+                this.PNLS = ScriptUtil.GetFieldValue('PNLS'); // PO Line Suffix
+                this.RVQA = this.ctrl.GetValue('RVQA'); // Received Quantity
+                this.WHSL = ScriptUtil.GetFieldValue('WHSL'); // Location
+                this.ITNO = ScriptUtil.GetFieldValue('ITNO'); // Item Number
+                this.OEND = ScriptUtil.GetFieldValue('OEND'); // Flag Completed
+                fieldValues = {
+                    PUNO: this.PUNO, SUNO: this.SUNO, WHLO: this.WHLO,
+                    PNLI: this.PNLI, PNLS: this.PNLS, RVQA: this.RVQA,
+                    WHSL: this.WHSL, ITNO: this.ITNO, OEND: this.OEND
+                };
+                console.log('[FIELD-VALUES] Extracted from H5 screen:', JSON.stringify(fieldValues, null, 2));
+                this.logDebug("Field values extracted: ".concat(JSON.stringify(fieldValues)));
+                missingFields = [
+                    !this.PUNO && 'PUNO', !this.PNLI && 'PNLI',
+                    !this.PNLS && 'PNLS', !this.RVQA && 'RVQA',
+                    !this.ITNO && 'ITNO', !this.WHLO && 'WHLO',
+                    !this.SUNO && 'SUNO', !this.OEND && 'OEND'
+                ].filter(Boolean);
+                if (missingFields.length > 0) {
+                    error = "Missing required fields: ".concat(missingFields.join(', '));
+                    console.error('[VALIDATION-ERROR]', error);
+                    this.log.Error(error);
+                    throw new Error(error);
                 }
-                this.CUNO = c.item.CUNO;  // Customer Number for equipment records
-                console.log(`[CUSTOMER-DATA] CO customer: ${this.CUNO}`);
-            }
-            
-            console.log('[LOOKUPS-COMPLETE] All data lookups successful');
-            this.log.Info('All lookups completed successfully');
-        } catch (error) {
-            this.log.Error('Data lookup failed', error);
-            throw error;
-        }
-    }
-
-    async warnings() {
-        // Business Rule: Warn if WMS-managed warehouse but not using WMS receipt (GETY≠24)
-        if (this.isWmsWhs && this.GETY !== '24') {
-            await this.dialogWarn(
-                'WMS Warehouse Detected; Receiving in M3 instead of WMS may result in balance discrepancy.'
-            );
-        }
-
-        // Business Rule: Warn if attempting to receive more than remaining quantity
-        if (this.num(this.RVQA) > this.num(this.RMQA)) {
-            const diff = this.num(this.RVQA) - this.num(this.RMQA);
-            await this.dialogWarn(`Over‑receipt of ${diff}.`);
-        }
-    }
-
+                console.log('[VALIDATION-SUCCESS] All required fields present');
+                this.log.Info('Field validation completed successfully');
+                return [2 /*return*/];
+            });
+        });
+    };
+    /*───────────────── MI LOOK‑UPS (Enterprise Error Handling) ─────────────────*/
+    class_1.prototype.getPOLine = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var request, response, errorMessage, poLineData, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.log.Info('Starting PO line lookup');
+                        request = new MIRequest();
+                        request.program = 'PPS200MI';
+                        request.transaction = 'GetLine';
+                        request.record = {
+                            PUNO: this.PUNO,
+                            PNLI: this.PNLI,
+                            PNLS: this.PNLS
+                        };
+                        request.maxReturnedRecords = 1;
+                        this.logMIRequest(request.program, request.transaction, request.record);
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.mi.executeRequest(request)];
+                    case 2:
+                        response = _a.sent();
+                        this.logMIResponse(request.program, request.transaction, response, true);
+                        if (!response || !response.item) {
+                            errorMessage = this.extractErrorMessage(response, 'PO line retrieval');
+                            throw new Error(errorMessage);
+                        }
+                        poLineData = {
+                            PUPR: response.item.PUPR,
+                            RORC: response.item.RORC,
+                            RORN: response.item.RORN,
+                            RORL: response.item.RORL,
+                            ITDS: response.item.ITDS,
+                            GETY: response.item.GETY,
+                            PUUN: response.item.PUUN
+                        };
+                        Object.assign(this, poLineData);
+                        console.log('[PO-LINE-DATA] Retrieved:', JSON.stringify(poLineData, null, 2));
+                        this.log.Info('PO line data retrieved successfully');
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_3 = _a.sent();
+                        this.logMIResponse(request.program, request.transaction, error_3, false);
+                        this.log.Error('Failed to retrieve PO line data', error_3);
+                        throw error_3;
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    class_1.prototype.lookups = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var headerRequest, header, errorMessage, headerData, whsRequest, whs, itemRequest, itm, errorMessage, itemData, isNonMaterial, remRequest, rem, errorMessage, customerRequest, c, errorMessage, error_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 7, , 8]);
+                        this.log.Info('Starting comprehensive data lookups');
+                        headerRequest = new MIRequest();
+                        headerRequest.program = 'PPS200MI';
+                        headerRequest.transaction = 'GetHead';
+                        headerRequest.record = { PUNO: this.PUNO };
+                        headerRequest.maxReturnedRecords = 1;
+                        this.logMIRequest(headerRequest.program, headerRequest.transaction, headerRequest.record);
+                        return [4 /*yield*/, this.mi.executeRequest(headerRequest)];
+                    case 1:
+                        header = _a.sent();
+                        this.logMIResponse(headerRequest.program, headerRequest.transaction, header, true);
+                        if (!header || !header.item) {
+                            errorMessage = this.extractErrorMessage(header, 'PO header retrieval');
+                            throw new Error(errorMessage);
+                        }
+                        headerData = {
+                            PUDT: header.item.PUDT, // Order Date
+                            CUCD: header.item.CUCD, // Currency Code
+                            FACI: header.item.FACI // Facility
+                        };
+                        Object.assign(this, headerData);
+                        console.log('[HEADER-DATA] Retrieved:', JSON.stringify(headerData, null, 2));
+                        whsRequest = new MIRequest();
+                        whsRequest.program = 'MMS009MI';
+                        whsRequest.transaction = 'Get';
+                        whsRequest.record = { WHGR: 'WMSWHSE', WHLO: this.WHLO };
+                        whsRequest.maxReturnedRecords = 1;
+                        this.logMIRequest(whsRequest.program, whsRequest.transaction, whsRequest.record);
+                        return [4 /*yield*/, this.mi.executeRequest(whsRequest)];
+                    case 2:
+                        whs = _a.sent();
+                        this.logMIResponse(whsRequest.program, whsRequest.transaction, whs, true);
+                        // If record exists, warehouse is WMS-managed
+                        this.isWmsWhs = !!(whs && whs.item);
+                        console.log("[WMS-CHECK] Warehouse ".concat(this.WHLO, " is WMS-managed: ").concat(this.isWmsWhs));
+                        this.log.Info("WMS warehouse check completed - isWmsWhs: ".concat(this.isWmsWhs));
+                        itemRequest = new MIRequest();
+                        itemRequest.program = 'MMS200MI';
+                        itemRequest.transaction = 'GetItmBasic';
+                        itemRequest.record = { ITNO: this.ITNO, ALFM: '1' };
+                        itemRequest.maxReturnedRecords = 1;
+                        this.logMIRequest(itemRequest.program, itemRequest.transaction, itemRequest.record);
+                        return [4 /*yield*/, this.mi.executeRequest(itemRequest)];
+                    case 3:
+                        itm = _a.sent();
+                        this.logMIResponse(itemRequest.program, itemRequest.transaction, itm, true);
+                        if (!itm || !itm.item) {
+                            errorMessage = this.extractErrorMessage(itm, 'Item details retrieval');
+                            throw new Error(errorMessage);
+                        }
+                        itemData = {
+                            EXPD: itm.item.EXPD, // Expiration Date Required (0/1)
+                            INDI: itm.item.INDI, // Lot Control Method (0=None, 1=Manual, 2=Serial, 3=Lot)
+                            TPCD: itm.item.TPCD // Item Category (13=Non-material)
+                        };
+                        Object.assign(this, itemData);
+                        console.log('[ITEM-DATA] Retrieved:', JSON.stringify(itemData, null, 2));
+                        isNonMaterial = this.INDI === '0' && this.TPCD === '13';
+                        console.log("[ITEM-ANALYSIS] isNonMaterial: ".concat(isNonMaterial, ", WHSL: ").concat(this.WHSL));
+                        if (!isNonMaterial && !this.WHSL) {
+                            throw new Error('Warehouse location (WHSL) is required for material items');
+                        }
+                        this.log.Info("Item validation completed - INDI: ".concat(this.INDI, ", TPCD: ").concat(this.TPCD, ", isNonMaterial: ").concat(isNonMaterial));
+                        remRequest = new MIRequest();
+                        remRequest.program = 'PPS001MI';
+                        remRequest.transaction = 'GetBasicData2';
+                        remRequest.record = { PUNO: this.PUNO, PNLI: this.PNLI, PNLS: this.PNLS };
+                        remRequest.maxReturnedRecords = 1;
+                        this.logMIRequest(remRequest.program, remRequest.transaction, remRequest.record);
+                        return [4 /*yield*/, this.mi.executeRequest(remRequest)];
+                    case 4:
+                        rem = _a.sent();
+                        this.logMIResponse(remRequest.program, remRequest.transaction, rem, true);
+                        if (!rem || !rem.item) {
+                            errorMessage = this.extractErrorMessage(rem, 'Remaining quantity retrieval');
+                            throw new Error(errorMessage);
+                        }
+                        this.RMQA = rem.item.RSTQ; // Remaining Quantity
+                        console.log("[REMAINING-QTY] RMQA: ".concat(this.RMQA, ", RVQA: ").concat(this.RVQA));
+                        if (!(this.RORC === '3' && this.RORN)) return [3 /*break*/, 6];
+                        customerRequest = new MIRequest();
+                        customerRequest.program = 'OIS100MI';
+                        customerRequest.transaction = 'GetOrderHead';
+                        customerRequest.record = { ORNO: this.RORN }; // Related Order Number
+                        customerRequest.maxReturnedRecords = 1;
+                        this.logMIRequest(customerRequest.program, customerRequest.transaction, customerRequest.record);
+                        return [4 /*yield*/, this.mi.executeRequest(customerRequest)];
+                    case 5:
+                        c = _a.sent();
+                        this.logMIResponse(customerRequest.program, customerRequest.transaction, c, true);
+                        if (!c || !c.item) {
+                            errorMessage = this.extractErrorMessage(c, 'Customer order details retrieval');
+                            throw new Error(errorMessage);
+                        }
+                        this.CUNO = c.item.CUNO; // Customer Number for equipment records
+                        console.log("[CUSTOMER-DATA] CO customer: ".concat(this.CUNO));
+                        _a.label = 6;
+                    case 6:
+                        console.log('[LOOKUPS-COMPLETE] All data lookups successful');
+                        this.log.Info('All lookups completed successfully');
+                        return [3 /*break*/, 8];
+                    case 7:
+                        error_4 = _a.sent();
+                        this.log.Error('Data lookup failed', error_4);
+                        throw error_4;
+                    case 8: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    class_1.prototype.warnings = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var diff;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(this.isWmsWhs && this.GETY !== '24')) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.dialogWarn('WMS Warehouse Detected; Receiving in M3 instead of WMS may result in balance discrepancy.')];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        if (!(this.num(this.RVQA) > this.num(this.RMQA))) return [3 /*break*/, 4];
+                        diff = this.num(this.RVQA) - this.num(this.RMQA);
+                        return [4 /*yield*/, this.dialogWarn("Over\u2011receipt of ".concat(diff, "."))];
+                    case 3:
+                        _a.sent();
+                        _a.label = 4;
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
     /*───────────────── USER‑INTERACTION DIALOGS (Enterprise H5 Pattern) ─────────────────*/
-    dialogWarn(msg) {
-        return new Promise((resolve, reject) => {
-            let closedByButton = false;
-            this.log.Info(`Displaying warning dialog: ${msg}`);
-            
+    class_1.prototype.dialogWarn = function (msg) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var closedByButton = false;
+            _this.log.Info("Displaying warning dialog: ".concat(msg));
             // Create dialog content following H5SampleCustomDialog pattern
-            const dialogContent = $(`<div><label class='inforLabel noColon'>${msg}</label></div>`);
-            
+            var dialogContent = $("<div><label class='inforLabel noColon'>".concat(msg, "</label></div>"));
             // Helper to close dialog and resolve promise
-            const handleProceed = () => {
+            var handleProceed = function () {
                 closedByButton = true;
                 if (ScriptUtil.version >= 2.0) {
                     $('.ui-dialog-content:visible').dialog('close');
-                } else {
+                }
+                else {
                     $(dialogContent).inforDialog("close");
                 }
-                resolve();
+                resolve(undefined);
             };
-            
             // Add Enter key handling for warning dialog
             dialogContent.on('keydown', function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     // Trigger Proceed button (default action)
-                    const proceedButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function() {
+                    var proceedButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function () {
                         return $(this).text().trim() === 'Proceed';
                     });
                     if (proceedButton.length > 0) {
                         proceedButton.click();
-                    } else {
+                    }
+                    else {
                         // Fallback: manually trigger the proceed logic
                         handleProceed();
                     }
                 }
             });
-            
-            const dialogButtons = [
+            var dialogButtons = [
                 {
                     text: "Proceed",
                     isDefault: true,
@@ -952,10 +983,11 @@ var POReceiptShortcutV2 = class {
                         closedByButton = true;
                         if (ScriptUtil.version >= 2.0) {
                             model.close(true);
-                        } else {
+                        }
+                        else {
                             $(this).inforDialog("close");
                         }
-                        resolve();
+                        resolve(undefined);
                     }
                 },
                 {
@@ -965,15 +997,15 @@ var POReceiptShortcutV2 = class {
                         closedByButton = true;
                         if (ScriptUtil.version >= 2.0) {
                             model.close(true);
-                        } else {
+                        }
+                        else {
                             $(this).inforDialog("close");
                         }
                         reject(new Error('Operation cancelled by user'));
                     }
                 }
             ];
-            
-            const dialogOptions = {
+            var dialogOptions = {
                 title: "⚠️ Warning",
                 dialogType: "General",
                 modal: true, // Changed back to true
@@ -989,53 +1021,51 @@ var POReceiptShortcutV2 = class {
                 },
                 buttons: dialogButtons
             };
-
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
             if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
-            } else {
+            }
+            else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
         });
-    }
-
-    promptConfirm() {
-        return new Promise((resolve, reject) => {
-            let closedByButton = false;
-            this.log.Info(`Requesting confirmation to receive ${this.RVQA} units`);
-            
+    };
+    class_1.prototype.promptConfirm = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var closedByButton = false;
+            _this.log.Info("Requesting confirmation to receive ".concat(_this.RVQA, " units"));
             // Create dialog content following H5SampleCustomDialog pattern
-            const dialogContent = $(`<div><label class='inforLabel noColon'>Receive ${this.RVQA} unit(s)?</label></div>`);
-            
+            var dialogContent = $("<div><label class='inforLabel noColon'>Receive ".concat(_this.RVQA, " unit(s)?</label></div>"));
             // Helper to close dialog and resolve promise
-            const handleConfirm = () => {
+            var handleConfirm = function () {
                 closedByButton = true;
                 if (ScriptUtil.version >= 2.0) {
                     $('.ui-dialog-content:visible').dialog('close');
-                } else {
+                }
+                else {
                     $(dialogContent).inforDialog("close");
                 }
-                resolve();
+                resolve(undefined);
             };
-            
             // Add Enter key handling for confirm dialog
             dialogContent.on('keydown', function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     // Trigger Confirm button
-                    const confirmButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function() {
+                    var confirmButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function () {
                         return $(this).text().trim() === 'Confirm';
                     });
                     if (confirmButton.length > 0) {
                         confirmButton.click();
-                    } else {
+                    }
+                    else {
                         // Fallback: manually trigger the confirm logic
                         handleConfirm();
                     }
                 }
             });
-            
-            const dialogButtons = [
+            var dialogButtons = [
                 {
                     text: "Confirm",
                     isDefault: true,
@@ -1044,10 +1074,11 @@ var POReceiptShortcutV2 = class {
                         closedByButton = true;
                         if (ScriptUtil.version >= 2.0) {
                             model.close(true);
-                        } else {
+                        }
+                        else {
                             $(this).inforDialog("close");
                         }
-                        resolve();
+                        resolve(undefined);
                     }
                 },
                 {
@@ -1057,15 +1088,15 @@ var POReceiptShortcutV2 = class {
                         closedByButton = true;
                         if (ScriptUtil.version >= 2.0) {
                             model.close(true);
-                        } else {
+                        }
+                        else {
                             $(this).inforDialog("close");
                         }
                         reject(new Error('Receipt cancelled by user'));
                     }
                 }
             ];
-            
-            const dialogOptions = {
+            var dialogOptions = {
                 title: "🔄 Confirm Receipt",
                 dialogType: "General",
                 modal: true, // Changed back to true
@@ -1081,267 +1112,215 @@ var POReceiptShortcutV2 = class {
                 },
                 buttons: dialogButtons
             };
-
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
             if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
-            } else {
+            }
+            else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
         });
-    }
-
-    promptSerials() {
-        return new Promise((resolve, reject) => {
-            let closedByButton = false;
-            const qty = this.num(this.RVQA);
-            this.log.Info(`Prompting for ${qty} serial numbers`);
-            
+    };
+    class_1.prototype.promptSerials = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var closedByButton = false;
+            var qty = _this.num(_this.RVQA);
+            _this.log.Info("Prompting for ".concat(qty, " serial numbers"));
             // Safety check: Prevent excessive quantity that could crash browser
-            const MAX_SERIALS = 25;  // Reasonable limit for manual entry
+            var MAX_SERIALS = 25; // Reasonable limit for manual entry
             if (qty > MAX_SERIALS) {
-                this.logError(`Serial quantity ${qty} exceeds maximum allowed ${MAX_SERIALS}`);
-                reject(new Error(`Cannot process ${qty} serials. Maximum allowed is ${MAX_SERIALS}. Please use batch import for large quantities.`));
+                _this.logError("Serial quantity ".concat(qty, " exceeds maximum allowed ").concat(MAX_SERIALS));
+                reject(new Error("Cannot process ".concat(qty, " serials. Maximum allowed is ").concat(MAX_SERIALS, ". Please use batch import for large quantities.")));
                 return;
             }
-            
             // Create scrollable form content with input fields for each serial
             // Using a scrollable container to handle large quantities without bleeding off-screen
-            let formHtml = '<div style="padding: 15px;">';
-            
+            var formHtml = '<div style="padding: 15px;">';
             // Add PO number display with copy functionality (fixed at top, outside scroll area)
-            formHtml += `<div style="margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px; font-size: 12px;">
-                <label class="inforLabel" style="font-weight: bold; font-size: 11px;">PO:</label>
-                <div style="display: flex; align-items: center; margin-top: 2px;">
-                    <input id="poNumberDisplay" type="text" readonly value="${this.PUNO}" 
-                           style="flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;">
-                    <button type="button" id="copyPoNumber" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Copy PO number">📋</button>
-                    <button type="button" id="generateSerials" style="margin-left: 6px; padding: 3px 6px; background: #2C8C3E; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;" title="Generate serials">🔢</button>
-                </div>
-                <div style="margin-top: 4px; font-size: 11px; color: #666;">
-                    <strong>Quantity:</strong> ${qty} serial${qty !== 1 ? 's' : ''} required
-                </div>
-            </div>`;
-            
+            formHtml += "<div style=\"margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px; font-size: 12px;\">\n                <label class=\"inforLabel\" style=\"font-weight: bold; font-size: 11px;\">PO:</label>\n                <div style=\"display: flex; align-items: center; margin-top: 2px;\">\n                    <input id=\"poNumberDisplay\" type=\"text\" readonly value=\"".concat(_this.PUNO, "\" \n                           style=\"flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;\">\n                    <button type=\"button\" id=\"copyPoNumber\" style=\"margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;\" title=\"Copy PO number\">\uD83D\uDCCB</button>\n                    <button type=\"button\" id=\"generateSerials\" style=\"margin-left: 6px; padding: 3px 6px; background: #2C8C3E; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;\" title=\"Generate serials\">\uD83D\uDD22</button>\n                </div>\n                <div style=\"margin-top: 4px; font-size: 11px; color: #666;\">\n                    <strong>Quantity:</strong> ").concat(qty, " serial").concat(qty !== 1 ? 's' : '', " required\n                </div>\n            </div>");
             // Scrollable container for serial inputs - prevents off-screen bleeding
             // Max height ensures dialog fits on screen while allowing smooth scrolling
-            const maxSerialLength = this.maxSerialInputLength || 20;
+            var maxSerialLength = _this.maxSerialInputLength || 20;
             formHtml += '<div id="serialInputsContainer" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;"><form>';
-            
-            for (let i = 0; i < qty; i++) {
-                formHtml += `<div style="margin-bottom: 10px;">
-                    <label class="inforLabel" for="serial${i}">Serial ${i + 1}:</label>
-                    <input id="serial${i}" type="text" class="inforTextBox" maxlength="${maxSerialLength}" 
-                           placeholder="Enter serial number (max ${maxSerialLength} chars)" style="width: 100%; text-transform: uppercase;" 
-                           ${i === 0 ? 'autofocus' : ''}>
-                </div>`;
+            for (var i = 0; i < qty; i++) {
+                formHtml += "<div style=\"margin-bottom: 10px;\">\n                    <label class=\"inforLabel\" for=\"serial".concat(i, "\">Serial ").concat(i + 1, ":</label>\n                    <input id=\"serial").concat(i, "\" type=\"text\" class=\"inforTextBox\" maxlength=\"").concat(maxSerialLength, "\" \n                           placeholder=\"Enter serial number (max ").concat(maxSerialLength, " chars)\" style=\"width: 100%; text-transform: uppercase;\" \n                           ").concat(i === 0 ? 'autofocus' : '', ">\n                </div>");
             }
             formHtml += '</form></div></div>';
-            
-            const dialogContent = $(formHtml);
-            
+            var dialogContent = $(formHtml);
             // Method to show validation errors within the dialog context
             // Error message appears above the scrollable area for visibility
-            dialogContent.showValidationError = function(message) {
+            dialogContent.showValidationError = function (message) {
                 // Remove any existing error messages
                 dialogContent.find('.validation-error').remove();
-                
                 // Create error message element
-                const errorDiv = $(`
-                    <div class="validation-error" style="
-                        background: #ffebee; 
-                        border: 1px solid #f44336; 
-                        color: #c62828; 
-                        padding: 8px 12px; 
-                        margin: 10px 0; 
-                        border-radius: 4px; 
-                        font-size: 12px;
-                        white-space: pre-line;
-                    ">
-                        <strong>⚠️ Validation Error:</strong><br>${message}
-                    </div>
-                `);
-                
+                var errorDiv = $("\n                    <div class=\"validation-error\" style=\"\n                        background: #ffebee; \n                        border: 1px solid #f44336; \n                        color: #c62828; \n                        padding: 8px 12px; \n                        margin: 10px 0; \n                        border-radius: 4px; \n                        font-size: 12px;\n                        white-space: pre-line;\n                    \">\n                        <strong>\u26A0\uFE0F Validation Error:</strong><br>".concat(message, "\n                    </div>\n                "));
                 // Insert error message before the scrollable container (stays visible while scrolling)
                 dialogContent.find('#serialInputsContainer').before(errorDiv);
-                
                 // Auto-remove after 5 seconds
-                setTimeout(() => errorDiv.fadeOut(() => errorDiv.remove()), 5000);
+                setTimeout(function () { return errorDiv.fadeOut(function () { return errorDiv.remove(); }); }, 5000);
             };
-            
             // Bind the validation error method to the correct context
-            const showValidationError = dialogContent.showValidationError;
-            
+            var showValidationError = dialogContent.showValidationError;
             // Add copy functionality for PO number
-            dialogContent.find('#copyPoNumber').on('click', function() {
-                const poInput = dialogContent.find('#poNumberDisplay')[0];
+            dialogContent.find('#copyPoNumber').on('click', function () {
+                var poInput = dialogContent.find('#poNumberDisplay')[0];
                 poInput.select();
                 document.execCommand('copy');
-                
                 // Visual feedback
-                const btn = $(this);
-                const originalText = btn.text();
+                var btn = $(this);
+                var originalText = btn.text();
                 btn.text('✓ Copied!').css('background', '#28a745');
-                setTimeout(() => {
+                setTimeout(function () {
                     btn.text(originalText).css('background', '#0072C6');
                 }, 1500);
             });
-            
             // Add auto-generate functionality for sequential serials
-            dialogContent.find('#generateSerials').on('click', function() {
-                const poNumber = dialogContent.find('#poNumberDisplay').val();
-                console.log(`[GENERATE-SERIALS] Auto-generating ${qty} sequential serials based on PO: ${poNumber}`);
-                
+            dialogContent.find('#generateSerials').on('click', function () {
+                var poNumber = dialogContent.find('#poNumberDisplay').val();
+                console.log("[GENERATE-SERIALS] Auto-generating ".concat(qty, " sequential serials based on PO: ").concat(poNumber));
                 // Clear any existing error messages
                 dialogContent.find('.validation-error').remove();
-                
                 // Populate each input field with PO-N format
-                for (let i = 0; i < qty; i++) {
-                    const serialValue = `${poNumber}-${i + 1}`;
-                    const inputField = dialogContent.find(`#serial${i}`);
+                for (var i = 0; i < qty; i++) {
+                    var serialValue = "".concat(poNumber, "-").concat(i + 1);
+                    var inputField = dialogContent.find("#serial".concat(i));
                     inputField.val(serialValue);
                     // Clear any error styling
                     inputField.css('border-color', '');
                     inputField.css('background-color', '');
                 }
-                
-                console.log(`[GENERATE-SERIALS] ✓ Generated serials: ${poNumber}-1 through ${poNumber}-${qty}`);
-                
+                console.log("[GENERATE-SERIALS] \u2713 Generated serials: ".concat(poNumber, "-1 through ").concat(poNumber, "-").concat(qty));
                 // Show success feedback
-                const successMsg = $('<div class="validation-success" style="padding: 6px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; margin-bottom: 10px; font-size: 12px;">✓ Generated ' + qty + ' sequential serial' + (qty !== 1 ? 's' : '') + ': ' + poNumber + '-1 through ' + poNumber + '-' + qty + '</div>');
+                var successMsg = $('<div class="validation-success" style="padding: 6px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; margin-bottom: 10px; font-size: 12px;">✓ Generated ' + qty + ' sequential serial' + (qty !== 1 ? 's' : '') + ': ' + poNumber + '-1 through ' + poNumber + '-' + qty + '</div>');
                 dialogContent.find('#serialInputsContainer').before(successMsg);
-                
                 // Auto-remove success message after 3 seconds
-                setTimeout(() => successMsg.fadeOut(300, function() { $(this).remove(); }), 3000);
-                
+                setTimeout(function () { return successMsg.fadeOut(300, function () { $(this).remove(); }); }, 3000);
                 // Visual feedback on button
-                const btn = $(this);
-                const originalText = btn.text();
+                var btn = $(this);
+                var originalText = btn.text();
                 btn.text('✓ Done!').css('background', '#28a745');
-                setTimeout(() => {
+                setTimeout(function () {
                     btn.text(originalText).css('background', '#2C8C3E');
                 }, 1500);
-                
                 // Focus on the first input for immediate review/editing
                 dialogContent.find('#serial0').focus();
             });
-            
             // Add input validation and uppercase conversion
             dialogContent.find('input').on('input', function () {
                 this.value = this.value.toUpperCase();
                 $(this).css('border', ''); // Clear any error styling
             });
-            
             // Enable right-click context menu for all input fields (for paste functionality)
             dialogContent.find('input').on('contextmenu', function (e) {
                 e.stopPropagation(); // Allow default right-click menu on inputs
             });
-            
             // Helper to validate and collect serials from input fields
-            const validateAndCollectSerials = () => {
-                const serials = [];
-                let invalid = [];
-
+            var validateAndCollectSerials = function () {
+                var serials = [];
+                var invalid = [];
                 // Validate all serial inputs - check format and presence first
-                for (let i = 0; i < qty; i++) {
-                    const $field = dialogContent.find(`#serial${i}`);
-                    const val = $field.val().trim();
-
+                for (var i = 0; i < qty; i++) {
+                    var $field = dialogContent.find("#serial".concat(i));
+                    var val = $field.val().trim();
                     if (!val) {
                         $field.css('border', '2px solid red');
-                        invalid.push(`Serial ${i + 1} (blank)`);
-                    } else if (val.length > maxSerialLength) {
+                        invalid.push("Serial ".concat(i + 1, " (blank)"));
+                    }
+                    else if (val.length > maxSerialLength) {
                         $field.css('border', '2px solid red');
-                        invalid.push(`Serial ${i + 1} (too long)`);
-                    } else if (!/^[A-Z0-9\-]+$/.test(val)) {
+                        invalid.push("Serial ".concat(i + 1, " (too long)"));
+                    }
+                    else if (!/^[A-Z0-9\-]+$/.test(val)) {
                         $field.css('border', '2px solid red');
-                        invalid.push(`Serial ${i + 1} (invalid characters)`);
-                    } else {
+                        invalid.push("Serial ".concat(i + 1, " (invalid characters)"));
+                    }
+                    else {
                         serials.push(val);
                     }
                 }
-
                 // Show validation errors if any invalid entries found
                 if (invalid.length) {
-                    showValidationError(`Invalid or blank input in: ${invalid.join(', ')}\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed), max ${maxSerialLength} characters.`);
+                    showValidationError("Invalid or blank input in: ".concat(invalid.join(', '), "\nSerials must be alphanumeric (A-Z, 0-9, hyphen allowed), max ").concat(maxSerialLength, " characters."));
                     return null;
                 }
-
                 // Check for duplicates only after all serials are validated
                 if (new Set(serials).size !== qty) {
-                    const seen = new Set();
-                    const duplicates = [];
-                    serials.forEach((serial, idx) => {
-                        if (seen.has(serial)) {
-                            dialogContent.find(`#serial${idx}`).css('border', '2px solid orange');
-                            if (!duplicates.includes(serial)) duplicates.push(serial);
-                        } else {
-                            seen.add(serial);
+                    var seen_1 = new Set();
+                    var duplicates_1 = [];
+                    serials.forEach(function (serial, idx) {
+                        if (seen_1.has(serial)) {
+                            dialogContent.find("#serial".concat(idx)).css('border', '2px solid orange');
+                            if (!duplicates_1.includes(serial))
+                                duplicates_1.push(serial);
+                        }
+                        else {
+                            seen_1.add(serial);
                         }
                     });
-                    showValidationError(`Duplicates detected: ${duplicates.join(', ')}\nEnsure each serial is unique.`);
+                    showValidationError("Duplicates detected: ".concat(duplicates_1.join(', '), "\nEnsure each serial is unique."));
                     return null;
                 }
-
                 return serials;
             };
-
             // Helper to close dialog and resolve with validated serials
-            const handleSaveSerials = (model) => {
-                const serials = validateAndCollectSerials();
-                if (serials === null) return; // Validation failed
-                
+            var handleSaveSerials = function (model) {
+                var serials = validateAndCollectSerials();
+                if (serials === null)
+                    return; // Validation failed
                 closedByButton = true;
                 if (model) {
                     // Called from button handler - use model.close()
                     if (ScriptUtil.version >= 2.0) {
                         model.close(true);
-                    } else {
+                    }
+                    else {
                         $(dialogContent).inforDialog("close");
                     }
-                } else {
+                }
+                else {
                     // Called from keydown fallback - use DOM method
                     if (ScriptUtil.version >= 2.0) {
                         $('.ui-dialog-content:visible').dialog('close');
-                    } else {
+                    }
+                    else {
                         $(dialogContent).inforDialog("close");
                     }
                 }
                 resolve(serials);
             };
-
             // Add Enter key handling for serial inputs
             dialogContent.find('input[id^="serial"]').on('keydown', function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const currentIndex = parseInt(this.id.replace('serial', ''));
-                    
+                    var currentIndex = parseInt(this.id.replace('serial', ''));
                     if (qty > 1 && currentIndex < qty - 1) {
                         // Multiple serials: move to next input and scroll it into view
-                        const nextInput = dialogContent.find(`#serial${currentIndex + 1}`);
+                        var nextInput = dialogContent.find("#serial".concat(currentIndex + 1));
                         nextInput.focus();
                         // Ensure the next input is visible in the scrollable container
-                        const container = dialogContent.find('#serialInputsContainer');
-                        const nextInputOffset = nextInput.position().top;
+                        var container = dialogContent.find('#serialInputsContainer');
+                        var nextInputOffset = nextInput.position().top;
                         if (nextInputOffset > container.height() - 60) {
                             container.scrollTop(container.scrollTop() + 60);
                         }
-                    } else {
+                    }
+                    else {
                         // Last serial or single serial: trigger Save button
-                        const saveButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function() {
+                        var saveButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function () {
                             return $(this).text().trim() === 'Save';
                         });
                         if (saveButton.length > 0) {
                             saveButton.click();
-                        } else {
+                        }
+                        else {
                             // Fallback: use shared validation and save logic
                             handleSaveSerials();
                         }
                     }
                 }
             });
-            
-            const dialogButtons = [
+            var dialogButtons = [
                 {
                     text: "Save",
                     isDefault: true,
@@ -1357,21 +1336,21 @@ var POReceiptShortcutV2 = class {
                         closedByButton = true;
                         if (ScriptUtil.version >= 2.0) {
                             model.close(true);
-                        } else {
+                        }
+                        else {
                             $(this).inforDialog("close");
                         }
                         reject(new Error('Serial input cancelled by user'));
                     }
                 }
             ];
-            
-            const dialogOptions = {
+            var dialogOptions = {
                 title: "📋 Enter Serial Numbers",
                 dialogType: "General",
                 modal: true,
-                width: 500,  // Increased width for better readability with scrollbar
-                height: Math.min(600, 250 + (Math.min(qty, 10) * 40)),  // Dynamic height, capped at 600px
-                maxHeight: 600,  // Enforce maximum height to prevent off-screen dialogs
+                width: 500, // Increased width for better readability with scrollbar
+                height: Math.min(600, 250 + (Math.min(qty, 10) * 40)), // Dynamic height, capped at 600px
+                maxHeight: 600, // Enforce maximum height to prevent off-screen dialogs
                 icon: "info",
                 closeOnEscape: true,
                 close: function () {
@@ -1382,110 +1361,65 @@ var POReceiptShortcutV2 = class {
                 },
                 buttons: dialogButtons
             };
-
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
             if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
-            } else {
+            }
+            else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
         });
-    }
-
-    promptLot() {
-        return new Promise((resolve, reject) => {
-            let closedByButton = false;
-            this.log.Info('Prompting for lot number and expiration date');
-            
+    };
+    class_1.prototype.promptLot = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var closedByButton = false;
+            _this.log.Info('Prompting for lot number and expiration date');
             // Create form content for lot number and optional expiration date
-            let formHtml = '<div style="padding: 15px;"><form>';
-            
+            var formHtml = '<div style="padding: 15px;"><form>';
             // Add PO number display with copy functionality (smaller version)
-            formHtml += `<div style="margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px; font-size: 12px;">
-                <label class="inforLabel" style="font-weight: bold; font-size: 11px;">PO:</label>
-                <div style="display: flex; align-items: center; margin-top: 2px;">
-                    <input id="poNumberDisplay" type="text" readonly value="${this.PUNO}" 
-                           style="flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;">
-                    <button type="button" id="copyPoNumber" style="margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;">📋</button>
-                </div>
-            </div>`;
-            
-            formHtml += `<div style="margin-bottom: 15px;">
-                <label class="inforLabel" for="lotNumber">Lot Number:</label>
-                <input id="lotNumber" type="text" class="inforTextBox" maxlength="20" 
-                       placeholder="Enter lot number" style="width: 100%; text-transform: uppercase;" autofocus>
-            </div>`;
-            
-            if (this.EXPD === '1') {
-                formHtml += `<div style="margin-bottom: 15px;">
-                    <label class="inforLabel" for="expirationDate">Expiration Date:</label>
-                    <input id="expirationDate" type="date" class="inforTextBox" 
-                           style="width: 100%;" title="Press 'T' for today's date">
-                    <small style="color: #666;">Press 'T' for today's date</small>
-                </div>`;
+            formHtml += "<div style=\"margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px; font-size: 12px;\">\n                <label class=\"inforLabel\" style=\"font-weight: bold; font-size: 11px;\">PO:</label>\n                <div style=\"display: flex; align-items: center; margin-top: 2px;\">\n                    <input id=\"poNumberDisplay\" type=\"text\" readonly value=\"".concat(_this.PUNO, "\" \n                           style=\"flex: 1; background: white; border: 1px solid #ccc; padding: 3px 5px; font-family: monospace; font-size: 12px;\">\n                    <button type=\"button\" id=\"copyPoNumber\" style=\"margin-left: 6px; padding: 3px 6px; background: #0072C6; color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 11px;\">\uD83D\uDCCB</button>\n                </div>\n            </div>");
+            formHtml += "<div style=\"margin-bottom: 15px;\">\n                <label class=\"inforLabel\" for=\"lotNumber\">Lot Number:</label>\n                <input id=\"lotNumber\" type=\"text\" class=\"inforTextBox\" maxlength=\"20\" \n                       placeholder=\"Enter lot number\" style=\"width: 100%; text-transform: uppercase;\" autofocus>\n            </div>";
+            if (_this.EXPD === '1') {
+                formHtml += "<div style=\"margin-bottom: 15px;\">\n                    <label class=\"inforLabel\" for=\"expirationDate\">Expiration Date:</label>\n                    <input id=\"expirationDate\" type=\"date\" class=\"inforTextBox\" \n                           style=\"width: 100%;\" title=\"Press 'T' for today's date\">\n                    <small style=\"color: #666;\">Press 'T' for today's date</small>\n                </div>";
             }
-            
             formHtml += '</form></div>';
-            
-            const dialogContent = $(formHtml);
-            
+            var dialogContent = $(formHtml);
             // Method to show validation errors within the dialog context
-            dialogContent.showValidationError = function(message) {
+            dialogContent.showValidationError = function (message) {
                 // Remove any existing error messages
                 dialogContent.find('.validation-error').remove();
-                
                 // Create error message element
-                const errorDiv = $(`
-                    <div class="validation-error" style="
-                        background: #ffebee; 
-                        border: 1px solid #f44336; 
-                        color: #c62828; 
-                        padding: 8px 12px; 
-                        margin: 10px 0; 
-                        border-radius: 4px; 
-                        font-size: 12px;
-                        white-space: pre-line;
-                    ">
-                        <strong>⚠️ Validation Error:</strong><br>${message}
-                    </div>
-                `);
-                
+                var errorDiv = $("\n                    <div class=\"validation-error\" style=\"\n                        background: #ffebee; \n                        border: 1px solid #f44336; \n                        color: #c62828; \n                        padding: 8px 12px; \n                        margin: 10px 0; \n                        border-radius: 4px; \n                        font-size: 12px;\n                        white-space: pre-line;\n                    \">\n                        <strong>\u26A0\uFE0F Validation Error:</strong><br>".concat(message, "\n                    </div>\n                "));
                 // Insert error message at the top of the form
                 dialogContent.find('form').prepend(errorDiv);
-                
                 // Auto-remove after 5 seconds
-                setTimeout(() => errorDiv.fadeOut(() => errorDiv.remove()), 5000);
+                setTimeout(function () { return errorDiv.fadeOut(function () { return errorDiv.remove(); }); }, 5000);
             };
-            
             // Bind the validation error method to the correct context
-            const showValidationError = dialogContent.showValidationError;
-            
+            var showValidationError = dialogContent.showValidationError;
             // Add copy functionality for PO number
-            dialogContent.find('#copyPoNumber').on('click', function() {
-                const poInput = dialogContent.find('#poNumberDisplay')[0];
+            dialogContent.find('#copyPoNumber').on('click', function () {
+                var poInput = dialogContent.find('#poNumberDisplay')[0];
                 poInput.select();
                 document.execCommand('copy');
-                
                 // Visual feedback
-                const btn = $(this);
-                const originalText = btn.text();
+                var btn = $(this);
+                var originalText = btn.text();
                 btn.text('✓ Copied!').css('background', '#28a745');
-                setTimeout(() => {
+                setTimeout(function () {
                     btn.text(originalText).css('background', '#0072C6');
                 }, 1500);
             });
-            
             // Add input validation and uppercase conversion for lot number
             dialogContent.find('#lotNumber').on('input', function () {
                 this.value = this.value.toUpperCase();
                 $(this).css('border', ''); // Clear any error styling
             });
-            
             // Enable right-click context menu for all input fields (for paste functionality)
             dialogContent.find('input').on('contextmenu', function (e) {
                 e.stopPropagation(); // Allow default right-click menu on inputs
             });
-            
             // Add Enter key handling for lot inputs
             dialogContent.find('#lotNumber, #expirationDate').on('keydown', function (e) {
                 if (e.key === 'Enter') {
@@ -1493,116 +1427,111 @@ var POReceiptShortcutV2 = class {
                     if (this.id === 'lotNumber' && this.EXPD === '1') {
                         // Move to expiration date if it exists
                         dialogContent.find('#expirationDate').focus();
-                    } else {
+                    }
+                    else {
                         // Trigger Save button
-                        const saveButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function() {
+                        var saveButton = dialogContent.closest('.ui-dialog-content').siblings('.ui-dialog-buttonpane').find('button').filter(function () {
                             return $(this).text().trim() === 'Save';
                         });
                         if (saveButton.length > 0) {
                             saveButton.click();
-                        } else {
+                        }
+                        else {
                             // Fallback: simulate Save button click with proper validation
-                            const $lot = dialogContent.find('#lotNumber');
-                            const lot = $lot.val().trim();
-                            let expi = null;
-                            let errors = [];
-
+                            var $lot = dialogContent.find('#lotNumber');
+                            var lot = $lot.val().trim();
+                            var expi = null;
+                            var errors = [];
                             // Validate lot number
                             if (!lot || lot.length > 20 || !/^[A-Z0-9\-]+$/.test(lot)) {
                                 $lot.css('border', '2px solid red');
                                 errors.push('Lot number required (alphanumeric, max 20 chars)');
                             }
-
                             // Validate expiration date if required
                             if (this.EXPD === '1') {
-                                const $exp = dialogContent.find('#expirationDate');
-                                const expDate = $exp.val();
+                                var $exp = dialogContent.find('#expirationDate');
+                                var expDate = $exp.val();
                                 if (!expDate) {
                                     $exp.css('border', '2px solid red');
                                     errors.push('Expiration date required');
-                                } else {
+                                }
+                                else {
                                     expi = expDate.replace(/-/g, ''); // Convert YYYY-MM-DD to YYYYMMDD
                                 }
                             }
-
                             // Show validation errors if any
                             if (errors.length) {
                                 showValidationError(errors.join('\n'));
                                 return;
                             }
-
                             // Close dialog and return lot data (duplicate the Save button success logic)
                             closedByButton = true;
                             if (ScriptUtil.version >= 2.0) {
                                 $('.ui-dialog-content:visible').dialog('close');
-                            } else {
+                            }
+                            else {
                                 $(dialogContent).inforDialog("close");
                             }
-                            resolve({ lot, expi });
+                            resolve({ lot: lot, expi: expi });
                         }
                     }
                 }
-            }.bind(this));
-            
+            }.bind(_this));
             // Add 'T' for today shortcut for expiration date
-            if (this.EXPD === '1') {
-                dialogContent.find('#expirationDate').on('keydown', function(e) {
+            if (_this.EXPD === '1') {
+                dialogContent.find('#expirationDate').on('keydown', function (e) {
                     if (e.key.toLowerCase() === 't') {
                         e.preventDefault();
                         $(this).val(new Date().toISOString().slice(0, 10));
                         $(this).css('border', ''); // Clear any error styling
                     }
                 });
-                
-                dialogContent.find('#expirationDate').on('change', function() {
+                dialogContent.find('#expirationDate').on('change', function () {
                     $(this).css('border', ''); // Clear any error styling
                 });
             }
-            
-            const dialogButtons = [
+            var dialogButtons = [
                 {
                     text: "Save",
                     isDefault: true,
                     width: 80,
                     click: function (event, model) {
-                        const $lot = dialogContent.find('#lotNumber');
-                        const lot = $lot.val().trim();
-                        let expi = null;
-                        let errors = [];
-
+                        var $lot = dialogContent.find('#lotNumber');
+                        var lot = $lot.val().trim();
+                        var expi = null;
+                        var errors = [];
                         // Validate lot number
                         if (!lot || lot.length > 20 || !/^[A-Z0-9\-]+$/.test(lot)) {
                             $lot.css('border', '2px solid red');
                             errors.push('Lot number required (alphanumeric, max 20 chars)');
                         }
-
                         // Validate expiration date if required
                         if (this.EXPD === '1') {
-                            const $exp = dialogContent.find('#expirationDate');
-                            const expDate = $exp.val();
+                            var $exp = dialogContent.find('#expirationDate');
+                            var expDate = $exp.val();
                             if (!expDate) {
                                 $exp.css('border', '2px solid red');
                                 errors.push('Expiration date required');
-                            } else {
+                            }
+                            else {
                                 expi = expDate.replace(/-/g, ''); // Convert YYYY-MM-DD to YYYYMMDD
                             }
                         }
-
                         // Show validation errors if any
                         if (errors.length) {
                             showValidationError(errors.join('\n'));
                             return;
                         }
-
                         // Close dialog and return lot data
                         closedByButton = true;
                         if (ScriptUtil.version >= 2.0) {
                             model.close(true);
-                        } else {
+                        }
+                        else {
                             $(this).inforDialog("close");
                         }
-                        resolve({ lot, expi });
-                    }.bind(this)
+                        resolve({ lot: lot, expi: expi });
+                    }.bind(_this)
                 },
                 {
                     text: "Cancel",
@@ -1611,20 +1540,20 @@ var POReceiptShortcutV2 = class {
                         closedByButton = true;
                         if (ScriptUtil.version >= 2.0) {
                             model.close(true);
-                        } else {
+                        }
+                        else {
                             $(this).inforDialog("close");
                         }
                         reject(new Error('Lot input cancelled by user'));
                     }
                 }
             ];
-            
-            const dialogOptions = {
+            var dialogOptions = {
                 title: "📦 Enter Lot Number",
                 dialogType: "General",
                 modal: true, // Changed back to true
                 width: 450,
-                minHeight: this.EXPD === '1' ? 280 : 220,  // Dynamic height based on expiration requirement
+                minHeight: _this.EXPD === '1' ? 280 : 220, // Dynamic height based on expiration requirement
                 icon: "info",
                 closeOnEscape: true,
                 close: function () {
@@ -1635,521 +1564,535 @@ var POReceiptShortcutV2 = class {
                 },
                 buttons: dialogButtons
             };
-
             // Show dialog with proper version handling (H5SampleCustomDialog pattern)
             if (ScriptUtil.version >= 2.0) {
                 H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
-            } else {
+            }
+            else {
                 dialogContent.inforMessageDialog(dialogOptions);
             }
         });
-    }
-
+    };
     /*───────────────── VALIDATION / EQUIPMENT ─────────────────*/
-    async checkSer(entries) {
-        console.log(`[SERIAL-CHECK] Starting validation for ${entries.length} derived serial numbers:`, entries);
-        this.logDebug(`checkSer: Validating ${entries.length} derived serial numbers`);
-        
-        // Validate each derived serial number doesn't already exist in M3
-        return Promise.all(entries.map((entry, index) => {
-            const derivedSerial = entry.derivedSerial;
-            const rq = Object.assign(new MIRequest(), {
-                program: 'MMS235MI',           // Item Lot API
-                transaction: 'GetItmLot',
-                record: { ITNO: this.ITNO, BANO: derivedSerial },  // BANO = Batch/Serial Number (derived)
-                maxReturnedRecords: 1
+    class_1.prototype.checkSer = function (entries) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                console.log("[SERIAL-CHECK] Starting validation for ".concat(entries.length, " derived serial numbers:"), entries);
+                this.logDebug("checkSer: Validating ".concat(entries.length, " derived serial numbers"));
+                // Validate each derived serial number doesn't already exist in M3
+                return [2 /*return*/, Promise.all(entries.map(function (entry, index) {
+                        var derivedSerial = entry.derivedSerial;
+                        var rq = Object.assign(new MIRequest(), {
+                            program: 'MMS235MI', // Item Lot API
+                            transaction: 'GetItmLot',
+                            record: { ITNO: _this.ITNO, BANO: derivedSerial }, // BANO = Batch/Serial Number (derived)
+                            maxReturnedRecords: 1
+                        });
+                        //consider validating custom field as well
+                        console.log("[SERIAL-CHECK-".concat(index + 1, "] Checking derived serial: ").concat(derivedSerial, " (source: ").concat(entry.originalSerial, ")"));
+                        _this.logMIRequest(rq.program, rq.transaction, rq.record);
+                        return _this.mi.executeRequest(rq).then(function (r) {
+                            _this.logMIResponse(rq.program, rq.transaction, r, true);
+                            // Check both ITNO and BANO match - if found, serial already exists
+                            if (r && r.item && r.item.ITNO === _this.ITNO && r.item.BANO === derivedSerial) {
+                                var error = "Derived serial ".concat(derivedSerial, " for item ").concat(_this.ITNO, " already exists (original: ").concat(entry.originalSerial, ").");
+                                console.error("[SERIAL-CHECK-".concat(index + 1, "] DUPLICATE FOUND:"), error);
+                                _this.logWarning("checkSer: ".concat(error));
+                                throw new Error(error);
+                            }
+                            console.log("[SERIAL-CHECK-".concat(index + 1, "] \u2713 Derived serial ").concat(derivedSerial, " available"));
+                            _this.logDebug("checkSer: Derived serial ".concat(derivedSerial, " validation passed"));
+                        }, function (e) {
+                            _this.logMIResponse(rq.program, rq.transaction, e, false);
+                            // Status 400 = Record not found (expected for new serials)
+                            if (e.statusCode === 400) {
+                                console.log("[SERIAL-CHECK-".concat(index + 1, "] \u2713 Derived serial ").concat(derivedSerial, " does not exist (expected)"));
+                                _this.logDebug("checkSer: Derived serial ".concat(derivedSerial, " does not exist (expected)"));
+                                return;
+                            }
+                            console.error("[SERIAL-CHECK-".concat(index + 1, "] ERROR checking derived serial ").concat(derivedSerial, ":"), e);
+                            _this.logError("checkSer: Error checking derived serial ".concat(derivedSerial), e);
+                            throw e;
+                        });
+                    }))];
             });
-            
-            //consider validating custom field as well
-
-            console.log(`[SERIAL-CHECK-${index + 1}] Checking derived serial: ${derivedSerial} (source: ${entry.originalSerial})`);
-            this.logMIRequest(rq.program, rq.transaction, rq.record);
-            
-            return this.mi.executeRequest(rq).then(
-                r => {
-                    this.logMIResponse(rq.program, rq.transaction, r, true);
-                    // Check both ITNO and BANO match - if found, serial already exists
-                    if (r && r.item && r.item.ITNO === this.ITNO && r.item.BANO === derivedSerial) {
-                        const error = `Derived serial ${derivedSerial} for item ${this.ITNO} already exists (original: ${entry.originalSerial}).`;
-                        console.error(`[SERIAL-CHECK-${index + 1}] DUPLICATE FOUND:`, error);
-                        this.logWarning(`checkSer: ${error}`);
-                        throw new Error(error);
-                    }
-                    console.log(`[SERIAL-CHECK-${index + 1}] ✓ Derived serial ${derivedSerial} available`);
-                    this.logDebug(`checkSer: Derived serial ${derivedSerial} validation passed`);
-                },
-                e => { 
-                    this.logMIResponse(rq.program, rq.transaction, e, false);
-                    // Status 400 = Record not found (expected for new serials)
-                    if (e.statusCode === 400) {
-                        console.log(`[SERIAL-CHECK-${index + 1}] ✓ Derived serial ${derivedSerial} does not exist (expected)`);
-                        this.logDebug(`checkSer: Derived serial ${derivedSerial} does not exist (expected)`);
-                        return; 
-                    }
-                    console.error(`[SERIAL-CHECK-${index + 1}] ERROR checking derived serial ${derivedSerial}:`, e);
-                    this.logError(`checkSer: Error checking derived serial ${derivedSerial}`, e);
-                    throw e; 
-                }
-            );
-        }));
-    }
-
-    async checkLot(lot) {
-        this.logDebug(`checkLot: Validating lot ${lot}`);
-        // Similar validation for lot numbers
-        const rq = Object.assign(new MIRequest(), {
-            program: 'MMS235MI',
-            transaction: 'GetItmLot',
-            record: { ITNO: this.ITNO, BANO: lot },
-            maxReturnedRecords: 1
         });
-        return this.mi.executeRequest(rq).then(
-            r => {
-                // Check both ITNO and BANO match - if found, lot already exists
-                if (r && r.item && r.item.ITNO === this.ITNO && r.item.BANO === lot) {
-                    const error = `Lot ${lot} for item ${this.ITNO} already exists.`;
-                    this.logWarning(`checkLot: ${error}`);
-                    throw new Error(error);
-                }
-                this.logDebug(`checkLot: Lot ${lot} validation passed`);
-            },
-            e => { 
-                if (e.statusCode === 400) {
-                    this.logDebug(`checkLot: Lot ${lot} does not exist (expected)`);
-                    return; 
-                }
-                this.logError(`checkLot: Error checking lot ${lot}`, e);
-                throw e; 
-            }
-        );
-    }
-
+    };
+    class_1.prototype.checkLot = function (lot) {
+        return __awaiter(this, void 0, void 0, function () {
+            var rq;
+            var _this = this;
+            return __generator(this, function (_a) {
+                this.logDebug("checkLot: Validating lot ".concat(lot));
+                rq = Object.assign(new MIRequest(), {
+                    program: 'MMS235MI',
+                    transaction: 'GetItmLot',
+                    record: { ITNO: this.ITNO, BANO: lot },
+                    maxReturnedRecords: 1
+                });
+                return [2 /*return*/, this.mi.executeRequest(rq).then(function (r) {
+                        // Check both ITNO and BANO match - if found, lot already exists
+                        if (r && r.item && r.item.ITNO === _this.ITNO && r.item.BANO === lot) {
+                            var error = "Lot ".concat(lot, " for item ").concat(_this.ITNO, " already exists.");
+                            _this.logWarning("checkLot: ".concat(error));
+                            throw new Error(error);
+                        }
+                        _this.logDebug("checkLot: Lot ".concat(lot, " validation passed"));
+                    }, function (e) {
+                        if (e.statusCode === 400) {
+                            _this.logDebug("checkLot: Lot ".concat(lot, " does not exist (expected)"));
+                            return;
+                        }
+                        _this.logError("checkLot: Error checking lot ".concat(lot), e);
+                        throw e;
+                    })];
+            });
+        });
+    };
     /**
      * Creates equipment records for serial-controlled items with custom field persistence.
-     * 
+     *
      * WORKFLOW:
      * 1. Create MMS240MI equipment record with SERN (either pass-through <=20 or derived BSN >20)
      * 2. Store original serial in CMS474MI custom field (CFMA) for complete audit trail
      * 3. Track each creation in this.createdEquipment array for rollback if needed
-     * 
+     *
      * ROLLBACK TRIGGER: If ANY equipment creation or custom field storage fails:
      * - Immediately call rollbackEquipment() to delete ALL previously created equipment + custom fields
      * - This ensures batch-level atomic success/failure (no orphaned records on failure)
      */
-    async addEquip(entries) {
-        // Initialize tracking array for potential rollback operations
-        this.createdEquipment = [];
-        
-        console.log(`[EQUIPMENT-ADD] Starting creation of ${entries.length} equipment records`);
-        this.logDebug(`addEquip: Creating equipment records for ${entries.length} derived serials`);
-        
-        try {
-            for (let index = 0; index < entries.length; index++) {
-                const entry = entries[index];
-                const derivedSerial = entry.derivedSerial;
-                const rq = new MIRequest();
-                rq.program = 'MMS240MI';  // Equipment API
-                rq.transaction = 'Add';
-                rq.maxReturnedRecords = 1;
-                rq.record = {
-                    ITNO: this.ITNO,     // Item Number
-                    SERN: derivedSerial, // Serial Number stored in MMS240 (<=20 chars)
-                    STAT: '20',          // Status (20 = In Stock)
-                    CUNO: this.CUNO,     // Customer Number (hard referenced for order initiated orders)
-                    PUPR: this.PUPR,     // Purchase Price
-                    CUCD: this.CUCD,     // Currency Code
-                    PPDT: this.today(),  // Purchase Date (today)
-                    FACI: this.FACI,     // Facility
-                    CUOW: this.CUNO,     // Current Owner
-                    OWTP: '0',           // Owner Type (0 = Company)
-                    PUNO: this.PUNO,     // Purchase Order Number
-                    PNLI: this.PNLI,     // PO Line Number
-                    PNLS: this.PNLS,     // PO Line Suffix
-                    ALII: this.ITDS      // Item Description
-                };
-                
-                console.log(`[EQUIPMENT-ADD-${index + 1}] Creating equipment for derived serial: ${derivedSerial} (source: ${entry.originalSerial})`);
-                this.logMIRequest(rq.program, rq.transaction, rq.record);
-                
-                const result = await this.mi.executeRequest(rq);
-                this.logMIResponse(rq.program, rq.transaction, result, true);
-                
-                if (!result || !result.item) {
-                    const errorMsg = this.extractErrorMessage(result, `Equipment creation for derived serial ${derivedSerial}`);
-                    throw new Error(errorMsg);
+    class_1.prototype.addEquip = function (entries) {
+        return __awaiter(this, void 0, void 0, function () {
+            var index, entry, derivedSerial, rq, result, errorMsg, eqNumber, createdContext, cfError_1, error_5;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        // Initialize tracking array for potential rollback operations
+                        this.createdEquipment = [];
+                        console.log("[EQUIPMENT-ADD] Starting creation of ".concat(entries.length, " equipment records"));
+                        this.logDebug("addEquip: Creating equipment records for ".concat(entries.length, " derived serials"));
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 9, , 11]);
+                        index = 0;
+                        _b.label = 2;
+                    case 2:
+                        if (!(index < entries.length)) return [3 /*break*/, 8];
+                        entry = entries[index];
+                        derivedSerial = entry.derivedSerial;
+                        rq = new MIRequest();
+                        rq.program = 'MMS240MI'; // Equipment API
+                        rq.transaction = 'Add';
+                        rq.maxReturnedRecords = 1;
+                        rq.record = {
+                            ITNO: this.ITNO, // Item Number
+                            SERN: derivedSerial, // Serial Number stored in MMS240 (<=20 chars)
+                            STAT: '20', // Status (20 = In Stock)
+                            CUNO: this.CUNO, // Customer Number (hard referenced for order initiated orders)
+                            PUPR: this.PUPR, // Purchase Price
+                            CUCD: this.CUCD, // Currency Code
+                            PPDT: this.today(), // Purchase Date (today)
+                            FACI: this.FACI, // Facility
+                            CUOW: this.CUNO, // Current Owner
+                            OWTP: '0', // Owner Type (0 = Company)
+                            PUNO: this.PUNO, // Purchase Order Number
+                            PNLI: this.PNLI, // PO Line Number
+                            PNLS: this.PNLS, // PO Line Suffix
+                            ALII: this.ITDS // Item Description
+                        };
+                        console.log("[EQUIPMENT-ADD-".concat(index + 1, "] Creating equipment for derived serial: ").concat(derivedSerial, " (source: ").concat(entry.originalSerial, ")"));
+                        this.logMIRequest(rq.program, rq.transaction, rq.record);
+                        return [4 /*yield*/, this.mi.executeRequest(rq)];
+                    case 3:
+                        result = _b.sent();
+                        this.logMIResponse(rq.program, rq.transaction, result, true);
+                        if (!result || !result.item) {
+                            errorMsg = this.extractErrorMessage(result, "Equipment creation for derived serial ".concat(derivedSerial));
+                            throw new Error(errorMsg);
+                        }
+                        eqNumber = result.item.EQNO || result.item.EQNR || null;
+                        createdContext = {
+                            ITNO: this.ITNO,
+                            SERN: derivedSerial,
+                            EQNO: eqNumber,
+                            originalSerial: entry.originalSerial
+                        };
+                        // Track successful equipment creation for potential rollback
+                        this.createdEquipment.push(createdContext);
+                        console.log("[EQUIPMENT-ADD-".concat(index + 1, "] \u2713 Successfully created equipment for derived serial: ").concat(derivedSerial, " (EQNO: ").concat(eqNumber || 'N/A', ")"));
+                        this.logDebug("addEquip: Successfully added equipment record for derived serial ".concat(derivedSerial));
+                        if (!((_a = this.customFieldConfig) === null || _a === void 0 ? void 0 : _a.enabled)) return [3 /*break*/, 7];
+                        _b.label = 4;
+                    case 4:
+                        _b.trys.push([4, 6, , 7]);
+                        return [4 /*yield*/, this.storeFullSerialCustomField(createdContext)];
+                    case 5:
+                        _b.sent();
+                        console.log("[EQUIPMENT-ADD-".concat(index + 1, "] \u2713 Persisted original serial to CMS474MI (group ").concat(this.customFieldConfig.group, ")"));
+                        return [3 /*break*/, 7];
+                    case 6:
+                        cfError_1 = _b.sent();
+                        console.error("[EQUIPMENT-ADD-".concat(index + 1, "] \u2717 Failed to persist long serial for ").concat(derivedSerial, ":"), cfError_1);
+                        this.logError("addEquip: Failed to persist long serial for ".concat(derivedSerial), cfError_1);
+                        throw cfError_1;
+                    case 7:
+                        index++;
+                        return [3 /*break*/, 2];
+                    case 8:
+                        console.log("[EQUIPMENT-ADD-COMPLETE] All ".concat(entries.length, " equipment records created successfully"));
+                        return [3 /*break*/, 11];
+                    case 9:
+                        error_5 = _b.sent();
+                        // If any equipment creation fails, rollback the ones that succeeded
+                        console.error('[EQUIPMENT-ADD-FAILED] Equipment creation failed, initiating rollback:', error_5);
+                        this.logError('addEquip: Equipment creation failed, initiating rollback', error_5);
+                        return [4 /*yield*/, this.rollbackEquipment()];
+                    case 10:
+                        _b.sent();
+                        throw error_5;
+                    case 11: return [2 /*return*/];
                 }
-
-                const eqNumber = result.item.EQNO || result.item.EQNR || null;
-                const createdContext = {
-                    ITNO: this.ITNO,
-                    SERN: derivedSerial,
-                    EQNO: eqNumber,
-                    originalSerial: entry.originalSerial
-                };
-
-                // Track successful equipment creation for potential rollback
-                this.createdEquipment.push(createdContext);
-                console.log(`[EQUIPMENT-ADD-${index + 1}] ✓ Successfully created equipment for derived serial: ${derivedSerial} (EQNO: ${eqNumber || 'N/A'})`);
-                this.logDebug(`addEquip: Successfully added equipment record for derived serial ${derivedSerial}`);
-
-                // Persist the original (long) serial in CMS474 custom fields
-                if (this.customFieldConfig?.enabled) {
-                    try {
-                        await this.storeFullSerialCustomField(createdContext);
-                        console.log(`[EQUIPMENT-ADD-${index + 1}] ✓ Persisted original serial to CMS474MI (group ${this.customFieldConfig.group})`);
-                    } catch (cfError) {
-                        console.error(`[EQUIPMENT-ADD-${index + 1}] ✗ Failed to persist long serial for ${derivedSerial}:`, cfError);
-                        this.logError(`addEquip: Failed to persist long serial for ${derivedSerial}`, cfError);
-                        throw cfError;
-                    }
-                }
-            }
-            
-            console.log(`[EQUIPMENT-ADD-COMPLETE] All ${entries.length} equipment records created successfully`);
-        } catch (error) {
-            // If any equipment creation fails, rollback the ones that succeeded
-            console.error('[EQUIPMENT-ADD-FAILED] Equipment creation failed, initiating rollback:', error);
-            this.logError('addEquip: Equipment creation failed, initiating rollback', error);
-            await this.rollbackEquipment();
-            throw error;
-        }
-    }
-
+            });
+        });
+    };
     /**
      * Rollback equipment records if receipt processing fails after equipment creation.
-     * 
+     *
      * ROLLBACK POLICY (Simplified):
      * - If addEquip() or process() fails, delete ALL equipment records created in this batch
      * - First delete CMS474MI custom field records (if enabled) to clean audit trail (THIS IS NOT NEEDED, but doesn't hurt to include. But does create unneccesary API calls)
      * - Then delete MMS240MI equipment records via Del transaction
      * - Continue rollback even if individual deletions fail (best-effort cleanup)
      * - Clear createdEquipment array when complete
-     * 
+     *
      * This ensures no orphaned equipment or custom field entries if receipt fails.
      * Failures during rollback are logged but non-blocking (we continue cleanup).
      */
-    async rollbackEquipment() {
-        if (!this.createdEquipment || this.createdEquipment.length === 0) {
-            console.log('[ROLLBACK] No equipment records to rollback');
-            this.logDebug('rollbackEquipment: No equipment records to rollback');
-            return;
-        }
-        
-        console.log(`[ROLLBACK] Rolling back ${this.createdEquipment.length} equipment records:`, this.createdEquipment);
-        this.logWarning(`rollbackEquipment: Rolling back ${this.createdEquipment.length} equipment records`);
-        
-        // Use Promise.allSettled to continue rollback even if some deletions fail
-        const rollbackPromises = this.createdEquipment.map(async (equip, index) => {
-            try {
-                if (this.customFieldConfig?.enabled) {
-                    try {
-                        await this.deleteEquipmentCustomField(equip);
-                        console.log(`[ROLLBACK-${index + 1}] ✓ Deleted CMS474 record for EQNO ${equip.EQNO || 'N/A'}`);
-                    } catch (cfDeleteError) {
-                        console.error(`[ROLLBACK-${index + 1}] ✗ Failed to delete CMS474 record for EQNO ${equip.EQNO || 'N/A'}`, cfDeleteError);
-                        this.logError(`rollbackEquipment: Failed to delete CMS474 record for EQNO ${equip.EQNO || 'N/A'}`, cfDeleteError);
-                    }
+    class_1.prototype.rollbackEquipment = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var rollbackPromises, results, successful, failed;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.createdEquipment || this.createdEquipment.length === 0) {
+                            console.log('[ROLLBACK] No equipment records to rollback');
+                            this.logDebug('rollbackEquipment: No equipment records to rollback');
+                            return [2 /*return*/];
+                        }
+                        console.log("[ROLLBACK] Rolling back ".concat(this.createdEquipment.length, " equipment records:"), this.createdEquipment);
+                        this.logWarning("rollbackEquipment: Rolling back ".concat(this.createdEquipment.length, " equipment records"));
+                        rollbackPromises = this.createdEquipment.map(function (equip, index) { return __awaiter(_this, void 0, void 0, function () {
+                            var cfDeleteError_1, deleteRequest, result, rollbackError_1;
+                            var _a;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        _b.trys.push([0, 6, , 7]);
+                                        if (!((_a = this.customFieldConfig) === null || _a === void 0 ? void 0 : _a.enabled)) return [3 /*break*/, 4];
+                                        _b.label = 1;
+                                    case 1:
+                                        _b.trys.push([1, 3, , 4]);
+                                        return [4 /*yield*/, this.deleteEquipmentCustomField(equip)];
+                                    case 2:
+                                        _b.sent();
+                                        console.log("[ROLLBACK-".concat(index + 1, "] \u2713 Deleted CMS474 record for EQNO ").concat(equip.EQNO || 'N/A'));
+                                        return [3 /*break*/, 4];
+                                    case 3:
+                                        cfDeleteError_1 = _b.sent();
+                                        console.error("[ROLLBACK-".concat(index + 1, "] \u2717 Failed to delete CMS474 record for EQNO ").concat(equip.EQNO || 'N/A'), cfDeleteError_1);
+                                        this.logError("rollbackEquipment: Failed to delete CMS474 record for EQNO ".concat(equip.EQNO || 'N/A'), cfDeleteError_1);
+                                        return [3 /*break*/, 4];
+                                    case 4:
+                                        deleteRequest = new MIRequest();
+                                        deleteRequest.program = 'MMS240MI'; // Equipment API
+                                        deleteRequest.transaction = 'Del'; // Delete transaction
+                                        deleteRequest.maxReturnedRecords = 1;
+                                        deleteRequest.record = {
+                                            ITNO: equip.ITNO, // Item Number
+                                            SERN: equip.SERN // Serial Number (equivalent to BANO)
+                                        };
+                                        console.log("[ROLLBACK-".concat(index + 1, "] Deleting equipment for serial: ").concat(equip.SERN));
+                                        this.logMIRequest(deleteRequest.program, deleteRequest.transaction, deleteRequest.record);
+                                        return [4 /*yield*/, this.mi.executeRequest(deleteRequest)];
+                                    case 5:
+                                        result = _b.sent();
+                                        this.logMIResponse(deleteRequest.program, deleteRequest.transaction, result, true);
+                                        console.log("[ROLLBACK-".concat(index + 1, "] \u2713 Successfully deleted equipment for serial: ").concat(equip.SERN));
+                                        this.logDebug("rollbackEquipment: Successfully deleted equipment record for serial ".concat(equip.SERN));
+                                        return [3 /*break*/, 7];
+                                    case 6:
+                                        rollbackError_1 = _b.sent();
+                                        // Log rollback failure but continue with other deletions
+                                        console.error("[ROLLBACK-".concat(index + 1, "] \u2717 Failed to delete equipment for serial: ").concat(equip.SERN), rollbackError_1);
+                                        this.logMIResponse('MMS240MI', 'Del', rollbackError_1, false);
+                                        this.logError("rollbackEquipment: Failed to delete equipment for serial ".concat(equip.SERN), rollbackError_1);
+                                        return [3 /*break*/, 7];
+                                    case 7: return [2 /*return*/];
+                                }
+                            });
+                        }); });
+                        return [4 /*yield*/, Promise.allSettled(rollbackPromises)];
+                    case 1:
+                        results = _a.sent();
+                        successful = results.filter(function (r) { return r.status === 'fulfilled'; }).length;
+                        failed = results.filter(function (r) { return r.status === 'rejected'; }).length;
+                        if (failed > 0) {
+                            console.log("[ROLLBACK-SUMMARY] Completed with ".concat(successful, " successful, ").concat(failed, " failed deletions"));
+                            this.logWarning("rollbackEquipment: Completed with ".concat(successful, " successful, ").concat(failed, " failed deletions"));
+                        }
+                        else {
+                            console.log("[ROLLBACK-SUMMARY] Successfully rolled back all ".concat(successful, " equipment records"));
+                            this.logInfo("rollbackEquipment: Successfully rolled back all ".concat(successful, " equipment records"));
+                        }
+                        // Clear the tracking array
+                        this.createdEquipment = [];
+                        return [2 /*return*/];
                 }
-
-                const deleteRequest = new MIRequest();
-                deleteRequest.program = 'MMS240MI';   // Equipment API
-                deleteRequest.transaction = 'Del';    // Delete transaction
-                deleteRequest.maxReturnedRecords = 1;
-                deleteRequest.record = {
-                    ITNO: equip.ITNO,  // Item Number
-                    SERN: equip.SERN   // Serial Number (equivalent to BANO)
-                };
-                
-                console.log(`[ROLLBACK-${index + 1}] Deleting equipment for serial: ${equip.SERN}`);
-                this.logMIRequest(deleteRequest.program, deleteRequest.transaction, deleteRequest.record);
-                
-                const result = await this.mi.executeRequest(deleteRequest);
-                this.logMIResponse(deleteRequest.program, deleteRequest.transaction, result, true);
-                
-                console.log(`[ROLLBACK-${index + 1}] ✓ Successfully deleted equipment for serial: ${equip.SERN}`);
-                this.logDebug(`rollbackEquipment: Successfully deleted equipment record for serial ${equip.SERN}`);
-            } catch (rollbackError) {
-                // Log rollback failure but continue with other deletions
-                console.error(`[ROLLBACK-${index + 1}] ✗ Failed to delete equipment for serial: ${equip.SERN}`, rollbackError);
-                this.logMIResponse('MMS240MI', 'Del', rollbackError, false);
-                this.logError(`rollbackEquipment: Failed to delete equipment for serial ${equip.SERN}`, rollbackError);
-                // Note: Individual rollback failures are logged but don't stop the overall process
-            }
-        });
-        
-        // Wait for all rollback operations to complete (successful or failed)
-        const results = await Promise.allSettled(rollbackPromises);
-        
-        // Log summary of rollback operations
-        const successful = results.filter(r => r.status === 'fulfilled').length;
-        const failed = results.filter(r => r.status === 'rejected').length;
-        
-        if (failed > 0) {
-            console.log(`[ROLLBACK-SUMMARY] Completed with ${successful} successful, ${failed} failed deletions`);
-            this.logWarning(`rollbackEquipment: Completed with ${successful} successful, ${failed} failed deletions`);
-        } else {
-            console.log(`[ROLLBACK-SUMMARY] Successfully rolled back all ${successful} equipment records`);
-            this.logInfo(`rollbackEquipment: Successfully rolled back all ${successful} equipment records`);
-        }
-        
-        // Clear the tracking array
-        this.createdEquipment = [];
-    }
-
-    /*───────────────── RECEIPT ENGINE ─────────────────*/
-    async process(lines, onePackPerSerial) {
-        console.log(`[RECEIPT-PROCESS] Starting with ${lines.length} line(s), onePackPerSerial: ${onePackPerSerial}`);
-        console.log('[RECEIPT-LINES] Processing lines:', JSON.stringify(lines, null, 2));
-        this.logDebug(`process: Starting receipt with ${lines.length} lines`);
-        
-        try {
-            // ───────────── AddWhsHead ─────────────
-            // Create warehouse transaction header for Interface processing
-            const head = Object.assign(new MIRequest(), {
-              program: "MHS850MI", // Interface Transaction Processing API
-              transaction: "AddWhsHead", // Create transaction header
-              maxReturnedRecords: 1,
-              record: {
-                WHLO: this.WHLO, // Warehouse
-                QLFR: "20", // Qualifier (20 = Purchase Receipt)
-                E0PA: "WS", // WS Partner (MMS865)
-                E0PB: "WS", // WS Partner (MMS865)
-                E007: "20", // Qualifier (20 = Purchase Receipt)
-                E065: "PPS300", // Message Type (MMS865)
-              },
             });
-
-            console.log('[WHS-HEAD] AddWhsHead payload:', JSON.stringify(head.record, null, 2));
-            this.logMIRequest(head.program, head.transaction, head.record);
-
-            const h = await this.mi.executeRequest(head);
-            this.logMIResponse(head.program, head.transaction, h, true);
-
-            // Validate header creation was successful
-            if (!h || !h.item || !h.item.MSGN) {
-                console.error('[WHS-HEAD-ERROR] AddWhsHead failed response:', JSON.stringify(h, null, 2));
-
-                // Extract error message using enhanced error handling
-                const errorMessage = this.extractErrorMessage(h, 'Warehouse transaction header creation');
-                throw new Error(errorMessage);
-            }
-
-            // Store message number for subsequent WMS transactions
-            this.MSGN = h.item.MSGN;
-            console.log('[WHS-HEAD-SUCCESS] → MSGN received:', this.MSGN);
-
-            // ───────────── AddWhsPack + AddWhsLine ─────────────
-            // Create single pack for all items (serial, lot, or non-lotted)
-            const packNumber = `${this.PUNO}_${this.PNLI}`;  // Use PUNO_PNLI format for all scenarios
-            
-            const pack = new MIRequest();
-            pack.program = 'MHS850MI';
-            pack.transaction = 'AddWhsPack';
-            pack.maxReturnedRecords = 1;
-            pack.record = {
-                WHLO: this.WHLO,
-                MSGN: this.MSGN,
-                PACN: packNumber,        // Pack Number = PUNO_PNLI
-                QLFR: '20'
-            };
-
-            console.log('[WHS-PACK] AddWhsPack (unified):', JSON.stringify(pack.record, null, 2));
-            this.logMIRequest(pack.program, pack.transaction, pack.record);
-            
-            const packResult = await this.mi.executeRequest(pack);
-            this.logMIResponse(pack.program, pack.transaction, packResult, true);
-            
-            // Brief delay to ensure pack creation is committed before adding lines
-            await this.sleep(50);
-
-            // Add all line items to the single pack
-            console.log(`[WHS-LINES] Adding ${lines.length} line(s) to pack ${packNumber}`);
-            await Promise.all(lines.map((rec, index) => {
-                const line = new MIRequest();
-                line.program = 'MHS850MI';
-                line.transaction = 'AddWhsLine';
-                line.maxReturnedRecords = 100;
-                line.record = {
-                  WHLO: this.WHLO,
-                  MSGN: this.MSGN,
-                  PACN: packNumber, // All lines use same pack number (PUNO_PNLI)
-                  QLFR: "20",
-                  ITNO: this.ITNO, // Item Number
-                  RVQA: rec.RVQA, // Received Quantity (1 for serials, full qty for others)
-                  PUUN: this.PUUN,
-                  RIDN: this.PUNO, // Reference ID (PO Number)
-                  RIDL: this.PNLI, // Reference Line (PO Line)
-                  RIDX: this.PNLS, // Reference Suffix (PO Line Suffix)
-                  OEND: this.OEND, // Flag Completed signifier
-                };
-                
-                // Add warehouse location only for material items (non-material items don't use WHSL)
-                const isNonMaterial = this.INDI === '0' && this.TPCD === '13';
-                if (!isNonMaterial) {
-                    line.record.WHSL = this.WHSL;  // Warehouse Location
+        });
+    };
+    /*───────────────── RECEIPT ENGINE ─────────────────*/
+    class_1.prototype.process = function (lines, onePackPerSerial) {
+        return __awaiter(this, void 0, void 0, function () {
+            var head, h, errorMessage, packNumber_1, pack, packResult, pr, prc, errorMessage, statusCheck, statusResult, transactionStatus, errorMessage, troubleshootingInfo, extracted, statusDescriptions, statusDesc, lines_1, e_2;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log("[RECEIPT-PROCESS] Starting with ".concat(lines.length, " line(s), onePackPerSerial: ").concat(onePackPerSerial));
+                        console.log('[RECEIPT-LINES] Processing lines:', JSON.stringify(lines, null, 2));
+                        this.logDebug("process: Starting receipt with ".concat(lines.length, " lines"));
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 14, , 15]);
+                        head = Object.assign(new MIRequest(), {
+                            program: "MHS850MI", // Interface Transaction Processing API
+                            transaction: "AddWhsHead", // Create transaction header
+                            maxReturnedRecords: 1,
+                            record: {
+                                WHLO: this.WHLO, // Warehouse
+                                QLFR: "20", // Qualifier (20 = Purchase Receipt)
+                                E0PA: "WS", // WS Partner (MMS865)
+                                E0PB: "WS", // WS Partner (MMS865)
+                                E007: "20", // Qualifier (20 = Purchase Receipt)
+                                E065: "PPS300", // Message Type (MMS865)
+                            },
+                        });
+                        console.log('[WHS-HEAD] AddWhsHead payload:', JSON.stringify(head.record, null, 2));
+                        this.logMIRequest(head.program, head.transaction, head.record);
+                        return [4 /*yield*/, this.mi.executeRequest(head)];
+                    case 2:
+                        h = _a.sent();
+                        this.logMIResponse(head.program, head.transaction, h, true);
+                        // Validate header creation was successful
+                        if (!h || !h.item || !h.item.MSGN) {
+                            console.error('[WHS-HEAD-ERROR] AddWhsHead failed response:', JSON.stringify(h, null, 2));
+                            errorMessage = this.extractErrorMessage(h, 'Warehouse transaction header creation');
+                            throw new Error(errorMessage);
+                        }
+                        // Store message number for subsequent WMS transactions
+                        this.MSGN = h.item.MSGN;
+                        console.log('[WHS-HEAD-SUCCESS] → MSGN received:', this.MSGN);
+                        packNumber_1 = "".concat(this.PUNO, "_").concat(this.PNLI);
+                        pack = new MIRequest();
+                        pack.program = 'MHS850MI';
+                        pack.transaction = 'AddWhsPack';
+                        pack.maxReturnedRecords = 1;
+                        pack.record = {
+                            WHLO: this.WHLO,
+                            MSGN: this.MSGN,
+                            PACN: packNumber_1, // Pack Number = PUNO_PNLI
+                            QLFR: '20'
+                        };
+                        console.log('[WHS-PACK] AddWhsPack (unified):', JSON.stringify(pack.record, null, 2));
+                        this.logMIRequest(pack.program, pack.transaction, pack.record);
+                        return [4 /*yield*/, this.mi.executeRequest(pack)];
+                    case 3:
+                        packResult = _a.sent();
+                        this.logMIResponse(pack.program, pack.transaction, packResult, true);
+                        // Brief delay to ensure pack creation is committed before adding lines
+                        return [4 /*yield*/, this.sleep(50)];
+                    case 4:
+                        // Brief delay to ensure pack creation is committed before adding lines
+                        _a.sent();
+                        // Add all line items to the single pack
+                        console.log("[WHS-LINES] Adding ".concat(lines.length, " line(s) to pack ").concat(packNumber_1));
+                        return [4 /*yield*/, Promise.all(lines.map(function (rec, index) {
+                                var line = new MIRequest();
+                                line.program = 'MHS850MI';
+                                line.transaction = 'AddWhsLine';
+                                line.maxReturnedRecords = 100;
+                                line.record = {
+                                    WHLO: _this.WHLO,
+                                    MSGN: _this.MSGN,
+                                    PACN: packNumber_1, // All lines use same pack number (PUNO_PNLI)
+                                    QLFR: "20",
+                                    ITNO: _this.ITNO, // Item Number
+                                    RVQA: rec.RVQA, // Received Quantity (1 for serials, full qty for others)
+                                    PUUN: _this.PUUN,
+                                    RIDN: _this.PUNO, // Reference ID (PO Number)
+                                    RIDL: _this.PNLI, // Reference Line (PO Line)
+                                    RIDX: _this.PNLS, // Reference Suffix (PO Line Suffix)
+                                    OEND: _this.OEND, // Flag Completed signifier
+                                };
+                                // Add warehouse location only for material items (non-material items don't use WHSL)
+                                var isNonMaterial = _this.INDI === '0' && _this.TPCD === '13';
+                                if (!isNonMaterial) {
+                                    line.record.WHSL = _this.WHSL; // Warehouse Location
+                                }
+                                // Conditionally add batch/lot/serial and expiration data
+                                if (rec.BANO)
+                                    line.record.BANO = rec.BANO; // Batch/Serial/Lot Number
+                                if (rec.EXPI)
+                                    line.record.EXPI = rec.EXPI; // Expiration Date
+                                console.log("[WHS-LINE-".concat(index + 1, "] Adding line:"), JSON.stringify(line.record, null, 2));
+                                _this.logMIRequest(line.program, line.transaction, line.record);
+                                return _this.mi.executeRequest(line).then(function (result) {
+                                    _this.logMIResponse(line.program, line.transaction, result, true);
+                                    console.log("[WHS-LINE-".concat(index + 1, "] \u2713 Line added successfully"));
+                                }, function (error) {
+                                    _this.logMIResponse(line.program, line.transaction, error, false);
+                                    console.error("[WHS-LINE-".concat(index + 1, "] \u2717 Line add failed:"), error);
+                                    throw error;
+                                });
+                            }))];
+                    case 5:
+                        _a.sent();
+                        if (!(lines.length > 1)) return [3 /*break*/, 7];
+                        console.log("[WHS-LINES] Waiting for ".concat(lines.length, " lines to settle..."));
+                        return [4 /*yield*/, this.sleep(200)];
+                    case 6:
+                        _a.sent();
+                        _a.label = 7;
+                    case 7:
+                        pr = new MIRequest();
+                        pr.program = 'MHS850MI';
+                        pr.transaction = 'PrcWhsTran'; // Process Warehouse Transaction
+                        pr.maxReturnedRecords = 1;
+                        pr.record = {
+                            MSGN: this.MSGN, // Message Number from header creation
+                            PRFL: '*EXE' // Process Flag (*EXE = Execute immediately)
+                        };
+                        console.log('[WHS-PROCESS] PrcWhsTran payload:', JSON.stringify(pr.record, null, 2));
+                        console.log("[WHS-PROCESS] [".concat(new Date().toISOString(), "] \u2192 Starting PrcWhsTran"));
+                        this.logMIRequest(pr.program, pr.transaction, pr.record);
+                        return [4 /*yield*/, this.prcWhsTranWithRetry(pr, 3)];
+                    case 8:
+                        prc = _a.sent();
+                        // Validate transaction processing was successful
+                        if (!prc || !prc.item) {
+                            errorMessage = this.extractErrorMessage(prc, 'Transaction processing');
+                            console.error('[WHS-PROCESS-ERROR] PrcWhsTran failed:', errorMessage);
+                            throw new Error(errorMessage);
+                        }
+                        // ───────────── Final Status Validation ─────────────
+                        // Check actual processing status using GetWhsHead to ensure transaction completed successfully
+                        return [4 /*yield*/, this.sleep(100)];
+                    case 9:
+                        // ───────────── Final Status Validation ─────────────
+                        // Check actual processing status using GetWhsHead to ensure transaction completed successfully
+                        _a.sent(); // Brief delay to ensure status is updated !!! UPDATE TO USE RESPONSE FROM ProcessTran instead of additional call? Test first, though.
+                        statusCheck = new MIRequest();
+                        statusCheck.program = 'MHS850MI';
+                        statusCheck.transaction = 'GetWhsHead';
+                        statusCheck.maxReturnedRecords = 1;
+                        statusCheck.record = {
+                            MSGN: this.MSGN
+                        };
+                        console.log('[WHS-STATUS] GetWhsHead status check:', JSON.stringify(statusCheck.record, null, 2));
+                        this.logMIRequest(statusCheck.program, statusCheck.transaction, statusCheck.record);
+                        return [4 /*yield*/, this.mi.executeRequest(statusCheck)];
+                    case 10:
+                        statusResult = _a.sent();
+                        this.logMIResponse(statusCheck.program, statusCheck.transaction, statusResult, true);
+                        if (!statusResult || !statusResult.item) {
+                            throw new Error('Failed to retrieve transaction status for validation');
+                        }
+                        transactionStatus = statusResult.item.STAT;
+                        console.log("[WHS-STATUS] \u2192 Transaction Status: ".concat(transactionStatus));
+                        if (!(transactionStatus !== '90')) return [3 /*break*/, 13];
+                        errorMessage = 'Transaction processing failed.\n\n';
+                        troubleshootingInfo = '';
+                        extracted = this.extractErrorMessage(statusResult, 'Transaction processing');
+                        if (extracted && extracted.trim() && !extracted.startsWith('Transaction processing failed')) {
+                            // Use the actual API-provided error message/details
+                            troubleshootingInfo = extracted;
+                        }
+                        else {
+                            // Fallback: Determine error level based on status code
+                            if (['15', '20'].includes(transactionStatus)) {
+                                // Header level errors
+                                troubleshootingInfo = "Header level error detected. Check MHS850 for details.\nMessage no = ".concat(this.MSGN);
+                            }
+                            else if (['25', '30', '35', '40'].includes(transactionStatus)) {
+                                // Package or line level errors
+                                troubleshootingInfo = "Package/Line level error detected. Check MHS851 for details.\nMessage no = ".concat(this.MSGN, "\nPackage no = ").concat(packNumber_1);
+                            }
+                            else {
+                                // Other error statuses
+                                troubleshootingInfo = "Processing error (Status: ".concat(transactionStatus, "). Check MHS850/MHS851 for details.\nMessage no = ").concat(this.MSGN);
+                            }
+                        }
+                        statusDescriptions = {
+                            '10': 'Entered',
+                            '15': 'Error on message header',
+                            '20': 'Header validated, no errors',
+                            '25': 'Error on message packages/IDs',
+                            '30': 'Package/ID validated, no errors',
+                            '35': 'Error on message lines/instructions',
+                            '40': 'Line/instructions validated, no errors',
+                            '45': 'Error from business component',
+                            '90': 'Processed, no errors',
+                            '92': 'Processed, test message, no update performed',
+                            '99': 'Archived'
+                        };
+                        statusDesc = statusDescriptions[transactionStatus] || 'Unknown status';
+                        lines_1 = [];
+                        // If troubleshootingInfo already includes a detailed API error, surface it on a dedicated line
+                        if (troubleshootingInfo && troubleshootingInfo.trim()) {
+                            lines_1.push("Error: ".concat(troubleshootingInfo.replace(/^[\n\s]+|[\n\s]+$/g, '')));
+                        }
+                        lines_1.push("Status: ".concat(transactionStatus, " (").concat(statusDesc, ")"));
+                        lines_1.push("Message no: ".concat(this.MSGN));
+                        if (typeof packNumber_1 !== 'undefined') {
+                            lines_1.push("Package no: ".concat(packNumber_1));
+                        }
+                        errorMessage += lines_1.join('\n');
+                        console.error('[WHS-STATUS-ERROR] Transaction failed with status:', transactionStatus, statusDesc);
+                        if (!(this.createdEquipment && this.createdEquipment.length > 0)) return [3 /*break*/, 12];
+                        console.log('[ROLLBACK] Transaction failed, initiating equipment rollback');
+                        this.logError('Transaction failed, initiating equipment rollback', { status: transactionStatus });
+                        return [4 /*yield*/, this.rollbackEquipment()];
+                    case 11:
+                        _a.sent();
+                        _a.label = 12;
+                    case 12: throw new Error(errorMessage);
+                    case 13:
+                        console.log('[WHS-PROCESS-SUCCESS] → PrcWhsTran succeeded with status 90.');
+                        this.logInfo('Receipt processing completed successfully');
+                        return [3 /*break*/, 15];
+                    case 14:
+                        e_2 = _a.sent();
+                        console.error('[RECEIPT-PROCESS-ERROR] Receipt processing failed:', e_2);
+                        this.logError('process: Receipt processing failed', e_2);
+                        throw e_2;
+                    case 15: return [2 /*return*/];
                 }
-                
-                // Conditionally add batch/lot/serial and expiration data
-                if (rec.BANO) line.record.BANO = rec.BANO;  // Batch/Serial/Lot Number
-                if (rec.EXPI) line.record.EXPI = rec.EXPI;  // Expiration Date
-
-                console.log(`[WHS-LINE-${index + 1}] Adding line:`, JSON.stringify(line.record, null, 2));
-                this.logMIRequest(line.program, line.transaction, line.record);
-                
-                return this.mi.executeRequest(line).then(result => {
-                    this.logMIResponse(line.program, line.transaction, result, true);
-                    console.log(`[WHS-LINE-${index + 1}] ✓ Line added successfully`);
-                }).catch(error => {
-                    this.logMIResponse(line.program, line.transaction, error, false);
-                    console.error(`[WHS-LINE-${index + 1}] ✗ Line add failed:`, error);
-                    throw error;
-                });
-            }));
-
-            // Allow lines to settle before processing, especially important for multiple serials
-            if (lines.length > 1) {
-                console.log(`[WHS-LINES] Waiting for ${lines.length} lines to settle...`);
-                await this.sleep(200);
-            }
-
-            // ───────────── PrcWhsTran ─────────────
-            // Execute the warehouse transaction to complete the receipt
-            const pr = new MIRequest();
-            pr.program = 'MHS850MI';
-            pr.transaction = 'PrcWhsTran';   // Process Warehouse Transaction
-            pr.maxReturnedRecords = 1;
-            pr.record = {
-                MSGN: this.MSGN,             // Message Number from header creation
-                PRFL: '*EXE'                 // Process Flag (*EXE = Execute immediately)
-            };
-
-            console.log('[WHS-PROCESS] PrcWhsTran payload:', JSON.stringify(pr.record, null, 2));
-            console.log(`[WHS-PROCESS] [${new Date().toISOString()}] → Starting PrcWhsTran`);
-            this.logMIRequest(pr.program, pr.transaction, pr.record);
-            
-            // Execute with retry/backoff to mitigate transient lock/busy errors
-            const prc = await this.prcWhsTranWithRetry(pr, 3);
-
-            // Validate transaction processing was successful
-            if (!prc || !prc.item) {
-                const errorMessage = this.extractErrorMessage(prc, 'Transaction processing');
-                console.error('[WHS-PROCESS-ERROR] PrcWhsTran failed:', errorMessage);
-                throw new Error(errorMessage);
-            }
-
-            // ───────────── Final Status Validation ─────────────
-            // Check actual processing status using GetWhsHead to ensure transaction completed successfully
-            await this.sleep(100); // Brief delay to ensure status is updated !!! UPDATE TO USE RESPONSE FROM ProcessTran instead of additional call? Test first, though.
-            
-            const statusCheck = new MIRequest();
-            statusCheck.program = 'MHS850MI';
-            statusCheck.transaction = 'GetWhsHead';
-            statusCheck.maxReturnedRecords = 1;
-            statusCheck.record = {
-                MSGN: this.MSGN
-            };
-
-            console.log('[WHS-STATUS] GetWhsHead status check:', JSON.stringify(statusCheck.record, null, 2));
-            this.logMIRequest(statusCheck.program, statusCheck.transaction, statusCheck.record);
-            
-            const statusResult = await this.mi.executeRequest(statusCheck);
-            this.logMIResponse(statusCheck.program, statusCheck.transaction, statusResult, true);
-
-            if (!statusResult || !statusResult.item) {
-                throw new Error('Failed to retrieve transaction status for validation');
-            }
-
-            const transactionStatus = statusResult.item.STAT;
-            console.log(`[WHS-STATUS] → Transaction Status: ${transactionStatus}`);
-
-            // Only status 90 (Processed, no errors) indicates success
-            if (transactionStatus !== '90') {
-                // Transaction failed - determine error level and provide specific guidance
-                let errorMessage = 'Transaction processing failed.\n\n';
-                let troubleshootingInfo = '';
-
-                // Prefer a concrete API error message if available
-                const extracted = this.extractErrorMessage(statusResult, 'Transaction processing');
-
-                if (extracted && extracted.trim() && !extracted.startsWith('Transaction processing failed')) {
-                    // Use the actual API-provided error message/details
-                    troubleshootingInfo = extracted;
-                } else {
-                    // Fallback: Determine error level based on status code
-                    if (['15', '20'].includes(transactionStatus)) {
-                        // Header level errors
-                        troubleshootingInfo = `Header level error detected. Check MHS850 for details.\nMessage no = ${this.MSGN}`;
-                    } else if (['25', '30', '35', '40'].includes(transactionStatus)) {
-                        // Package or line level errors
-                        troubleshootingInfo = `Package/Line level error detected. Check MHS851 for details.\nMessage no = ${this.MSGN}\nPackage no = ${packNumber}`;
-                    } else {
-                        // Other error statuses
-                        troubleshootingInfo = `Processing error (Status: ${transactionStatus}). Check MHS850/MHS851 for details.\nMessage no = ${this.MSGN}`;
-                    }
-                }
-
-                // Add status description for clarity
-                const statusDescriptions = {
-                    '10': 'Entered',
-                    '15': 'Error on message header',
-                    '20': 'Header validated, no errors',
-                    '25': 'Error on message packages/IDs',
-                    '30': 'Package/ID validated, no errors',
-                    '35': 'Error on message lines/instructions',
-                    '40': 'Line/instructions validated, no errors',
-                    '45': 'Error from business component',
-                    '90': 'Processed, no errors',
-                    '92': 'Processed, test message, no update performed',
-                    '99': 'Archived'
-                };
-
-                const statusDesc = statusDescriptions[transactionStatus] || 'Unknown status';
-
-                // Build a clearer, structured message
-                const lines = [];
-                // If troubleshootingInfo already includes a detailed API error, surface it on a dedicated line
-                if (troubleshootingInfo && troubleshootingInfo.trim()) {
-                    lines.push(`Error: ${troubleshootingInfo.replace(/^[\n\s]+|[\n\s]+$/g, '')}`);
-                }
-                lines.push(`Status: ${transactionStatus} (${statusDesc})`);
-                lines.push(`Message no: ${this.MSGN}`);
-                if (typeof packNumber !== 'undefined') {
-                    lines.push(`Package no: ${packNumber}`);
-                }
-                errorMessage += lines.join('\n');
-
-                console.error('[WHS-STATUS-ERROR] Transaction failed with status:', transactionStatus, statusDesc);
-                
-                // Initiate rollback for failed transaction
-                if (this.createdEquipment && this.createdEquipment.length > 0) {
-                    console.log('[ROLLBACK] Transaction failed, initiating equipment rollback');
-                    this.logError('Transaction failed, initiating equipment rollback', { status: transactionStatus });
-                    await this.rollbackEquipment();
-                }
-
-                throw new Error(errorMessage);
-            }
-
-            console.log('[WHS-PROCESS-SUCCESS] → PrcWhsTran succeeded with status 90.');
-            this.logInfo('Receipt processing completed successfully');
-            
-        } catch (e) {
-            console.error('[RECEIPT-PROCESS-ERROR] Receipt processing failed:', e);
-            this.logError('process: Receipt processing failed', e);
-            throw e;
-        }
-    }
-
+            });
+        });
+    };
     /*───────────────── HELPER METHODS (Enterprise H5 Patterns) ─────────────────*/
     // Enterprise-grade alert using H5ControlUtil.H5Dialog
-    alert(title, message, shouldRefresh = false) {
-        this.log.Info(`Displaying alert: ${title} - ${message}`);
-        
+    class_1.prototype.alert = function (title, message, shouldRefresh) {
+        if (shouldRefresh === void 0) { shouldRefresh = false; }
+        this.log.Info("Displaying alert: ".concat(title, " - ").concat(message));
         // Enhanced message formatting for better readability
-        const formattedMessage = message.replace(/\n/g, '<br>');
-        const dialogContent = $(`<div style="max-width: 500px; word-wrap: break-word;"><label class="inforLabel noColon">${formattedMessage}</label></div>`);
-        
-        const dialogButtons = [
+        var formattedMessage = message.replace(/\n/g, '<br>');
+        var dialogContent = $("<div style=\"max-width: 500px; word-wrap: break-word;\"><label class=\"inforLabel noColon\">".concat(formattedMessage, "</label></div>"));
+        var dialogButtons = [
             {
                 text: "OK",
                 isDefault: true,
@@ -2157,7 +2100,8 @@ var POReceiptShortcutV2 = class {
                 click: function (event, model) {
                     if (ScriptUtil.version >= 2.0) {
                         model.close(true);
-                    } else {
+                    }
+                    else {
                         $(this).inforDialog("close");
                     }
                     if (shouldRefresh) {
@@ -2166,8 +2110,7 @@ var POReceiptShortcutV2 = class {
                 }.bind(this)
             }
         ];
-        
-        const dialogOptions = {
+        var dialogOptions = {
             title: title,
             dialogType: "General",
             modal: true,
@@ -2181,99 +2124,119 @@ var POReceiptShortcutV2 = class {
             },
             buttons: dialogButtons
         };
-
         // Show dialog with proper version handling (H5SampleCustomDialog pattern)
         if (ScriptUtil.version >= 2.0) {
             H5ControlUtil.H5Dialog.CreateDialogElement(dialogContent[0], dialogOptions);
-        } else {
+        }
+        else {
             dialogContent.inforMessageDialog(dialogOptions);
         }
-    }
-
-    busy(v) {
+    };
+    class_1.prototype.busy = function (v) {
+        var _a, _b, _c, _d;
         try {
             if (!this.ctrl) {
                 console.warn('[BUSY] Controller not available, skipping busy indicator');
                 return;
             }
             if (v) {
-                this.ctrl.ShowBusyIndicator?.();
-            } else {
-                this.ctrl.HideBusyIndicator?.();
+                (_b = (_a = this.ctrl).ShowBusyIndicator) === null || _b === void 0 ? void 0 : _b.call(_a);
             }
-        } catch (error) {
+            else {
+                (_d = (_c = this.ctrl).HideBusyIndicator) === null || _d === void 0 ? void 0 : _d.call(_c);
+            }
+        }
+        catch (error) {
             console.error('[BUSY-ERROR] Failed to set busy indicator:', error);
         }
-    }
-
-    refresh() {
+    };
+    class_1.prototype.refresh = function () {
+        var _a;
         // Refresh H5 screen to show updated data
-        if (this.ctrl?.PressKey) {
+        if ((_a = this.ctrl) === null || _a === void 0 ? void 0 : _a.PressKey) {
             this.ctrl.PressKey("F5");
-        } else {
+        }
+        else {
             this.log.Info('Screen refresh requested but controller not available');
         }
-    }
-
-    num(value) {
+    };
+    class_1.prototype.num = function (value) {
         // Convert string to number, removing non-numeric characters
         return parseFloat((value || '0').toString().replace(/[^\d.-]/g, '')) || 0;
-    }
-
-    today() {
+    };
+    class_1.prototype.today = function () {
         // Return today's date in YYYYMMDD format for M3
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        return `${year}${month}${day}`;
-    }
-
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var day = String(now.getDate()).padStart(2, '0');
+        return "".concat(year).concat(month).concat(day);
+    };
     // Detect transient lock/busy errors for ProcessTran retry logic
-    isTransientProcessLock(e) {
+    class_1.prototype.isTransientProcessLock = function (e) {
         try {
-            const status = e && e.statusCode;
-            const code = ((e && e.errorCode) || '').toString().toUpperCase();
-            const msg = ((e && (e.errorMessage || e.message)) || '').toString().toLowerCase();
-
+            var status_1 = e && e.statusCode;
+            var code = ((e && e.errorCode) || '').toString().toUpperCase();
+            var msg_1 = ((e && (e.errorMessage || e.message)) || '').toString().toLowerCase();
             // HTTP-style transient signals
-            if (status === 409 || status === 503) return true;
-
+            if (status_1 === 409 || status_1 === 503)
+                return true;
             // Common lock/busy keywords
-            const keywords = ['locked', 'record lock', 'busy', 'in use', 'try again', 'temporary', 'timeout', 'deadlock'];
-            if (keywords.some(k => msg.includes(k))) return true;
-
+            var keywords = ['locked', 'record lock', 'busy', 'in use', 'try again', 'temporary', 'timeout', 'deadlock'];
+            if (keywords.some(function (k) { return msg_1.includes(k); }))
+                return true;
             // Known MI error codes that often indicate transient state
-            if (["WPU0901", "M3LOCK"].includes(code)) return true;
-        } catch (_) {}
-        return false;
-    }
-
-    // Execute PrcWhsTran with limited retries and exponential backoff
-    async prcWhsTranWithRetry(pr, maxRetries = 2) {
-        let attempt = 1;
-        let lastError = null;
-        while (attempt <= maxRetries) {
-            try {
-                const result = await this.mi.executeRequest(pr);
-                console.log(`[WHS-PROCESS] [${new Date().toISOString()}] → Finished PrcWhsTran (attempt ${attempt})`);
-                this.logMIResponse(pr.program, pr.transaction, result, true);
-                return result;
-            } catch (e) {
-                this.logMIResponse(pr.program, pr.transaction, e, false);
-                lastError = e;
-                if (!this.isTransientProcessLock(e) || attempt === maxRetries) {
-                    console.error(`[WHS-PROCESS] PrcWhsTran failed (final). No retry.`, e);
-                    throw e;
-                }
-                const backoff = 300 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 100);
-                console.warn(`[WHS-PROCESS] Transient lock/busy detected. Retrying in ${backoff} ms (attempt ${attempt + 1}/${maxRetries})`);
-                await this.sleep(backoff);
-                attempt++;
-            }
+            if (["WPU0901", "M3LOCK"].includes(code))
+                return true;
         }
-        // Should not reach here, but throw last error defensively
-        throw lastError || new Error('Unknown error executing PrcWhsTran');
-    }
-
-};
+        catch (_) { }
+        return false;
+    };
+    // Execute PrcWhsTran with limited retries and exponential backoff
+    class_1.prototype.prcWhsTranWithRetry = function (pr_1) {
+        return __awaiter(this, arguments, void 0, function (pr, maxRetries) {
+            var attempt, lastError, result, e_3, backoff;
+            if (maxRetries === void 0) { maxRetries = 2; }
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        attempt = 1;
+                        lastError = null;
+                        _a.label = 1;
+                    case 1:
+                        if (!(attempt <= maxRetries)) return [3 /*break*/, 7];
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 6]);
+                        return [4 /*yield*/, this.mi.executeRequest(pr)];
+                    case 3:
+                        result = _a.sent();
+                        console.log("[WHS-PROCESS] [".concat(new Date().toISOString(), "] \u2192 Finished PrcWhsTran (attempt ").concat(attempt, ")"));
+                        this.logMIResponse(pr.program, pr.transaction, result, true);
+                        return [2 /*return*/, result];
+                    case 4:
+                        e_3 = _a.sent();
+                        this.logMIResponse(pr.program, pr.transaction, e_3, false);
+                        lastError = e_3;
+                        if (!this.isTransientProcessLock(e_3) || attempt === maxRetries) {
+                            console.error("[WHS-PROCESS] PrcWhsTran failed (final). No retry.", e_3);
+                            throw e_3;
+                        }
+                        backoff = 300 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 100);
+                        console.warn("[WHS-PROCESS] Transient lock/busy detected. Retrying in ".concat(backoff, " ms (attempt ").concat(attempt + 1, "/").concat(maxRetries, ")"));
+                        return [4 /*yield*/, this.sleep(backoff)];
+                    case 5:
+                        _a.sent();
+                        attempt++;
+                        return [3 /*break*/, 6];
+                    case 6: return [3 /*break*/, 1];
+                    case 7: 
+                    // Should not reach here, but throw last error defensively
+                    throw lastError || new Error('Unknown error executing PrcWhsTran');
+                }
+            });
+        });
+    };
+    return class_1;
+}());
+//# sourceMappingURL=POReceiptShortcutV2.js.map
