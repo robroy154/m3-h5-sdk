@@ -151,3 +151,73 @@ TypeScript 5.8.3 is installed globally. Do not reinstall or change the version.
 
 ### Type Definitions
 Infor's official `.d.ts` files are located at:
+
+### Best Practices and Recommendations
+
+#### Preferred API Usage
+
+- Use `InstanceController.ParentWindow` to get the current panel. Never use CSS class
+  selectors like `$(".lawsonHost:visible")` or `$(".visible-tab-host")` as these are
+  internal and will break on H5 updates.
+- Use `ContentElement.AddElement()` to add elements to a panel. This aligns elements
+  automatically to the panel row. Do NOT use `ContentElement.Add()` (requires exact
+  pixel positioning) or `ControlFactory` (not part of the public API).
+- Use `MIService` for all M3 API requests. Never use `ScriptUtil.ApiRequest()` which
+  is deprecated.
+- Use the `log` object from `IScriptArgs` for all logging. Never use `console.log()`
+  directly. The `log` object supports log levels (Error, Warning, Info, Debug, Trace)
+  that can be toggled on and off. `console.log()` cannot be turned off.
+
+#### Event Handler Management
+
+- Always unsubscribe from events when a panel navigates away or a script deactivates.
+  Failure to do so causes memory leaks and multiple invocations of the same handler
+  across different panel instances.
+- Use `ScriptUtil.AddEventHandler()` and `ScriptUtil.RemoveEventHandler()` with
+  namespaced event types (e.g. "click.myScriptName") so you can remove only your
+  handler without affecting others.
+- Pass data into event callbacks via the paramData argument rather than using anonymous
+  functions that close over variables, as anonymous functions can cause memory leaks.
+
+#### Script Instance Management
+
+- Use `InstanceCache` to ensure a script only attaches once per program instance.
+  Without this guard, navigating between panels can cause the script to attach
+  multiple times, resulting in duplicate handlers and unpredictable behavior.
+
+Example:
+const key = "MyScriptName";
+if (InstanceCache.ContainsKey(this.controller, key)) {
+  return;
+}
+InstanceCache.Add(this.controller, key, true);
+
+#### URL Handling
+
+- Always use relative URLs when calling `ScriptUtil.Launch()` or adding personalization
+  shortcuts that reference H5 or other M3 URLs sharing the same base URL as M3 H5.
+  Using absolute URLs causes broken links when migrating between environments
+  (dev, test, production).
+
+#### Script Minification
+
+- Before deploying any H5 script to production, minify the compiled .js file to reduce
+  download size, remove comments, and obfuscate code.
+- Always keep the original .ts source files in version control before minifying.
+  Minified files cannot be debugged or maintained. The .ts files are your source of
+  truth.
+- Several open-source minifiers are available. The choice of minifier is up to the
+  developer but verify it does not break on Promise.catch syntax — use the
+  .then(success, error) pattern to avoid this entirely.
+
+#### outputFields Usage in MIService
+
+- Always specify the outputFields array on MIRequest to limit data transferred from
+  the server. Only request fields you actually use in the script logic.
+- This directly improves script performance, especially on list panels with many rows.
+
+Example:
+const request = new MIRequest();
+request.program = "MNS150MI";
+request.transaction = "GetUserData";
+request.outputFields = ["USID", "CONO", "DIVI"];
