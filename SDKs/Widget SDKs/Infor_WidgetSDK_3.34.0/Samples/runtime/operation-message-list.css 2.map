@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/operation-message-list.scss"],
+  "sourcesContent": [":host > div {\r\n\tmax-width: 420px;\r\n}\r\n\r\nli {\r\n\tfont-size: 14px;\r\n\tmargin-bottom: 10px;\r\n\tdisplay: flex;\r\n}\r\n\r\nli svg {\r\n\ttop: 0px;\r\n\tmargin-right: 5px;\r\n\tflex: 0 0 auto;\r\n}\r\n\r\nli span {\r\n\tline-height: 18px;\r\n\tflex: 1 1 auto;\r\n}\r\n\r\n.separator {\r\n\tborder-top: 1px solid;\r\n\tpadding-top: 10px;\r\n}\r\n"],
+  "mappings": "AAAA,KAAA,CAAA,IACC,UAAA,MAGD,GACC,UAAA,KACA,cAAA,KACA,QAAA,KAGD,GAAA,IACC,IAAA,EACA,aAAA,IACA,KAAA,EAAA,EAAA,KAGD,GAAA,KACC,YAAA,KACA,KAAA,EAAA,EAAA,KAGD,CAAA,UACC,WAAA,IAAA,MACA,YAAA",
+  "names": []
+}

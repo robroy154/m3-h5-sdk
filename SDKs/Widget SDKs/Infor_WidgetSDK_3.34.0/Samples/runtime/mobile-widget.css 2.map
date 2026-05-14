@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/mobile-container/mobile-widget.scss"],
+  "sourcesContent": [".splash {\r\n\theight: 100%;\r\n}\r\n\r\n:host ::ng-deep lm-widget-container {\r\n\tbackground-color: white;\r\n}\r\n\r\n/*\r\n\tThis section contains overrides for SOHO widget styles. This is needed because SOHO widget classes\r\n\tare used inside lm-widget-container. However mobile widgets should not have any borders, title-bars, margins etc.\r\n*/\r\n:host ::ng-deep .widget-header {\r\n\tdisplay: none;\r\n}\r\n\r\n:host ::ng-deep .widget {\r\n\tborder: none;\r\n\tmargin-bottom: unset;\r\n\tmin-height: unset; /* Overrides 360px from IDS, which causes problems in landscape */\r\n\theight: calc(100% - 60px); /* Full height, excluding nav bar */\r\n}\r\n\r\n:host ::ng-deep .widget-content {\r\n\tmin-height: unset;\r\n\theight: 100%;\r\n}\r\n\r\n/*\r\n\tEND SOHO widget override section\r\n*/\r\n"],
+  "mappings": "AAAA,CAAA,OACC,OAAA,KAGD,MAAA,UAAA,oBACC,iBAAA,KAOD,MAAA,UAAA,CAAA,cACC,QAAA,KAGD,MAAA,UAAA,CAAA,OACC,OAAA,KACA,cAAA,MACA,WAAA,MACA,OAAA,KAAA,KAAA,EAAA,MAGD,MAAA,UAAA,CAAA,eACC,WAAA,MACA,OAAA",
+  "names": []
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/mobile-container/empty/mobile-container-empty.scss"],
+  "sourcesContent": [".page-container-empty {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\theight: calc(100% - 60px);\r\n}\r\n.page-container-empty .icon {\r\n\twidth: 128px;\r\n\theight: 128px;\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,qBACC,QAAA,KACA,eAAA,OACA,YAAA,OACA,gBAAA,OACA,OAAA,KAAA,KAAA,EAAA,MAED,CAPA,qBAOA,CAAA,KACC,MAAA,MACA,OAAA",
+  "names": []
+}

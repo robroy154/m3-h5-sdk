@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;cd0fc809c6a4bffe66195b8994601b8181b70cd73b079ecee9708f097f9501f8;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\admin\\pages\\dyn\\editor\\layout-components\\information-component\\information.ts"],
+  "sourcesContent": ["\n\t\t\t.header-container {\n\t\t\t\tpadding: 10px 0 10px 0px;\n\t\t\t}\n\n\t\t\t.content-container {\n\t\t\t\tpadding: 25px 0 10px 0px;\n\t\t\t}\n\n\t\t\th2 {\n\t\t\t\tpadding: 5px 0px;\n\t\t\t}\n\n\t\t\t.add-button-container.empty {\n\t\t\t\theight: 100px;\n\t\t\t}\n\n\t\t\t.dyn-experimental {\n\t\t\t\theight: 14px;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,CAAC,iBADJ,QAEa,KAAK,CACf,CAEA,CAAC,kBALJ,QAMa,KAAK,EAAE,IACjB,CAEA,GATH,QAUa,IAAI,CACd,CAEA,CAAC,oBAAoB,CAAC,MACrB,OAAQ,KACT,CAEA,CAAC,iBACA,OAAQ,IACT",
+  "names": []
+}

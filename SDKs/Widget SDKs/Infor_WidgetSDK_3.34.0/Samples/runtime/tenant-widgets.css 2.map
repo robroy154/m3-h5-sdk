@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/widgets/tenant-widgets.scss"],
+  "sourcesContent": ["lm-admin-message-banner {\r\n\tdisplay: flex;\r\n\tmargin-bottom: 10px;\r\n}\r\n"],
+  "mappings": "AAAA,wBACC,QAAA,KACA,cAAA",
+  "names": []
+}

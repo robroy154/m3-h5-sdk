@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/maintenance-entity/maintenance-entity.scss"],
+  "sourcesContent": [":host {\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\talign-items: center;\r\n\tjustify-content: center;\r\n\tpadding: 20px;\r\n}\r\n\r\n.icon {\r\n\tcolor: #0072ed;\r\n\twidth: 128px;\r\n\theight: 128px;\r\n\tmargin-bottom: 15px;\r\n}\r\n\r\np {\r\n\ttext-align: center;\r\n\r\n\t&.maintenance-title {\r\n\t\tcolor: #368ac0;\r\n\t}\r\n\r\n\t&.maintenance-message,\r\n\t&.maintenance-optional-message {\r\n\t\tfont-size: 13px;\r\n\t}\r\n}\r\n\r\n:host-context(.lm-banner) .icon {\r\n\tcolor: #fff;\r\n}\r\n"],
+  "mappings": "AAAA,MACC,OAAA,KACA,QAAA,KACA,eAAA,OACA,YAAA,OACA,gBAAA,OALD,QAMC,KAGD,CAAA,KACC,MAAA,QACA,MAAA,MACA,OAAA,MACA,cAAA,KAGD,EACC,WAAA,OAEA,CAAA,CAAA,kBACC,MAAA,QAGD,CAAA,CAAA,oBAAA,CAAA,CAAA,6BAEC,UAAA,KAIF,cAAA,CAAA,WAAA,CApBA,KAqBC,MAAA",
+  "names": []
+}

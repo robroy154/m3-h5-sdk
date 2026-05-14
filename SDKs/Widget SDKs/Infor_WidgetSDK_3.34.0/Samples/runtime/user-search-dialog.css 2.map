@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/admin/user-search-dialog.scss"],
+  "sourcesContent": ["soho-listview {\r\n\tmax-width: 300px;\r\n}\r\n\r\nsoho-listview li {\r\n\tmax-width: 300px;\r\n\tpadding: 5px 8px;\r\n}\r\n\r\nsoho-listview p {\r\n\tmax-width: inherit;\r\n}\r\n"],
+  "mappings": "AAAA,cACC,UAAA,MAGD,cAAA,GACC,UAAA,MALD,QAMC,IAAA,IAGD,cAAA,EACC,UAAA",
+  "names": []
+}

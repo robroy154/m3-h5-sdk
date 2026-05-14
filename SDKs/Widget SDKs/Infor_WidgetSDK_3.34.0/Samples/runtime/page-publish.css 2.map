@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/lazy/components/page-publish/page-publish.scss"],
+  "sourcesContent": [".page-publish-dialog {\r\n\tmin-height: 565px;\r\n\twidth: 505px;\r\n}\r\n\r\n@media (max-width: 655px) {\r\n\t.page-publish-dialog {\r\n\t\twidth: 100%;\r\n\t}\r\n}\r\n"],
+  "mappings": "AAAA,CAAA,oBACC,WAAA,MACA,MAAA,MAGD,OAAA,CAAA,SAAA,EAAA,OACC,CAND,oBAOE,MAAA",
+  "names": []
+}

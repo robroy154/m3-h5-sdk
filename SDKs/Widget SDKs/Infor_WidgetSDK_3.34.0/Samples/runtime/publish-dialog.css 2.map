@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["angular:styles/component:css;eb8118a58dece35a6d170c589542accafaf36857334b53f574ecca0b3b21163a;C:\\code\\homepages\\Client\\Framework\\scripts\\lime\\admin\\pages\\dyn\\publish-dialog.ts"],
+  "sourcesContent": ["\n\t\t\t.permission-container {\n\t\t\t\tdisplay: flex;\n\t\t\t\tflex-direction: column;\n\t\t\t\tborder-top: 1px solid;\n\t\t\t\tpadding-top: 20px;\n\t\t\t\tmargin-bottom: 10px;\n\t\t\t}\n\n\t\t\t.permission-edit {\n\t\t\t\tdisplay: flex;\n\t\t\t\tflex-direction: row;\n\t\t\t\tmargin-top: 5px;\n\t\t\t}\n\n\t\t\t.permission-edit h2 {\n\t\t\t\tflex: 1 1 auto;\n\t\t\t\tfont-weight: bold;\n\t\t\t\tmargin-top: 5px;\n\t\t\t\tvertical-align: middle;\n\t\t\t}\n\n\t\t\t.permission-edit svg {\n\t\t\t\ttop: 3px;\n\t\t\t}\n\t\t"],
+  "mappings": "AACG,CAAC,qBACA,QAAS,KACT,eAAgB,OAChB,WAAY,IAAI,MAChB,YAAa,KACb,cAAe,IAChB,CAEA,CAAC,gBACA,QAAS,KACT,eAAgB,IAChB,WAAY,GACb,CAEA,CANC,gBAMgB,GAChB,KAAM,EAAE,EAAE,KACV,YAAa,IACb,WAAY,IACZ,eAAgB,MACjB,CAEA,CAbC,gBAagB,IAChB,IAAK,GACN",
+  "names": []
+}

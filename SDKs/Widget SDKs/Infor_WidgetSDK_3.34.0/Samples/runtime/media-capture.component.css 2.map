@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["scripts/lime/core/components/device/media-capture.component.scss"],
+  "sourcesContent": [":host {\r\n\tdisplay: flex;\r\n\tposition: relative;\r\n\tmargin: -30px 0 !important; /* Override CAP top/bottom margin. */\r\n}\r\n\r\nvideo {\r\n\tmax-width: 100%;\r\n\tdisplay: block;\r\n}\r\n\r\n.controls-container {\r\n\twidth: 100%;\r\n\tposition: absolute;\r\n\tbottom: 0;\r\n\tdisplay: flex;\r\n\tjustify-content: center;\r\n}\r\n\r\n.controls {\r\n\topacity: 0.9;\r\n\tbackground-color: white;\r\n\tborder-radius: 5px 5px 0 0;\r\n\twidth: 150px;\r\n\tdisplay: flex;\r\n\tjustify-content: center;\r\n}\r\n\r\n.controls > button {\r\n\tmargin: 5px;\r\n\twidth: 40px;\r\n\theight: 40px;\r\n}\r\n\r\n:host ::ng-deep .controls button > svg {\r\n\twidth: 30px;\r\n\theight: 30px;\r\n}\r\n"],
+  "mappings": "AAAA,MACC,QAAA,KACA,SAAA,SAFD,OAGC,MAAA,YAGD,MACC,UAAA,KACA,QAAA,MAGD,CAAA,mBACC,MAAA,KACA,SAAA,SACA,OAAA,EACA,QAAA,KACA,gBAAA,OAGD,CAAA,SACC,QAAA,GACA,iBAAA,KArBD,cAsBC,IAAA,IAAA,EAAA,EACA,MAAA,MACA,QAAA,KACA,gBAAA,OAGD,CATA,QASA,CAAA,OA5BA,OA6BC,IACA,MAAA,KACA,OAAA,KAGD,MAAA,UAAA,CAfA,SAeA,MAAA,CAAA,IACC,MAAA,KACA,OAAA",
+  "names": []
+}
