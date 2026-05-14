@@ -5,19 +5,11 @@
     Version: 8.0
 
   FEATURES
-  • H5 SDK compliance using H5ControlUtil.H5Dialog API
-  • Promise-based MI service calls with comprehensive error handling
-  • Enhanced error messages with errorCode:errorMessage format
   • Retry logic with exponential backoff for transient lock/busy errors
-  • Proper H5 logging patterns following SDK guidelines
-  • Dialog implementation with version fallback
   • Serial policy: <=20 chars stays as-is in SERN and CFMA; >20 chars gets BSN epoch-derived SERN with original kept in CFMA
   • Single pack with multiple lines for INDI = 2 (PACN = PUNO_PNLI), single pack otherwise
   • Pushes only one PrcWhsTran (message-level)
-    • "T for today" shortcut in Expiration date input with validation (today is not allowed)
   • Auto-generate sequential serial numbers (PO-1, PO-2, etc.)
-  • Scrollable serial input dialog (handles 1-25 serials)
-  • Consistent error reporting and user feedback
   • Transaction rollback for equipment records on failure
 ─────────────────────────────────────────────────────────────────────────────*/
 
