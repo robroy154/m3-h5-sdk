@@ -1,0 +1,10 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/Nodejs"
+echo "Starting H5 dev web server at http://localhost:8080"
+echo "Serving: $SCRIPT_DIR/Samples"
+echo ""
+echo "Use this URL to test a script (replace YourScript.js with your file):"
+echo "  <H5_URL>?scriptCache=false&localScript=http://localhost:8080/YourScript.js"
+echo ""
+node webserver.js 8080 "../Samples"
