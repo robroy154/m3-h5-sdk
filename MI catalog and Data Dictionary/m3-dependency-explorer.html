@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M3 Dependency Explorer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141720;
+    --surface2:  #1c2030;
+    --border:    #252a3a;
+    --accent:    #4f8ef7;
+    --accent2:   #2dd4a4;
+    --accent3:   #f7934f;
+    --warn:      #f7c94f;
+    --text:      #e2e8f0;
+    --text-dim:  #7a8499;
+    --text-faint:#3a4055;
+    --key-color: #2dd4a4;
+    --hop-colors: #4f8ef7, #a78bfa, #f7934f, #2dd4a4, #f7c94f, #f472b6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 20px 32px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+  }
+  header .logo {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.3);
+    padding: 4px 10px;
+    border-radius: 3px;
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  header .subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  #stats-bar {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+  }
+  #stats-bar span { color: var(--accent2); }
+
+  /* ── Layout ── */
+  .main {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Left panel ── */
+  .left-panel {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .panel-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-section label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+  .input-wrap input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input-wrap input:focus {
+    border-color: var(--accent);
+  }
+  .input-wrap input::placeholder { color: var(--text-faint); }
+
+  .autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+  }
+  .autocomplete-list.open { display: block; }
+  .ac-item {
+    padding: 8px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.1s;
+  }
+  .ac-item:hover, .ac-item.selected { background: rgba(79,142,247,0.15); }
+  .ac-item .ac-name { color: var(--text); }
+  .ac-item .ac-desc {
+    color: var(--text-dim);
+    font-size: 10px;
+    text-align: right;
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ac-item .ac-badge {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    background: rgba(45,212,164,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(45,212,164,0.3);
+    flex-shrink: 0;
+  }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* Search button */
+  #find-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  #find-btn:hover { opacity: 0.85; }
+  #find-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* Options */
+  .option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  .option-row label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: none;
+    letter-spacing: 0;
+    margin: 0;
+  }
+  .option-row input[type=number] {
+    width: 56px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    outline: none;
+  }
+  .option-row input[type=checkbox] { accent-color: var(--accent); }
+
+  /* Table browser */
+  .table-browser {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+  }
+  .tb-search {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 10px;
+  }
+  .tb-search:focus { border-color: var(--accent); }
+  .tb-item {
+    padding: 7px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.1s;
+    margin-bottom: 1px;
+  }
+  .tb-item:hover { background: var(--surface2); }
+  .tb-item.active { background: rgba(79,142,247,0.12); border-left: 2px solid var(--accent); padding-left: 8px; }
+  .tb-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .tb-desc {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Right panel ── */
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .results-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+  }
+  .results-header h2 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .results-header .badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(79,142,247,0.15);
+    border: 1px solid rgba(79,142,247,0.3);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .results-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  /* ── Path result ── */
+  .path-result {
+    margin-bottom: 28px;
+  }
+  .path-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .path-rank {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+  .path-hops {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .path-hops strong { color: var(--accent2); font-family: 'IBM Plex Mono', monospace; }
+
+  .path-chain {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .path-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    min-width: 160px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .path-node.start  { border-color: var(--accent); }
+  .path-node.end    { border-color: var(--accent2); }
+
+  .node-table {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .node-desc {
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .node-field {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .field-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.25);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .field-tag.is-key {
+    color: var(--key-color);
+    background: rgba(45,212,164,0.1);
+    border-color: rgba(45,212,164,0.25);
+  }
+  .field-tag .key-icon { font-size: 9px; }
+  .field-desc {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .path-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    color: var(--text-faint);
+    font-size: 18px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  /* ── Table detail view ── */
+  .table-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .td-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .td-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .td-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .td-cat {
+    margin-left: auto;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent3);
+    background: rgba(247,147,79,0.1);
+    border: 1px solid rgba(247,147,79,0.25);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  .fields-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .fields-table thead tr {
+    background: var(--surface2);
+  }
+  .fields-table th {
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .fields-table td {
+    padding: 7px 14px;
+    border-bottom: 1px solid rgba(37,42,58,0.6);
+    vertical-align: middle;
+  }
+  .fields-table tr:last-child td { border-bottom: none; }
+  .fields-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .fields-table .col-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .fields-table .col-name.is-key { color: var(--key-color); }
+  .key-pill {
+    font-size: 9px;
+    padding: 1px 5px;
+    background: rgba(45,212,164,0.12);
+    border: 1px solid rgba(45,212,164,0.3);
+    color: var(--key-color);
+    border-radius: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .col-desc { color: var(--text-dim); }
+  .col-type { color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+  /* linked field highlight */
+  .fields-table tr.linked td { background: rgba(79,142,247,0.06); }
+  .fields-table tr.linked .col-name { color: var(--accent); }
+
+  /* ── Empty / loading states ── */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--text-faint);
+    text-align: center;
+  }
+  .empty-state .icon { font-size: 40px; opacity: 0.4; }
+  .empty-state p { font-size: 13px; line-height: 1.6; max-width: 320px; }
+  .empty-state code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--text-dim);
+  }
+
+  .no-path {
+    background: rgba(247,147,79,0.08);
+    border: 1px solid rgba(247,147,79,0.25);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--accent3);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── Load overlay ── */
+  #load-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 999;
+  }
+  #load-overlay.hidden { display: none; }
+  #load-overlay .load-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+  .load-bar-wrap {
+    width: 280px;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .load-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+  #load-status {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* file picker */
+  #file-picker-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  #file-picker-wrap p {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.6;
+  }
+  #file-picker-wrap code {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent2);
+    font-size: 12px;
+  }
+  .file-btn {
+    padding: 10px 24px;
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .file-btn:hover { opacity: 0.85; }
+  #file-input { display: none; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a4055; }
+
+  .sep { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  .panel-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-tab {
+    flex: 1;
+    padding: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .panel-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(79,142,247,0.05);
+  }
+</style>
+</head>
+<body>
+
+<!-- Load overlay -->
+<div id="load-overlay">
+  <div id="file-picker-wrap">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--accent);letter-spacing:0.05em;">M3 DEP EXPLORER</div>
+    <p>Load your processed graph file.<br>Run <code>node build-m3-graph.js</code> first to generate <code>m3_graph.json</code>.</p>
+    <button class="file-btn" onclick="document.getElementById('file-input').click()">Load m3_graph.json</button>
+    <input type="file" id="file-input" accept=".json">
+    <p style="font-size:11px;color:var(--text-faint);">File is loaded locally — nothing leaves your machine.</p>
+  </div>
+  <div id="loading-wrap" style="display:none; flex-direction:column; align-items:center; gap:16px;">
+    <div class="load-title">INDEXING GRAPH</div>
+    <div class="load-bar-wrap"><div class="load-bar" id="load-bar"></div></div>
+    <div id="load-status">Reading file...</div>
+  </div>
+</div>
+
+<!-- Main UI -->
+<header>
+  <div class="logo">M3</div>
+  <h1>Dependency Explorer</h1>
+  <div id="stats-bar">
+    <div>Tables: <span id="stat-tables">—</span></div>
+    <div>Columns: <span id="stat-cols">—</span></div>
+    <div>Edges: <span id="stat-edges">—</span></div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- Left panel -->
+  <div class="left-panel">
+    <div class="panel-tabs">
+      <button class="panel-tab active" onclick="switchTab('path')">Path Query</button>
+      <button class="panel-tab" onclick="switchTab('browse')">Browse</button>
+    </div>
+
+    <!-- Path Query tab -->
+    <div id="tab-path">
+      <div class="panel-section">
+        <label>Query Mode</label>
+        <div class="mode-toggle">
+          <button class="mode-btn active" onclick="setMode('field')" id="mode-field">Field → Field</button>
+          <button class="mode-btn" onclick="setMode('table')" id="mode-table">Table → Table</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <label id="from-label">From Field</label>
+        <div class="input-wrap">
+          <input type="text" id="from-input" placeholder="e.g. ITNO" autocomplete="off" oninput="onFromInput()" onkeydown="onAcKey(event,'from')">
+          <div class="autocomplete-list" id="from-ac"></div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <label id="to-label">To Field</label>
+        <div class="input-wrap">
+          <input type="text" id="to-input" placeholder="e.g. WHLO" autocomplete="off" oninput="onToInput()" onkeydown="onAcKey(event,'to')">
+          <div class="autocomplete-list" id="to-ac"></div>
+        </div>
+
+        <div class="option-row">
+          <label>Max hops</label>
+          <input type="number" id="max-hops" value="5" min="1" max="10">
+        </div>
+        <div class="option-row">
+          <label>Key fields only (high-confidence)</label>
+          <input type="checkbox" id="keys-only">
+        </div>
+        <div class="option-row">
+          <label>Max paths to show</label>
+          <input type="number" id="max-paths" value="5" min="1" max="20">
+        </div>
+
+        <button id="find-btn" onclick="runQuery()">Find Path</button>
+      </div>
+    </div>
+
+    <!-- Browse tab -->
+    <div id="tab-browse" style="display:none; flex-direction:column; flex:1; overflow:hidden; padding:12px;">
+      <input type="text" class="tb-search" placeholder="Search tables..." oninput="filterTables(this.value)" id="tb-search-input">
+      <div class="table-browser" id="table-browser-list"></div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="right-panel">
+    <div class="results-header">
+      <h2 id="results-title">No query yet</h2>
+      <div class="badge" id="results-badge" style="display:none"></div>
+    </div>
+    <div class="results-body" id="results-body">
+      <div class="empty-state">
+        <div class="icon">⬡</div>
+        <p>Enter a source and target field (or table) and hit <strong>Find Path</strong> to see the shortest chain of M3 tables connecting them.</p>
+        <p style="margin-top:8px;">Or use the <strong>Browse</strong> tab to explore tables and their fields directly.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────
+let G = null;         // { tables, index }
+let mode = 'field';   // 'field' | 'table'
+let acSelected = { from: -1, to: -1 };
+
+// ─────────────────────────────────────────────
+// File load
+// ─────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const wrap = document.getElementById('file-picker-wrap');
+  const loadWrap = document.getElementById('loading-wrap');
+  wrap.style.display = 'none';
+  loadWrap.style.display = 'flex';
+  setLoadBar(10, 'Reading file...');
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    setLoadBar(40, 'Parsing JSON...');
+    setTimeout(() => {
+      try {
+        G = JSON.parse(ev.target.result);
+        setLoadBar(80, 'Building indices...');
+        setTimeout(() => {
+          finalizeLoad();
+          setLoadBar(100, 'Done.');
+          setTimeout(() => {
+            document.getElementById('load-overlay').classList.add('hidden');
+          }, 300);
+        }, 50);
+      } catch(err) {
+        alert('Failed to parse JSON: ' + err.message);
+        wrap.style.display = 'flex';
+        loadWrap.style.display = 'none';
+      }
+    }, 50);
+  };
+  reader.readAsText(file);
+});
+
+function setLoadBar(pct, msg) {
+  document.getElementById('load-bar').style.width = pct + '%';
+  document.getElementById('load-status').textContent = msg;
+}
+
+function finalizeLoad() {
+  const tableCount = Object.keys(G.tables).length;
+  const colCount   = Object.keys(G.index).length;
+  // count edges = sum of tables per column that appear in >1 table
+  let edges = 0;
+  for (const col in G.index) {
+    const n = G.index[col].length;
+    if (n > 1) edges += n * (n - 1) / 2;
+  }
+  document.getElementById('stat-tables').textContent = tableCount.toLocaleString();
+  document.getElementById('stat-cols').textContent   = colCount.toLocaleString();
+  document.getElementById('stat-edges').textContent  = edges.toLocaleString();
+  buildTableBrowser();
+}
+
+// ─────────────────────────────────────────────
+// Tab switching
+// ─────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-path').style.display   = tab === 'path'   ? 'block' : 'none';
+  document.getElementById('tab-browse').style.display = tab === 'browse' ? 'flex'  : 'none';
+  document.querySelectorAll('.panel-tab').forEach((el, i) => {
+    el.classList.toggle('active', (i === 0 && tab === 'path') || (i === 1 && tab === 'browse'));
+  });
+}
+
+// ─────────────────────────────────────────────
+// Mode
+// ─────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  document.getElementById('mode-field').classList.toggle('active', m === 'field');
+  document.getElementById('mode-table').classList.toggle('active', m === 'table');
+  document.getElementById('from-label').textContent = m === 'field' ? 'From Field' : 'From Table';
+  document.getElementById('to-label').textContent   = m === 'field' ? 'To Field'   : 'To Table';
+  document.getElementById('from-input').placeholder = m === 'field' ? 'e.g. ITNO'  : 'e.g. MITMAS';
+  document.getElementById('to-input').placeholder   = m === 'field' ? 'e.g. WHLO'  : 'e.g. MPDMAT';
+  clearAc('from'); clearAc('to');
+}
+
+// ─────────────────────────────────────────────
+// Autocomplete
+// ─────────────────────────────────────────────
+function getAcItems(query, which) {
+  if (!G || !query || query.length < 1) return [];
+  query = query.toUpperCase();
+  const isField = mode === 'field';
+
+  if (isField) {
+    return Object.keys(G.index)
+      .filter(c => c.startsWith(query) || c.includes(query))
+      .slice(0, 40)
+      .sort((a, b) => (a.startsWith(query) ? 0 : 1) - (b.startsWith(query) ? 0 : 1))
+      .map(c => ({
+        value: c,
+        desc: getFieldDesc(c),
+        badge: G.index[c].length + ' tables'
+      }));
+  } else {
+    return Object.keys(G.tables)
+      .filter(t => t.startsWith(query) || t.includes(query))
+      .slice(0, 40)
+      .sort((a, b) => (a.startsWith(query) ? 0 : 1) - (b.startsWith(query) ? 0 : 1))
+      .map(t => ({
+        value: t,
+        desc: G.tables[t].description || '',
+        badge: Object.keys(G.tables[t].fields).length + ' cols'
+      }));
+  }
+}
+
+function getFieldDesc(col) {
+  for (const tbl of (G.index[col] || [])) {
+    const f = G.tables[tbl] && G.tables[tbl].fields[col];
+    if (f && f.desc) return f.desc;
+  }
+  return '';
+}
+
+function showAc(which, items) {
+  const el = document.getElementById(which + '-ac');
+  if (!items.length) { el.classList.remove('open'); return; }
+  el.innerHTML = items.map((item, i) =>
+    `<div class="ac-item" data-val="${item.value}" data-idx="${i}"
+       onmousedown="selectAc('${which}','${item.value}')" onmouseover="acHover('${which}',${i})">
+      <span class="ac-name">${item.value}</span>
+      <span class="ac-desc">${item.desc}</span>
+      <span class="ac-badge">${item.badge}</span>
+    </div>`
+  ).join('');
+  acSelected[which] = -1;
+  el.classList.add('open');
+}
+
+function clearAc(which) {
+  const el = document.getElementById(which + '-ac');
+  el.classList.remove('open');
+  acSelected[which] = -1;
+}
+
+function selectAc(which, val) {
+  document.getElementById(which + '-input').value = val;
+  clearAc(which);
+}
+
+function acHover(which, idx) {
+  acSelected[which] = idx;
+  document.querySelectorAll(`#${which}-ac .ac-item`).forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+}
+
+function onAcKey(e, which) {
+  const el = document.getElementById(which + '-ac');
+  const items = el.querySelectorAll('.ac-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acSelected[which] = Math.min(acSelected[which] + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('selected', i === acSelected[which]));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acSelected[which] = Math.max(acSelected[which] - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('selected', i === acSelected[which]));
+  } else if (e.key === 'Enter') {
+    if (acSelected[which] >= 0) {
+      e.preventDefault();
+      const val = items[acSelected[which]].dataset.val;
+      selectAc(which, val);
+    }
+  } else if (e.key === 'Escape') {
+    clearAc(which);
+  }
+}
+
+function onFromInput() {
+  const q = document.getElementById('from-input').value;
+  showAc('from', getAcItems(q, 'from'));
+}
+function onToInput() {
+  const q = document.getElementById('to-input').value;
+  showAc('to', getAcItems(q, 'to'));
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#from-input') && !e.target.closest('#from-ac')) clearAc('from');
+  if (!e.target.closest('#to-input')   && !e.target.closest('#to-ac'))   clearAc('to');
+});
+
+// ─────────────────────────────────────────────
+// BFS
+// ─────────────────────────────────────────────
+function runQuery() {
+  if (!G) return;
+  const fromVal  = document.getElementById('from-input').value.trim().toUpperCase();
+  const toVal    = document.getElementById('to-input').value.trim().toUpperCase();
+  const maxHops  = parseInt(document.getElementById('max-hops').value) || 5;
+  const keysOnly = document.getElementById('keys-only').checked;
+  const maxPaths = parseInt(document.getElementById('max-paths').value) || 5;
+
+  if (!fromVal || !toVal) { alert('Enter both a source and a target.'); return; }
+
+  clearAc('from'); clearAc('to');
+
+  let paths = [];
+
+  if (mode === 'field') {
+    paths = findFieldPaths(fromVal, toVal, maxHops, keysOnly, maxPaths);
+  } else {
+    paths = findTablePaths(fromVal, toVal, maxHops, keysOnly, maxPaths);
+  }
+
+  renderResults(fromVal, toVal, paths);
+}
+
+/**
+ * BFS over field→table→field graph.
+ * Each node in the BFS is a { field, table } pair.
+ * An edge exists between (field1, table1) and (field2, table2) when:
+ *   table1 === table2  (both fields are on the same table)
+ * 
+ * The path returned is an array of { table, field } hops.
+ */
+function findFieldPaths(fromField, toField, maxHops, keysOnly, maxPaths) {
+  if (!G.index[fromField]) return null;
+  if (!G.index[toField])   return null;
+
+  // Quick same-table check
+  const fromTables = new Set(G.index[fromField]);
+  const toTables   = new Set(G.index[toField]);
+  const overlap    = [...fromTables].filter(t => toTables.has(t));
+  if (overlap.length) {
+    return overlap.slice(0, maxPaths).map(tbl => ({
+      hops: 0,
+      path: [
+        { table: tbl, field: fromField, isKey: G.tables[tbl].fields[fromField]?.isKey },
+        { table: tbl, field: toField,   isKey: G.tables[tbl].fields[toField]?.isKey }
+      ]
+    }));
+  }
+
+  // BFS — state: { field, table, path[] }
+  const results = [];
+  const queue   = [];
+  const visited = new Set();
+
+  for (const tbl of fromTables) {
+    if (keysOnly && !G.tables[tbl]?.fields[fromField]?.isKey) continue;
+    queue.push({
+      field: fromField,
+      table: tbl,
+      path: [{ table: tbl, field: fromField, isKey: G.tables[tbl]?.fields[fromField]?.isKey }]
+    });
+  }
+
+  let head = 0;
+  while (head < queue.length && results.length < maxPaths) {
+    const cur = queue[head++];
+    if (cur.path.length > maxHops + 1) continue;
+
+    const stateKey = cur.table + '|' + cur.field + '|' + cur.path.length;
+    if (visited.has(stateKey)) continue;
+    visited.add(stateKey);
+
+    // All columns on current table
+    const tableFields = G.tables[cur.table]?.fields || {};
+    for (const col in tableFields) {
+      if (keysOnly && !tableFields[col].isKey) continue;
+
+      // Does this column connect to the target field?
+      if (col === toField) {
+        results.push({
+          hops: cur.path.length - 1,
+          path: [...cur.path, { table: cur.table, field: toField, isKey: tableFields[toField]?.isKey }]
+        });
+        continue;
+      }
+
+      // Fan out: this column appears on other tables — explore them
+      if (col === cur.field) continue;
+      const linkedTables = G.index[col] || [];
+      for (const nextTable of linkedTables) {
+        if (nextTable === cur.table) continue;
+        if (cur.path.some(p => p.table === nextTable && p.field === col)) continue;
+        if (keysOnly && !G.tables[nextTable]?.fields[col]?.isKey) continue;
+
+        queue.push({
+          field: col,
+          table: nextTable,
+          path: [
+            ...cur.path,
+            { table: cur.table, field: col, isKey: tableFields[col]?.isKey },
+            { table: nextTable, field: col, isKey: G.tables[nextTable]?.fields[col]?.isKey }
+          ]
+        });
+      }
+    }
+  }
+
+  return results.length ? results.sort((a, b) => a.hops - b.hops) : null;
+}
+
+/**
+ * Table-to-table BFS.
+ * Edges exist between tables that share at least one column name.
+ */
+function findTablePaths(fromTable, toTable, maxHops, keysOnly, maxPaths) {
+  if (!G.tables[fromTable]) return null;
+  if (!G.tables[toTable])   return null;
+  if (fromTable === toTable) return [{ hops: 0, path: [{ table: fromTable, linkField: null }] }];
+
+  const results = [];
+  const queue   = [{ table: fromTable, path: [{ table: fromTable, linkField: null }] }];
+  const visited = new Set([fromTable]);
+  let head = 0;
+
+  while (head < queue.length && results.length < maxPaths) {
+    const cur = queue[head++];
+    if (cur.path.length > maxHops + 1) continue;
+
+    const tableFields = G.tables[cur.table]?.fields || {};
+    for (const col in tableFields) {
+      if (keysOnly && !tableFields[col].isKey) continue;
+      const linkedTables = G.index[col] || [];
+      for (const nextTable of linkedTables) {
+        if (nextTable === cur.table) continue;
+        if (cur.path.some(p => p.table === nextTable)) continue;
+
+        const newPath = [
+          ...cur.path.slice(0, -1),
+          { ...cur.path[cur.path.length - 1], linkField: col },
+          { table: nextTable, linkField: null }
+        ];
+
+        if (nextTable === toTable) {
+          results.push({ hops: newPath.length - 1, path: newPath });
+          continue;
+        }
+
+        if (!visited.has(nextTable + cur.path.length)) {
+          visited.add(nextTable + cur.path.length);
+          queue.push({ table: nextTable, path: newPath });
+        }
+      }
+    }
+  }
+
+  return results.length ? results.sort((a, b) => a.hops - b.hops) : null;
+}
+
+// ─────────────────────────────────────────────
+// Render
+// ─────────────────────────────────────────────
+function renderResults(from, to, paths) {
+  const title  = document.getElementById('results-title');
+  const badge  = document.getElementById('results-badge');
+  const body   = document.getElementById('results-body');
+
+  if (!paths || !paths.length) {
+    title.textContent = `No path found: ${from} → ${to}`;
+    badge.style.display = 'none';
+    body.innerHTML = `<div class="no-path">No path found within the hop limit. Try increasing max hops or disabling key-fields-only.</div>`;
+    return;
+  }
+
+  title.textContent   = `${from} → ${to}`;
+  badge.style.display = 'inline';
+  badge.textContent   = `${paths.length} path${paths.length > 1 ? 's' : ''} found`;
+
+  if (mode === 'field') {
+    body.innerHTML = paths.map((p, pi) => renderFieldPath(p, pi)).join('');
+  } else {
+    body.innerHTML = paths.map((p, pi) => renderTablePath(p, pi)).join('');
+  }
+}
+
+function renderFieldPath(result, pi) {
+  const nodes = result.path;
+  const chain = nodes.map((node, i) => {
+    const isFirst = i === 0;
+    const isLast  = i === nodes.length - 1;
+    const tbl     = G.tables[node.table] || {};
+    const fieldMeta = tbl.fields && tbl.fields[node.field];
+    const isKey   = fieldMeta?.isKey;
+    const fdesc   = fieldMeta?.desc || '';
+    const tdesc   = tbl.description ? tbl.description.replace(/^[A-Z]{2}:\s*/, '') : '';
+
+    const nodeHtml = `
+      <div class="path-node ${isFirst ? 'start' : ''} ${isLast ? 'end' : ''}">
+        <div class="node-table">${node.table}</div>
+        <div class="node-desc">${tdesc}</div>
+        <div class="node-field">
+          <div class="field-tag ${isKey ? 'is-key' : ''}">
+            ${isKey ? '<span class="key-icon">🔑</span>' : ''}
+            ${node.field}
+          </div>
+          ${fdesc ? `<div class="field-desc">${fdesc}</div>` : ''}
+        </div>
+      </div>`;
+
+    const arrow = (i < nodes.length - 1) ? `<div class="path-arrow">→</div>` : '';
+    return nodeHtml + arrow;
+  }).join('');
+
+  return `
+    <div class="path-result">
+      <div class="path-header">
+        <div class="path-rank">PATH ${pi + 1}</div>
+        <div class="path-hops"><strong>${result.hops}</strong> hop${result.hops !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="path-chain">${chain}</div>
+    </div>`;
+}
+
+function renderTablePath(result, pi) {
+  const nodes = result.path;
+  const chain = nodes.map((node, i) => {
+    const isFirst = i === 0;
+    const isLast  = i === nodes.length - 1;
+    const tbl     = G.tables[node.table] || {};
+    const tdesc   = tbl.description ? tbl.description.replace(/^[A-Z]{2}:\s*/, '') : '';
+
+    const nodeHtml = `
+      <div class="path-node ${isFirst ? 'start' : ''} ${isLast ? 'end' : ''}">
+        <div class="node-table">${node.table}</div>
+        <div class="node-desc">${tdesc}</div>
+        ${node.linkField ? `
+          <div class="node-field">
+            <div class="field-tag">→ via ${node.linkField}</div>
+          </div>` : ''}
+      </div>`;
+
+    const arrow = (i < nodes.length - 1) ? `<div class="path-arrow">→</div>` : '';
+    return nodeHtml + arrow;
+  }).join('');
+
+  return `
+    <div class="path-result">
+      <div class="path-header">
+        <div class="path-rank">PATH ${pi + 1}</div>
+        <div class="path-hops"><strong>${result.hops}</strong> hop${result.hops !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="path-chain">${chain}</div>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────
+// Table Browser
+// ─────────────────────────────────────────────
+let allTableNames = [];
+
+function buildTableBrowser() {
+  allTableNames = Object.keys(G.tables).sort();
+  renderTableList(allTableNames.slice(0, 200));
+}
+
+function renderTableList(names) {
+  const el = document.getElementById('table-browser-list');
+  el.innerHTML = names.map(t => {
+    const desc = (G.tables[t].description || '').replace(/^[A-Z]{2}:\s*/, '');
+    return `<div class="tb-item" onclick="showTableDetail('${t}')" id="tb-${t}">
+      <div class="tb-name">${t}</div>
+      <div class="tb-desc">${desc}</div>
+    </div>`;
+  }).join('');
+  if (names.length === 200) {
+    el.innerHTML += `<div style="font-size:11px;color:var(--text-faint);padding:8px;text-align:center;">Showing first 200 — use search to filter</div>`;
+  }
+}
+
+function filterTables(q) {
+  q = q.toUpperCase();
+  const filtered = allTableNames.filter(t =>
+    t.includes(q) || (G.tables[t].description || '').toUpperCase().includes(q)
+  ).slice(0, 200);
+  renderTableList(filtered);
+}
+
+function showTableDetail(tableName) {
+  // Mark active in browser
+  document.querySelectorAll('.tb-item').forEach(el => el.classList.remove('active'));
+  const tbEl = document.getElementById('tb-' + tableName);
+  if (tbEl) tbEl.classList.add('active');
+
+  // Switch to right panel
+  const tbl   = G.tables[tableName] || {};
+  const desc  = (tbl.description || '').replace(/^[A-Z]{2}:\s*/, '');
+  const cat   = tbl.category || '';
+  const fields = tbl.fields || {};
+  const sorted = Object.entries(fields).sort((a, b) => {
+    if (a[1].isKey && !b[1].isKey) return -1;
+    if (!a[1].isKey && b[1].isKey) return 1;
+    return a[0].localeCompare(b[0]);
+  });
+
+  document.getElementById('results-title').textContent = tableName;
+  document.getElementById('results-badge').style.display = 'inline';
+  document.getElementById('results-badge').textContent = Object.keys(fields).length + ' columns';
+
+  const rows = sorted.map(([col, meta]) => `
+    <tr>
+      <td class="col-name ${meta.isKey ? 'is-key' : ''}">${col}${meta.isKey ? ' <span class="key-pill">KEY</span>' : ''}</td>
+      <td class="col-desc">${meta.desc || ''}</td>
+      <td class="col-type">${meta.dataType || ''}</td>
+      <td class="col-type">${meta.length || ''}</td>
+    </tr>`).join('');
+
+  document.getElementById('results-body').innerHTML = `
+    <div class="table-detail">
+      <div class="td-header">
+        <div>
+          <div class="td-name">${tableName}</div>
+          <div class="td-desc">${desc}</div>
+        </div>
+        ${cat ? `<div class="td-cat">${cat}</div>` : ''}
+      </div>
+      <table class="fields-table">
+        <thead><tr>
+          <th>Column</th><th>Description</th><th>Type</th><th>Length</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+</script>
+</body>
+</html>
