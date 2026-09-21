@@ -15,9 +15,9 @@
     "globals": "^15.0.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^3.0.0",
-    "@eslint/json": "^0.10.0",
+    "vitest": "^5.0.0",
+    "@eslint/json": "^2.1.0",
     "@eslint/markdown": "^6.0.0",
-    "@eslint/css": "^0.7.0"
+    "@eslint/css": "^2.0.0"
   }
 }
