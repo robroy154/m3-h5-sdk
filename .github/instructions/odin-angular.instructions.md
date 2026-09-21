@@ -92,7 +92,7 @@ odin build                           # Creates dist/{name}.zip for H5 upload
 - Config: `odin set m3-proxy https://m3server` modifies `odin.json`
 
 ## Deployment
-```
+```text
 odin build → dist/{projectName}.zip
 Upload via H5 Admin → Applications → Install
 Access at /mne/apps/{projectName}

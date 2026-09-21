@@ -1,0 +1,22 @@
+{
+  "//": "Typechecks the tests, which the build config excludes. Without this a test can drift from the API it exercises and still pass, because Vitest strips types rather than checking them. Target is raised because Vitest's own .d.ts files use private identifiers; the es5 contract H5 needs is still enforced by tsconfig.json, which is what actually emits.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "target": "es2020"
+  },
+  "include": [
+    "../../../../SDKs/M3 H5 Scripting/Templates/H5ScriptsProjectTemplate/H5ScriptsProjectTemplate/typings/infor.controls.d.ts",
+    "../../../../SDKs/M3 H5 Scripting/Templates/H5ScriptsProjectTemplate/H5ScriptsProjectTemplate/typings/jquery.d.ts",
+    "../../../../SDKs/M3 H5 Scripting/Templates/H5ScriptsProjectTemplate/H5ScriptsProjectTemplate/typings/jquery.json.d.ts",
+    "typings/h5.script.d.ts",
+    "typings/h5.extensions.d.ts",
+    "src/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
+}

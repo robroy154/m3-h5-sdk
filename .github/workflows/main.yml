@@ -1,143 +1,65 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [master]
   pull_request:
     branches: [master]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# Least privilege. Every job here only checks out and runs npm; none of them
+# write to the repository, post statuses, or publish packages. Without this the
+# workflow inherits the repository default GITHUB_TOKEN scope.
+permissions:
+  contents: read
+
+# Scope note: the jobs below cover this fork's own work — the H5 scripts under
+# Projects/. They deliberately do NOT build or test anything under SDKs/, which
+# is Infor's vendored SDK material, checked in verbatim and never modified here.
+# The upstream workflow's build / odin_new / test jobs ran `cd ./cli` and
+# `cd ./m3-odin`; those directories live at the repository root upstream but at
+# SDKs/H5 Angular/ in this fork, so every one of those jobs failed at its first
+# step on every run since the fork was restructured.
+
 jobs:
-  # Build of CLI and M3-ODIN
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    env:
-      PUPPETEER_SKIP_DOWNLOAD: true
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18.19"
-
-      # Runs a set of commands using the runners shell
-      - name: Build CLI
-        run: |
-          cd ./cli
-          npm config set fetch-retry-mintimeout 20000
-          npm config set fetch-retry-maxtimeout 120000
-          npm ci
-          npm run build
-
-      - name: Build Libraries
-        run: |
-          cd ./m3-odin
-          npm ci
-          npm run build:libs
-
-      - name: Zip CLI for upload
-        run: |
-          zip -q cli.zip ./cli -r
-
-      - name: Upload CLI archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: cli-build-result
-          path: cli.zip
-          retention-days: 1
-
-  # Test of different Odin new commands
-  odin_new:
-    # Depends on successful run of Build
-    needs: build
-
-    runs-on: ubuntu-latest
-
-    env:
-      PUPPETEER_SKIP_DOWNLOAD: true
-
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "18.19"
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: cli-build-result
-          path: .
-
-      - name: Unzip CLI archive
-        run: unzip -q cli.zip
-
-      - name: Install Odin CLI
-        run: |
-          cd ./cli
-          npm config set fetch-retry-mintimeout 20000
-          npm config set fetch-retry-maxtimeout 120000
-          npm install --location=global .
-
-      - name: Generate Angular soho app
-        run: |
-          odin new app-angular-soho --angular --soho --install --skip-git -p https://proxy.com -po http://portal.com 
-          cd app-angular-soho
-          odin build
-
-      - name: Generate Angular app
-        run: |
-          odin new app-angular-none --soho none --angular --install --skip-git  -p https://proxy.com -po http://portal.com 
-          cd app-angular-none
-          odin build
-
-      - name: Generate basic soho app
-        run: |
-          odin new app-basic-soho --soho --install --angular false --skip-git -p https://proxy.com -po http://portal.com
-          cd app-basic-soho
-          odin build
-
-  # Run ESLint on Projects scripts
   lint:
+    name: Lint
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.19"
+          node-version: "20"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: ESLint
+        run: npm run lint
 
-      - name: Install ESLint dependencies
-        run: npm install
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: tsc --noEmit
+        run: npm run typecheck
 
-      - name: Lint Projects scripts
-        run: npx eslint "Projects/**/*.{ts,js}" --max-warnings=0
-
-  # Run all automated tests
   test:
-    # Depends on successful run of Build
-    # needs: build
-
+    name: Unit tests
     runs-on: ubuntu-latest
-
     steps:
-      #- uses: browser-actions/setup-chrome@latest
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: "18.19"
-
-      - name: run tests
-        run: |
-          cd ./m3-odin
-          npm ci
-          npm run ng -- test @infor-up/m3-odin --code-coverage --browsers=ChromeHeadlessCI
+          node-version: "20"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Vitest
+        run: npm test

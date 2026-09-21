@@ -13,7 +13,7 @@ var BEN_H5_CTS100B1 = /** @class */ (function () {
             new BEN_H5_CTS100B1(scriptArgs).run();
         }
         else {
-            console.error("Wrong H5 version, exiting script...");
+            scriptArgs.log.Error("Wrong H5 version, exiting script...");
         }
     };
     class_1.prototype.run = function () {

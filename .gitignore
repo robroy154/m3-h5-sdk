@@ -15,3 +15,28 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Claude Code local overrides (machine-specific, never shared)
+.claude/settings.local.json
+
+# V7 build intermediates (tsc output that rolldown consumes)
+Projects/General/H5-Scripts/*/build/
+
+# Credentials. The harness reads a downloaded ION API service-account file and
+# a tenant config that names real master data; neither belongs in the repo.
+# tenant.example.json IS committed - it is the template, and carries no values.
+*.ionapi
+**/validation/tenant.local.json
+.env
+.env.*
+
+# Output of a validation run: a transcript of real tenant requests.
+**/validation/validation-result.json
+
+# Infor M3 sources are confidential and are never committed here. The message
+# catalogue is generated FROM them; only the generated file belongs in the repo.
+*_MVX.java
+
+# A full clone of this repo checked out inside itself (SDK reference + its
+# node_modules). Local working material, not content.
+/m3-h5-sdk/

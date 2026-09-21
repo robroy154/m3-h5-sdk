@@ -2,11 +2,17 @@
 
 A multi-purpose development repository for building and extending Infor M3 ERP integrations. Despite the repository name, this is not limited to H5 scripts — it houses three distinct SDK tracks and a `Projects/` directory containing real-world implementations.
 
+> Forked from [`infor-cloud/m3-h5-sdk`](https://github.com/infor-cloud/m3-h5-sdk).
+> Everything under `SDKs/` is Infor's material, vendored verbatim and **never
+> modified here** — upstream owns it. This fork's own work lives in
+> `Projects/`, with the repository-level tooling and documentation adapted to
+> suit it.
+
 ---
 
 ## Repository Map
 
-```
+```text
 m3-h5-sdk/
 ├── SDKs/                          # SDK source distributions
 │   ├── H5 Angular/                # Odin SDK — standalone M3 web applications
@@ -19,11 +25,18 @@ m3-h5-sdk/
 │   └── Widget SDKs/               # Infor Widget SDK — Ming.le/OS Homepages widgets
 │       ├── Infor_WidgetSDK_3.0.1/ # Legacy version (retained for reference)
 │       └── Infor_WidgetSDK_3.34.0/# Current version — use for all new development
-└── Projects/                      # Custom implementations
-    ├── Benco/                     # Benco client scripts
-    └── General/
-        └── Widgets/               # Reusable Homepages widgets
+├── Projects/                      # This fork's own work
+│   ├── General/                   # Reusable, customer-agnostic assets
+│   │   ├── H5-Scripts/            #   H5 scripts, one folder per asset
+│   │   └── Widgets/               #   Homepages widgets
+│   └── Benco/                     # Customer-specific scripts and API notes
+├── MI catalog and Data Dictionary/# Generated M3 metadata (~175 MB): the MI
+│                                  # transaction catalog and table dictionary
+└── logs/                          # Scratch output, not part of the build
 ```
+
+`SDKs/` and `MI catalog and Data Dictionary/` are reference material. Neither
+is built, linted, or analysed by CI.
 
 ---
 
@@ -88,11 +101,13 @@ Builds inline, external, banner, and mobile widgets for the Infor Ming.le / OS P
 **Active version:** `Infor_WidgetSDK_3.34.0` — use for all new development.  
 **Legacy version:** `Infor_WidgetSDK_3.0.1` — retained for reference only.
 
-**Quick start:**
-```bash
-cd "SDKs/Widget SDKs/Infor_WidgetSDK_3.34.0"
-node install-cli.mjs          # installs the widget CLI
-```
+**Getting started:** `Infor_WidgetSDK_3.34.0/Documentation/DevelopersGuide.pdf`,
+with working packages under `Infor_WidgetSDK_3.34.0/Samples/Widgets/`.
+
+Note that the `install-cli.mjs` bootstrap script exists **only in 3.0.1**;
+3.34.0 ships documentation and samples rather than a CLI installer, so a
+quick-start that starts with that command will not work against the current
+version.
 
 See `SDKs/Widget SDKs/README.md` for full version guidance.
 
@@ -100,33 +115,51 @@ See `SDKs/Widget SDKs/README.md` for full version guidance.
 
 ## Projects
 
-### `Projects/Benco/`
-H5 Script SDK customizations for Benco. See [`Projects/Benco/README.md`](Projects/Benco/README.md) for current file status.
+### `Projects/General/` — reusable, customer-agnostic assets
+Start here for anything not specific to one customer. Every tenant-specific
+value is a script argument, so the same build deploys anywhere.
 
-### `Projects/General/Widgets/`
-Reusable Homepages widgets built with the Widget SDK.
+- [`H5-Scripts/`](Projects/General/H5-Scripts/) — reusable H5 scripts, each a
+  self-contained folder with its own tests, build and configuration reference
+- `Widgets/` — reusable Homepages widgets
+
+### `Projects/Benco/` — customer-specific work
+See [`Projects/Benco/README.md`](Projects/Benco/README.md) for current file
+status.
 
 ---
 
 ## Development Setup
 
 ### Prerequisites
-- Node.js ≥18.19
+- Node.js ≥18.19 (CI uses 20)
 - npm ≥9
-- TypeScript (installed per-project)
 
-### Linting
-ESLint is configured at the repo root and covers JS, TS, JSON, Markdown, and CSS:
+TypeScript is a devDependency, so `npm ci` is all the setup a clean clone
+needs. Do not rely on a global `tsc`.
+
+### Commands
 ```bash
-npx eslint .
+npm ci
+
+npm run lint          # ESLint over JS, TS, JSON, Markdown and CSS
+npm run typecheck     # tsc --noEmit over the H5 projects and their tests
+npm test              # Vitest
+npm run build         # compiles every H5 project
 ```
+
+`npm run lint` deliberately skips `SDKs/`, `MI catalog and Data Dictionary/`,
+compiled `.js` output and `archive/` — see `eslint.config.mjs`.
 
 ### CI/CD
 GitHub Actions (`.github/workflows/main.yml`) runs on push/PR to `master`:
-- Builds CLI and Odin libraries
-- Tests `odin new` for all three project templates
-- Runs unit tests with ChromeHeadlessCI
-- Lints `Projects/` scripts
+`lint`, `typecheck` and `test`, each on Node 20 with read-only token scope.
+
+It deliberately does **not** build anything under `SDKs/`. The upstream
+workflow's `build`, `odin_new` and `test` jobs ran `cd ./cli` and
+`cd ./m3-odin`, which exist at the repository root upstream but at
+`SDKs/H5 Angular/` in this fork — so every one of those jobs failed at its
+first step on every run after the fork was restructured.
 
 ---
 

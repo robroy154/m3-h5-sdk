@@ -3,15 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build:h5": "tsc --project Projects/Benco/H5-Scripts/tsconfig.json"
+    "build:h5": "tsc --project Projects/Benco/H5-Scripts/tsconfig.json",
+    "build:poreceipt": "tsc --project Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.json && rolldown -c Projects/General/H5-Scripts/POReceiptShortcut/rolldown.config.mjs",
+    "build": "npm run build:h5 && npm run build:poreceipt",
+    "validate:tenant": "tsc -p Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.json && node Projects/General/H5-Scripts/POReceiptShortcut/validation/validate-tenant.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --project Projects/Benco/H5-Scripts/tsconfig.json --noEmit && tsc --project Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.json --noEmit && tsc --project Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.tests.json",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "eslint": "^9.0.0",
     "@eslint/js": "^9.0.0",
     "globals": "^15.0.0",
+    "typescript": "~6.0.2",
     "typescript-eslint": "^8.0.0",
-    "@eslint/json": "^0.10.0",
+    "vitest": "^5.0.0",
+    "@eslint/json": "^2.1.0",
     "@eslint/markdown": "^6.0.0",
-    "@eslint/css": "^0.7.0"
+    "@eslint/css": "^2.0.0"
   }
 }
