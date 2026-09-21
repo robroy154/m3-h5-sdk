@@ -12,7 +12,7 @@ var AddLotControlColumn_v2 = class {
     private mi: any; // MIService (v2+) or MIService.Current instance (v1) — TODO: tighten type
     // Cache ITNO → formatted label so repeated items only hit the API once
     private indiCache: Map<string, string>;
-    private unsubscribeEvents: Function | null;
+    private unsubscribeEvents: (() => void) | null;
 
     constructor(scriptArgs: IScriptArgs) {
         this.scriptName = 'AddLotControlColumn_v2';
@@ -128,7 +128,7 @@ var AddLotControlColumn_v2 = class {
     }
 
     private attachEvents(): void {
-        this.unsubscribeEvents = this.controller.RequestCompleted.On((e: RequestEventArgs) => {
+        this.unsubscribeEvents = <() => void>this.controller.RequestCompleted.On((e: RequestEventArgs) => {
             try {
                 const list = this.controller.GetGrid();
                 if (!list) return;

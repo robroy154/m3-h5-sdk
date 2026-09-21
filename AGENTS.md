@@ -186,11 +186,14 @@ Infor's official `.d.ts` files are located at:
   multiple times, resulting in duplicate handlers and unpredictable behavior.
 
 Example:
+
+```typescript
 const key = "MyScriptName";
 if (InstanceCache.ContainsKey(this.controller, key)) {
   return;
 }
 InstanceCache.Add(this.controller, key, true);
+```
 
 #### URL Handling
 
@@ -217,7 +220,10 @@ InstanceCache.Add(this.controller, key, true);
 - This directly improves script performance, especially on list panels with many rows.
 
 Example:
+
+```typescript
 const request = new MIRequest();
 request.program = "MNS150MI";
 request.transaction = "GetUserData";
 request.outputFields = ["USID", "CONO", "DIVI"];
+```

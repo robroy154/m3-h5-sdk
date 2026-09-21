@@ -6,7 +6,7 @@
     "build:h5": "tsc --project Projects/Benco/H5-Scripts/tsconfig.json",
     "lint": "eslint .",
     "typecheck": "tsc --project Projects/Benco/H5-Scripts/tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
   "devDependencies": {

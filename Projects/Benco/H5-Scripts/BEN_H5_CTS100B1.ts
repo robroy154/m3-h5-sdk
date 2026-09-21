@@ -17,7 +17,7 @@ var BEN_H5_CTS100B1 = class {
         if (ScriptUtil.version >= 2.0) {
             new BEN_H5_CTS100B1(scriptArgs).run();
         } else {
-            console.error("Wrong H5 version, exiting script...");
+            scriptArgs.log.Error("Wrong H5 version, exiting script...");
         }
     }
 

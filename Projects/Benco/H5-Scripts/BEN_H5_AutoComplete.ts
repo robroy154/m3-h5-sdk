@@ -227,7 +227,7 @@ var BEN_H5_AutoComplete = class {
             autoFocus: false,
             delay: 300,
             minLength: 1,
-            source: (search: any, response: Function) => {
+            source: (search: any, response: (items?: any[]) => void) => {
                 const searchTerm = search.term.toUpperCase();
                 if (searchTerm in this.cacheSelectedItems) {
                     this.log.Debug(
