@@ -1,20 +1,20 @@
 /**
  * Per-deployment configuration, read from the H5 script argument string.
  *
- * This is what makes the asset customer-agnostic. V6 compiled Benco's
- * warehouse group, CMS474 custom field and currency into the source, which is
- * exactly what stops a script being reusable. Nothing tenant-specific has a
- * default here: a value is either supplied, or the feature it drives is
+ * This is what makes the asset customer-agnostic. Its predecessor compiled one
+ * tenant's warehouse group, CMS474 custom field and currency into the source,
+ * which is exactly what stops a script being reusable. Nothing tenant-specific
+ * has a default here: a value is either supplied, or the feature it drives is
  * skipped, or the script refuses to run.
  *
  * Format is comma-separated `key:value`, order-independent, every key
  * omittable:
  *
- *     wms:true,whgr:WMSWHSE,e065:WMS,maxserials:25
+ *     wms:true,whgr:WMSGROUP,e065:WMS,maxserials:25
  *
- * BEN_H5_AutoComplete uses positional arguments, but with a dozen optional
- * settings that degrades into runs of empty commas where a mis-ordered value
- * fails silently. Keys are worth the small departure.
+ * Other scripts in this repository take positional arguments, but with a dozen
+ * optional settings that degrades into runs of empty commas where a mis-ordered
+ * value fails silently. Keys are worth the small departure.
  */
 
 export interface ReceiptConfig {

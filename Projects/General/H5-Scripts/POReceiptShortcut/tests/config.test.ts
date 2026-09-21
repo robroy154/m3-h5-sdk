@@ -8,9 +8,9 @@ import {
 
 describe('parseArgumentString', () => {
   it('reads comma-separated key:value pairs', () =>
-    expect(parseArgumentString('wms:true,whgr:WMSWHSE')).toEqual({
+    expect(parseArgumentString('wms:true,whgr:WMSGROUP')).toEqual({
       wms: 'true',
-      whgr: 'WMSWHSE',
+      whgr: 'WMSGROUP',
     }));
 
   it('is order-independent', () =>
@@ -69,7 +69,7 @@ describe('buildConfig defaults', () => {
     expect(errors).toHaveLength(0); // legal until an oversize serial appears
   });
 
-  it('carries no Benco value anywhere in the defaults', () => {
+  it('carries no tenant-specific value anywhere in the defaults', () => {
     const serialised = JSON.stringify(DEFAULT_CONFIG).toUpperCase();
     for (const leak of ['BENCO', 'WMSWHSE', 'EQUIPMENT', 'FULLSERNUM', 'USD']) {
       expect(serialised).not.toContain(leak);
@@ -79,9 +79,9 @@ describe('buildConfig defaults', () => {
 
 describe('buildConfig overrides', () => {
   it('enables the WMS check when given a group', () => {
-    const { config, errors } = buildConfig('wms:true,whgr:WMSWHSE');
+    const { config, errors } = buildConfig('wms:true,whgr:WMSGROUP');
     expect(config.wmsCheckEnabled).toBe(true);
-    expect(config.warehouseGroup).toBe('WMSWHSE');
+    expect(config.warehouseGroup).toBe('WMSGROUP');
     expect(errors).toHaveLength(0);
   });
 
@@ -119,7 +119,7 @@ describe('buildConfig refusals', () => {
   });
 
   it('does not complain about a group supplied without the check', () =>
-    expect(buildConfig('whgr:WMSWHSE').errors).toHaveLength(0));
+    expect(buildConfig('whgr:WMSGROUP').errors).toHaveLength(0));
 
   it('rejects a non-numeric or non-positive serial cap', () => {
     for (const v of ['abc', '0', '-1', '2.5']) {

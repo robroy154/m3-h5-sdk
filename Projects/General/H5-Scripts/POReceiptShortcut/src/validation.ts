@@ -23,6 +23,14 @@ export interface FieldIssue {
   /** 1-based position shown to the operator, or the field name. */
   label: string;
   reason: string;
+  /**
+   * Zero-based position in the submitted batch, when there is one.
+   *
+   * The label already encodes it as "Serial 3", but a dialog that needs to
+   * mark the offending input should not have to parse that back out — the
+   * label is text for a person, not a key.
+   */
+  index?: number;
 }
 
 /** Reason the value is unusable, or null when it is fine. */
@@ -59,7 +67,7 @@ export function validateSerialBatch(
   values.forEach((value, index) => {
     const reason = validateSerialValue(value, maxLength);
     if (reason) {
-      issues.push({ label: 'Serial ' + (index + 1), reason });
+      issues.push({ label: 'Serial ' + (index + 1), reason, index });
     } else {
       serials.push((value || '').trim());
     }

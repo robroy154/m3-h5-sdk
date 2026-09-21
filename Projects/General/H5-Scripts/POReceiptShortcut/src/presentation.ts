@@ -9,7 +9,7 @@
  *  - Plain text dialogs go through `ConfirmDialog.Show`/`ShowMessageDialog`,
  *    which H5 renders and themes itself. That removes three of V6's five
  *    dialogs from the theming problem entirely, and is already proven in
- *    BEN_H5_AutoComplete.
+ *    production elsewhere in this repository.
  *  - The two dialogs that genuinely need form content keep a custom element,
  *    but every colour is `var(--ids-token, fallback)` rather than a hex
  *    literal. If the host defines the token the dialog follows the operator's

@@ -5,7 +5,7 @@
   "scripts": {
     "build:h5": "tsc --project Projects/Benco/H5-Scripts/tsconfig.json",
     "build:poreceipt": "tsc --project Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.json && rolldown -c Projects/General/H5-Scripts/POReceiptShortcut/rolldown.config.mjs",
-    "build": "npm run build:h5",
+    "build": "npm run build:h5 && npm run build:poreceipt",
     "lint": "eslint .",
     "typecheck": "tsc --project Projects/Benco/H5-Scripts/tsconfig.json --noEmit && tsc --project Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.json --noEmit && tsc --project Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.tests.json",
     "test": "vitest run --passWithNoTests",

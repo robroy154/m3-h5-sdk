@@ -142,3 +142,17 @@ describe('findMissingFields', () => {
     expect(findMissingFields({ OEND: '0' })).toHaveLength(0);
   });
 });
+
+describe('FieldIssue.index', () => {
+  it('carries the position so a dialog need not parse the label', () => {
+    const result = validateSerialBatch(['OK1', '', 'bad char', 'OK2'], 20);
+    expect(result.issues.map((i) => i.index)).toEqual([1, 2]);
+  });
+
+  it('agrees with the label it renders', () => {
+    const result = validateSerialBatch(['', ''], 20);
+    for (const issue of result.issues) {
+      expect(issue.label).toBe('Serial ' + (issue.index! + 1));
+    }
+  });
+});
