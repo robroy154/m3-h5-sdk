@@ -1,0 +1,145 @@
+import { describe, it, expect } from 'vitest';
+import {
+  STATUS_PROCESSED_OK,
+  extractErrorMessage,
+  getTransactionStatusDescription,
+  getTroubleshootingInfo,
+  isRecordMissingError,
+  statusWarrantsLineLookup,
+} from '../src/errors';
+
+/** Characterisation of POReceiptShortcutV6's error handling. */
+
+describe('getTransactionStatusDescription', () => {
+  it('names every documented MHS850 status', () => {
+    const expected: Record<string, string> = {
+      '10': 'Entered',
+      '15': 'Error on message header',
+      '20': 'Header validated, no errors',
+      '25': 'Error on message packages/IDs',
+      '30': 'Package/ID validated, no errors',
+      '35': 'Error on message lines/instructions',
+      '40': 'Line/instructions validated, no errors',
+      '45': 'Error from business component',
+      '90': 'Processed, no errors',
+      '92': 'Processed, test message, no update performed',
+      '99': 'Archived',
+    };
+    for (const [code, text] of Object.entries(expected)) {
+      expect(getTransactionStatusDescription(code)).toBe(text);
+    }
+  });
+
+  it('falls back rather than throwing on an unknown status', () =>
+    expect(getTransactionStatusDescription('77')).toBe('Unknown status'));
+
+  it('treats only 90 as success', () => {
+    expect(STATUS_PROCESSED_OK).toBe('90');
+    // 92 is a test-mode run: it "succeeded" but moved no stock.
+    expect(getTransactionStatusDescription('92')).toContain('no update performed');
+  });
+});
+
+describe('statusWarrantsLineLookup', () => {
+  it('is true for the statuses where a line lookup explains the failure', () => {
+    for (const s of ['25', '30', '35', '40', '45']) {
+      expect(statusWarrantsLineLookup(s)).toBe(true);
+    }
+  });
+  it('is false for header-level and terminal statuses', () => {
+    for (const s of ['10', '15', '20', '90', '92', '99']) {
+      expect(statusWarrantsLineLookup(s)).toBe(false);
+    }
+  });
+});
+
+describe('getTroubleshootingInfo', () => {
+  it('appends the line detail for line-level failures', () => {
+    const out = getTroubleshootingInfo('35', 'Item ABC rejected');
+    expect(out).toContain('Line validation failed');
+    expect(out).toContain('Item ABC rejected');
+  });
+
+  it('omits an empty line detail rather than leaving a blank line', () => {
+    expect(getTroubleshootingInfo('35', '')).toBe(
+      'Line validation failed. Check MHS851 for the failing line.'
+    );
+  });
+
+  it('explains test mode for 92, which otherwise looks like success', () =>
+    expect(getTroubleshootingInfo('92')).toContain('no inventory update'));
+
+  it('names the status in its fallback', () =>
+    expect(getTroubleshootingInfo('77')).toContain('status 77'));
+});
+
+describe('extractErrorMessage', () => {
+  it('falls back to the operation name when there is no error object', () => {
+    expect(extractErrorMessage(null, 'Receipt')).toBe('Receipt failed');
+    expect(extractErrorMessage(undefined, 'Receipt')).toBe('Receipt failed');
+  });
+
+  it('prefers errorMessage over message', () => {
+    const out = extractErrorMessage({ errorMessage: 'MI says no', message: 'generic' });
+    expect(out).toContain('MI says no');
+    expect(out).not.toContain('generic');
+  });
+
+  it('includes the API, error code and field for whoever chases it in M3', () => {
+    const out = extractErrorMessage(
+      {
+        errorMessage: 'Item not found',
+        errorCode: 'WW101',
+        errorField: 'ITNO',
+        program: 'MMS240MI',
+        transaction: 'Add',
+      },
+      'Equipment creation'
+    );
+    expect(out).toContain('Item not found');
+    expect(out).toContain('MMS240MI/Add');
+    expect(out).toContain('WW101');
+    expect(out).toContain('ITNO');
+  });
+
+  it('omits the technical block entirely when there is nothing to show', () => {
+    expect(extractErrorMessage({ message: 'boom' }, 'Op')).toBe('boom');
+  });
+
+  it('does not print the API line when only the program is known', () => {
+    // transaction is required too; a half-line would be worse than none.
+    const out = extractErrorMessage({ program: 'MMS240MI', errorCode: 'X1' });
+    expect(out).not.toContain('API:');
+    expect(out).toContain('X1');
+  });
+});
+
+describe('isRecordMissingError', () => {
+  it('is false for no error', () => {
+    expect(isRecordMissingError(null)).toBe(false);
+    expect(isRecordMissingError(undefined)).toBe(false);
+  });
+
+  it('recognises the not-found wording', () => {
+    expect(isRecordMissingError({ errorMessage: 'No record found' })).toBe(true);
+    expect(isRecordMissingError({ message: 'Record not found' })).toBe(true);
+  });
+
+  it('reads statusCode and the jQuery XHR status alike', () => {
+    expect(isRecordMissingError({ statusCode: 400 })).toBe(true);
+    expect(isRecordMissingError({ status: 400 })).toBe(true);
+  });
+
+  it('DEFECT, pinned: a malformed request reads as "record missing"', () => {
+    // MI returns 400 both for "no such record" and for a bad request — an
+    // unknown field, a value past its length. V6 cannot tell them apart, so a
+    // broken call is read as "that serial is free" and processing continues.
+    // Locked in here; corrected in a later commit so the change is visible.
+    const malformed = { statusCode: 400, errorMessage: 'Field ITNO is invalid' };
+    expect(isRecordMissingError(malformed)).toBe(true);
+  });
+
+  it('is false for a server error', () => {
+    expect(isRecordMissingError({ statusCode: 500, errorMessage: 'boom' })).toBe(false);
+  });
+});
