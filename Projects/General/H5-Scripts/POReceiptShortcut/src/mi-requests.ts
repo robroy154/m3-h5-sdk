@@ -42,10 +42,11 @@ export interface PoLineContext {
   poItemName: string;
   /** Item master description (ITDS), the fallback. */
   itemDescription: string;
-  /** Manufacturer. */
+  /**
+   * Manufacturer. Written to the warehouse LINE, not to the equipment record:
+   * MMS240MI/Add does not accept PROD, MHS850MI/AddWhsLine does.
+   */
   PROD: string;
-  /** Revision number. */
-  ECVE: string;
 }
 
 function truncate(value: string, max: number): string {
@@ -95,7 +96,11 @@ export function chooseOversizeTarget(originalSerial: string): OversizeTarget {
  *   records which vendor supplied it.
  * - SKEY ("search key equipment", 20) now carries the operator's serial, so a
  *   derived BSN value remains findable by what the vendor actually printed.
- * - PROD and ECVE are captured; M3 sets both on ILOMA and V6 captured neither.
+ * - PROD is captured, but on the warehouse line rather than here: the catalog
+ *   shows MMS240MI/Add takes no PROD input, and no ECVE input either. An
+ *   earlier draft of this file set both on the equipment record, where M3
+ *   would have ignored them. ECVE has no home in either write transaction and
+ *   is no longer fetched.
  *
  * PUNO and PNLI are kept even though PPS300's chkIndiv() overwrites them
  * during the receipt. chkIndiv only runs for INDI 2, so leaving them out would
@@ -122,8 +127,6 @@ export function buildEquipmentRecord(
     PUNO: ctx.PUNO,
     PNLI: ctx.PNLI,
     PNLS: ctx.PNLS,
-    PROD: ctx.PROD,
-    ECVE: ctx.ECVE,
     ALII: truncate(ctx.poItemName || ctx.itemDescription, ALII_MAX_LENGTH),
     SKEY: truncate(entry.originalSerial, SKEY_MAX_LENGTH),
     // Only when the original does not fit SERN but does fit EEQN.
@@ -180,4 +183,149 @@ export function describeLineFailure(line: Record<string, string>): string {
   if (line.ITNO) parts.push('Item: ' + line.ITNO);
   if (line.BANO) parts.push('Lot/Serial: ' + line.BANO);
   return parts.join('\n');
+}
+
+/* ─── MHS850MI record builders ───────────────────────────────────────────── */
+
+/**
+ * M3 protocol constants for this transaction shape. Named, not configurable:
+ * these identify what kind of warehouse message is being written, and a
+ * different value would describe a different operation.
+ */
+const QUALIFIER_RECEIPT = '20';
+const DIRECTION_INBOUND = '20';
+/** PrcWhsTran processing flag: execute rather than validate. */
+export const PROCESS_FLAG_EXECUTE = '*EXE';
+
+/** MHS850MI/AddWhsHead input lengths that need guarding. */
+export const YREF_MAX_LENGTH = 30;
+/** MHS850MI/AddWhsLine REMK. V6 used BREM, which is 20 — see below. */
+export const REMK_MAX_LENGTH = 30;
+
+export interface WhsHeaderConfig {
+  partnerA: string;
+  partnerB: string;
+  partnerQualifierA: string;
+  partnerQualifierB: string;
+  messageType: string;
+}
+
+/**
+ * MHS850MI/AddWhsHead record.
+ *
+ * E0PA/E0PB (partner) and E065 (message type) together resolve the MMS865
+ * partner record M3 uses to interpret the message. V6 hardcoded E065 to
+ * 'PPS300', which requires the customer to have created that partner record by
+ * hand; the default here is the record M3 ships, and all five keys are
+ * configurable for a tenant that has its own.
+ *
+ * YREF ("Your reference", 30) stamps the message with what wrote it, so a
+ * receipt can be traced back to this script rather than to a person.
+ */
+export function buildWarehouseHeaderRecord(
+  whlo: string,
+  config: WhsHeaderConfig,
+  reference: string
+): Record<string, string> {
+  return compact({
+    WHLO: whlo,
+    QLFR: QUALIFIER_RECEIPT,
+    E0PA: config.partnerA,
+    E0PB: config.partnerB,
+    E0QA: config.partnerQualifierA,
+    E0QB: config.partnerQualifierB,
+    E007: DIRECTION_INBOUND,
+    E065: config.messageType,
+    YREF: truncate(reference, YREF_MAX_LENGTH),
+  });
+}
+
+/** MHS850MI/AddWhsPack record. The package groups the lines of one PO line. */
+export function buildWarehousePackRecord(
+  whlo: string,
+  msgn: string,
+  packNumber: string
+): Record<string, string> {
+  return compact({
+    WHLO: whlo,
+    MSGN: msgn,
+    PACN: packNumber,
+    QLFR: QUALIFIER_RECEIPT,
+  });
+}
+
+/** One receipt line: a quantity, optionally against a lot or serial. */
+export interface WhsLineInput {
+  /** Received quantity, in the purchase unit. */
+  RVQA: string;
+  /** Lot or serial number, for a lot-controlled item. */
+  BANO?: string;
+  /** Expiration date, yyyyMMdd. */
+  EXPI?: string;
+}
+
+export interface WhsLineContext {
+  WHLO: string;
+  MSGN: string;
+  PACN: string;
+  ITNO: string;
+  /** Purchase unit of measure. */
+  PUUN: string;
+  PUNO: string;
+  PNLI: string;
+  PNLS: string;
+  /**
+   * Stock location. Blank is legitimate: under direct put-away, or a goods
+   * receiving method that presets one, M3 places the goods itself.
+   */
+  WHSL: string;
+  /** Flagged as completed. */
+  OEND: string;
+  /** Manufacturer, when the PO line carries one. */
+  PROD: string;
+}
+
+/**
+ * MHS850MI/AddWhsLine record.
+ *
+ * RIDN/RIDL/RIDX are the reference-order keys: PO number, line, and suffix.
+ * That linkage is what tells M3 this is a receipt against that PO line rather
+ * than an unreferenced inbound movement.
+ *
+ * The origin-location note moves from BREM to REMK. Both are "Remark" on this
+ * transaction, but BREM is 20 characters and the note is `Orig Loc: ` (10)
+ * plus WHSL (10) — exactly 20, with no headroom at all. REMK is 30. Same
+ * field semantics, no boundary to trip over.
+ */
+export function buildWarehouseLineRecord(
+  input: WhsLineInput,
+  ctx: WhsLineContext
+): Record<string, string> {
+  const record: Record<string, string> = {
+    WHLO: ctx.WHLO,
+    MSGN: ctx.MSGN,
+    PACN: ctx.PACN,
+    QLFR: QUALIFIER_RECEIPT,
+    ITNO: ctx.ITNO,
+    RVQA: input.RVQA,
+    PUUN: ctx.PUUN,
+    RIDN: ctx.PUNO,
+    RIDL: ctx.PNLI,
+    RIDX: ctx.PNLS,
+    OEND: ctx.OEND,
+    WHSL: ctx.WHSL,
+    PROD: ctx.PROD,
+  };
+
+  if (input.BANO) {
+    record.BANO = input.BANO;
+    if (ctx.WHSL) {
+      record.REMK = truncate('Orig Loc: ' + ctx.WHSL, REMK_MAX_LENGTH);
+    }
+  }
+  if (input.EXPI) {
+    record.EXPI = input.EXPI;
+  }
+
+  return compact(record);
 }

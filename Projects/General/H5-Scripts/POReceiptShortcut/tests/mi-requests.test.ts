@@ -3,9 +3,13 @@ import {
   ALII_MAX_LENGTH,
   LINE_DIAGNOSTIC_FIELDS,
   PoLineContext,
+  REMK_MAX_LENGTH,
   SKEY_MAX_LENGTH,
+  YREF_MAX_LENGTH,
   buildCustomFieldRecord,
   buildEquipmentRecord,
+  buildWarehouseHeaderRecord,
+  buildWarehouseLineRecord,
   chooseOversizeTarget,
   describeLineFailure,
 } from '../src/mi-requests';
@@ -25,7 +29,6 @@ const ctx: PoLineContext = {
   poItemName: 'PO item name',
   itemDescription: 'Item master description',
   PROD: 'ACME',
-  ECVE: 'A1',
 };
 
 const entry = (original: string, derived = original, index = 0): SerialEntry => ({
@@ -96,10 +99,15 @@ describe('buildEquipmentRecord', () => {
     expect(long.EEQN).toBeUndefined(); // goes to CMS474 instead
   });
 
-  it('captures PROD and ECVE, which M3 sets on ILOMA and V6 dropped', () => {
+  it('sets no PROD or ECVE, because MMS240MI/Add accepts neither', () => {
+    // An earlier draft set both here on the strength of M3's own createMILOIN
+    // writing them to ILOMA. The catalog is clear that Add's input list has
+    // no PROD and no ECVE, so M3 would have ignored both. PROD moves to the
+    // warehouse line, which does accept it; ECVE has no home in either write
+    // transaction and is no longer read.
     const r = buildEquipmentRecord(entry('S1'), ctx);
-    expect(r.PROD).toBe('ACME');
-    expect(r.ECVE).toBe('A1');
+    expect(r.PROD).toBeUndefined();
+    expect(r.ECVE).toBeUndefined();
   });
 
   it('keeps PUNO/PNLI even though chkIndiv overwrites them', () => {
@@ -112,10 +120,9 @@ describe('buildEquipmentRecord', () => {
   });
 
   it('omits empty fields rather than sending blanks', () => {
-    const r = buildEquipmentRecord(entry('S1'), { ...ctx, CUNO: '', PROD: '', ECVE: '' });
+    const r = buildEquipmentRecord(entry('S1'), { ...ctx, CUNO: '', PROD: '' });
     expect(r).not.toHaveProperty('CUNO');
     expect(r).not.toHaveProperty('PROD');
-    expect(r).not.toHaveProperty('ECVE');
     expect(r.ITNO).toBe('ITEM-1'); // populated ones survive
   });
 
@@ -176,5 +183,94 @@ describe('line failure diagnostics', () => {
   it('returns nothing for an absent or empty line', () => {
     expect(describeLineFailure(null as any)).toBe('');
     expect(describeLineFailure({})).toBe('');
+  });
+});
+
+describe('buildWarehouseHeaderRecord', () => {
+  const config = {
+    partnerA: 'WS',
+    partnerB: 'WS',
+    partnerQualifierA: '',
+    partnerQualifierB: '',
+    messageType: 'WMS',
+  };
+
+  it('sends every key AddWhsHead marks mandatory', () => {
+    const record = buildWarehouseHeaderRecord('REG', config, 'ref');
+    for (const key of ['WHLO', 'QLFR', 'E0PA', 'E0PB', 'E065']) {
+      expect(record[key]).toBeTruthy();
+    }
+  });
+
+  it('omits the partner qualifiers when not configured', () => {
+    // An empty E0QA would be a value M3 tries to resolve, not an absence.
+    const record = buildWarehouseHeaderRecord('REG', config, 'ref');
+    expect(record.E0QA).toBeUndefined();
+    expect(record.E0QB).toBeUndefined();
+  });
+
+  it('passes the qualifiers through when they are configured', () => {
+    const record = buildWarehouseHeaderRecord(
+      'REG', { ...config, partnerQualifierA: 'A1', partnerQualifierB: 'B1' }, 'ref'
+    );
+    expect(record.E0QA).toBe('A1');
+    expect(record.E0QB).toBe('B1');
+  });
+
+  it('truncates the reference to YREF:30', () => {
+    const record = buildWarehouseHeaderRecord('REG', config, 'X'.repeat(45));
+    expect(record.YREF).toHaveLength(YREF_MAX_LENGTH);
+  });
+});
+
+describe('buildWarehouseLineRecord', () => {
+  const ctx = {
+    WHLO: 'REG', MSGN: 'MSG1', PACN: 'PO1_10', ITNO: 'ITEM1',
+    PUUN: 'EA', PUNO: 'PO1', PNLI: '10', PNLS: '0',
+    WHSL: 'A01', OEND: '1', PROD: 'ACME',
+  };
+
+  it('links the line back to the PO through RIDN/RIDL/RIDX', () => {
+    // That linkage is what makes this a receipt rather than a loose inbound.
+    const record = buildWarehouseLineRecord({ RVQA: '5' }, ctx);
+    expect(record.RIDN).toBe('PO1');
+    expect(record.RIDL).toBe('10');
+    expect(record.RIDX).toBe('0');
+  });
+
+  it('carries the manufacturer, which the equipment record cannot', () => {
+    // MMS240MI/Add has no PROD input; AddWhsLine does.
+    expect(buildWarehouseLineRecord({ RVQA: '1' }, ctx).PROD).toBe('ACME');
+  });
+
+  it('omits the location when none resolved', () => {
+    // Blank is legitimate under direct put-away: M3 places the goods itself.
+    const record = buildWarehouseLineRecord({ RVQA: '1' }, { ...ctx, WHSL: '' });
+    expect(record.WHSL).toBeUndefined();
+  });
+
+  it('writes the origin-location note to REMK, not BREM', () => {
+    // BREM is 20 and the note is exactly 20 at a full-width WHSL. REMK is 30.
+    const record = buildWarehouseLineRecord({ RVQA: '1', BANO: 'SER1' }, ctx);
+    expect(record.REMK).toBe('Orig Loc: A01');
+    expect(record.BREM).toBeUndefined();
+  });
+
+  it('keeps the note inside REMK:30 at a full-width location', () => {
+    const record = buildWarehouseLineRecord(
+      { RVQA: '1', BANO: 'SER1' }, { ...ctx, WHSL: 'L'.repeat(10) }
+    );
+    expect(record.REMK!.length).toBeLessThanOrEqual(REMK_MAX_LENGTH);
+  });
+
+  it('adds no note for an uncontrolled line', () => {
+    expect(buildWarehouseLineRecord({ RVQA: '1' }, ctx).REMK).toBeUndefined();
+  });
+
+  it('includes the expiry only when one was collected', () => {
+    expect(buildWarehouseLineRecord({ RVQA: '1' }, ctx).EXPI).toBeUndefined();
+    expect(
+      buildWarehouseLineRecord({ RVQA: '1', EXPI: '20260101' }, ctx).EXPI
+    ).toBe('20260101');
   });
 });

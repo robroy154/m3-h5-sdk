@@ -154,3 +154,35 @@ export function isRecordMissingError(error: MiErrorLike | null | undefined): boo
   const message = (error.errorMessage || error.message || '').toLowerCase();
   return message.indexOf('no record') !== -1 || message.indexOf('not found') !== -1;
 }
+
+/**
+ * Whether a failure is a transient lock or busy condition worth retrying.
+ *
+ * Ported from V6's isTransientProcessLock(), which only ever guarded
+ * PrcWhsTran. Kept narrow on purpose: a retry is only safe on an operation
+ * that is idempotent or has not yet taken effect, and processing a warehouse
+ * message that failed to start is both. Nothing else in the write path retries.
+ */
+const TRANSIENT_KEYWORDS = [
+  'locked', 'record lock', 'busy', 'in use',
+  'try again', 'temporary', 'timeout', 'deadlock',
+];
+
+/** MI error codes that in practice mean "held elsewhere, come back". */
+const TRANSIENT_ERROR_CODES = ['WPU0901', 'M3LOCK'];
+
+export function isTransientProcessLock(
+  error: MiErrorLike | null | undefined
+): boolean {
+  if (!error) return false;
+
+  const status = error.statusCode ?? error.status;
+  // 409 Conflict and 503 Unavailable are the two HTTP shapes M3 uses here.
+  if (status === 409 || status === 503) return true;
+
+  const code = String(error.errorCode || '').toUpperCase();
+  if (TRANSIENT_ERROR_CODES.indexOf(code) !== -1) return true;
+
+  const message = String(error.errorMessage || error.message || '').toLowerCase();
+  return TRANSIENT_KEYWORDS.some((k) => message.indexOf(k) !== -1);
+}

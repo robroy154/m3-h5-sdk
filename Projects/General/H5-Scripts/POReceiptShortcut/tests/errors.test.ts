@@ -5,6 +5,7 @@ import {
   getTransactionStatusDescription,
   getTroubleshootingInfo,
   isRecordMissingError,
+  isTransientProcessLock,
   statusWarrantsLineLookup,
 } from '../src/errors';
 
@@ -146,5 +147,48 @@ describe('isRecordMissingError', () => {
 
   it('is false for a server error', () => {
     expect(isRecordMissingError({ statusCode: 500, errorMessage: 'boom' })).toBe(false);
+  });
+});
+
+describe('isTransientProcessLock', () => {
+  it('treats 409 and 503 as transient', () => {
+    expect(isTransientProcessLock({ statusCode: 409 })).toBe(true);
+    expect(isTransientProcessLock({ status: 503 })).toBe(true);
+  });
+
+  it('does not treat a business failure as transient', () => {
+    // Retrying a non-transient PrcWhsTran risks receiving the goods twice.
+    expect(isTransientProcessLock({ statusCode: 400 })).toBe(false);
+    expect(isTransientProcessLock({ errorMessage: 'Quantity exceeds order' })).toBe(false);
+    expect(isTransientProcessLock({ errorCode: 'WW10203' })).toBe(false);
+  });
+
+  it('recognises the lock and busy wordings', () => {
+    for (const message of [
+      'Record locked by another user',
+      'Resource is busy',
+      'Item in use',
+      'Please try again',
+      'Temporary failure',
+      'Request timeout',
+      'Deadlock detected',
+    ]) {
+      expect(isTransientProcessLock({ errorMessage: message })).toBe(true);
+    }
+  });
+
+  it('matches the wording case-insensitively', () => {
+    expect(isTransientProcessLock({ errorMessage: 'RECORD LOCKED' })).toBe(true);
+  });
+
+  it('recognises the known lock error codes', () => {
+    expect(isTransientProcessLock({ errorCode: 'wpu0901' })).toBe(true);
+    expect(isTransientProcessLock({ errorCode: 'M3LOCK' })).toBe(true);
+  });
+
+  it('is false for nothing at all', () => {
+    expect(isTransientProcessLock(null)).toBe(false);
+    expect(isTransientProcessLock(undefined)).toBe(false);
+    expect(isTransientProcessLock({})).toBe(false);
   });
 });
