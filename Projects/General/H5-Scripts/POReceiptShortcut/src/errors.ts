@@ -137,19 +137,20 @@ export function extractErrorMessage(
 /**
  * Whether a failure means "no such record".
  *
- * CARRIED OVER FROM V6, AND WRONG. HTTP 400 is treated as not-found, but MI
- * also returns 400 for a malformed request — a bad field name, a value past
- * its length. So a genuinely broken call reads as "that serial is free" and
- * processing continues on a false premise. Pinned by test here; corrected in
- * a separate commit so the change is visible on its own.
+ * V6 treated HTTP 400 as not-found. MI returns 400 both for a genuinely
+ * missing record AND for a malformed request — an unknown field, a value past
+ * its length, a bad program name. V6 could not tell them apart, so a broken
+ * call read as "that serial is free" and the receipt continued on a false
+ * premise, creating equipment against a serial nobody had actually checked.
+ *
+ * Now the wording decides. A 400 carrying no not-found text is treated as a
+ * real error, which fails the receipt loudly instead of proceeding on an
+ * assumption. That is the safe direction: refusing a receipt that might have
+ * been fine costs a retry, whereas posting one against an unverified serial
+ * costs an inventory correction.
  */
 export function isRecordMissingError(error: MiErrorLike | null | undefined): boolean {
   if (!error) return false;
   const message = (error.errorMessage || error.message || '').toLowerCase();
-  const httpStatus = error.statusCode !== undefined ? error.statusCode : error.status;
-  return (
-    httpStatus === 400 ||
-    message.indexOf('no record') !== -1 ||
-    message.indexOf('not found') !== -1
-  );
+  return message.indexOf('no record') !== -1 || message.indexOf('not found') !== -1;
 }

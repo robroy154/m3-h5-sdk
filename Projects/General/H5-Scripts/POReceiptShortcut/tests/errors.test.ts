@@ -125,18 +125,23 @@ describe('isRecordMissingError', () => {
     expect(isRecordMissingError({ message: 'Record not found' })).toBe(true);
   });
 
-  it('reads statusCode and the jQuery XHR status alike', () => {
-    expect(isRecordMissingError({ statusCode: 400 })).toBe(true);
-    expect(isRecordMissingError({ status: 400 })).toBe(true);
+  it('FIXED: a malformed 400 is no longer read as "record missing"', () => {
+    // MI returns 400 both for "no such record" and for a bad request. V6 could
+    // not tell them apart, so a broken call read as "that serial is free" and
+    // the receipt continued, creating equipment against an unverified serial.
+    const malformed = { statusCode: 400, errorMessage: 'Field ITNO is invalid' };
+    expect(isRecordMissingError(malformed)).toBe(false);
   });
 
-  it('DEFECT, pinned: a malformed request reads as "record missing"', () => {
-    // MI returns 400 both for "no such record" and for a bad request — an
-    // unknown field, a value past its length. V6 cannot tell them apart, so a
-    // broken call is read as "that serial is free" and processing continues.
-    // Locked in here; corrected in a later commit so the change is visible.
-    const malformed = { statusCode: 400, errorMessage: 'Field ITNO is invalid' };
-    expect(isRecordMissingError(malformed)).toBe(true);
+  it('a bare 400 with no wording is treated as a real error', () => {
+    // Failing loudly costs a retry. Proceeding costs an inventory correction.
+    expect(isRecordMissingError({ statusCode: 400 })).toBe(false);
+    expect(isRecordMissingError({ status: 400 })).toBe(false);
+  });
+
+  it('still recognises not-found whatever the HTTP status', () => {
+    expect(isRecordMissingError({ statusCode: 400, errorMessage: 'No record found' })).toBe(true);
+    expect(isRecordMissingError({ statusCode: 404, message: 'Record not found' })).toBe(true);
   });
 
   it('is false for a server error', () => {
