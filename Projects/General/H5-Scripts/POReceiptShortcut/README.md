@@ -34,7 +34,7 @@ The compiled `.js` and `.js.map` are committed so an H5 admin can deploy
 without running a build.
 
 > **Before a production deploy**, minify the `.js`. The H5 developer guide
-> recommends it, and this bundle is ~110 KB unminified because it keeps its
+> recommends it, and this bundle is ~132 KB unminified because it keeps its
 > comments. Keep the `.ts` sources as the thing you maintain — a minified file
 > cannot be debugged. The code uses `.then(success, error)` throughout and
 > never `.catch()`, precisely so minifiers do not choke on the reserved word.
