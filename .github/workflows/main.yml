@@ -7,6 +7,12 @@ on:
     branches: [master]
   workflow_dispatch:
 
+# Least privilege. Every job here only checks out and runs npm; none of them
+# write to the repository, post statuses, or publish packages. Without this the
+# workflow inherits the repository default GITHUB_TOKEN scope.
+permissions:
+  contents: read
+
 # Scope note: the jobs below cover this fork's own work — the H5 scripts under
 # Projects/. They deliberately do NOT build or test anything under SDKs/, which
 # is Infor's vendored SDK material, checked in verbatim and never modified here.
