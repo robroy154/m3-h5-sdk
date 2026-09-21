@@ -1,11 +1,8 @@
 /**
  * Turning MI failures into something a receiving clerk can act on.
- *
- * Extracted from POReceiptShortcutV6 with its behaviour preserved, so the
- * tests can pin it before any of it changes. Two known problems are carried
- * over deliberately and marked; both are fixed in a later, visible commit
- * rather than smuggled in here.
  */
+
+import { describeMiMessage, messageMatchesCatalogue } from './mi-messages';
 
 /** Shape of the bits of IMIResponse this module reads. */
 export interface MiErrorLike {
@@ -22,81 +19,101 @@ export interface MiErrorLike {
 
 /* ─── MHS850 message status (MHS850MI/GetWhsHead -> STAT) ────────────────── */
 
-const TRANSACTION_STATUS: Record<string, string> = {
-  '10': 'Entered',
-  '15': 'Error on message header',
-  '20': 'Header validated, no errors',
-  '25': 'Error on message packages/IDs',
-  '30': 'Package/ID validated, no errors',
-  '35': 'Error on message lines/instructions',
-  '40': 'Line/instructions validated, no errors',
-  '45': 'Error from business component',
-  '90': 'Processed, no errors',
-  '92': 'Processed, test message, no update performed',
-  '99': 'Archived',
+interface StatusInfo {
+  /** M3's own name for the status. */
+  label: string;
+  /** What to do about it. Absent means there is nothing useful to say. */
+  advice?: string;
+  /** Whether a per-line lookup will add anything. */
+  lines?: boolean;
+}
+
+const TRANSACTION_STATUS: Record<string, StatusInfo> = {
+  '10': {
+    label: 'Entered',
+    advice: 'Warehouse transaction message was created but has not been validated yet.',
+  },
+  '15': {
+    label: 'Error on message header',
+    advice: 'Header validation failed. Check MHS850 for the header error.',
+  },
+  '20': {
+    label: 'Header validated, no errors',
+    advice:
+      'Header validated, but package processing did not start. Check MHS850 for the message details.',
+  },
+  '25': {
+    label: 'Error on message packages/IDs',
+    advice: 'Package validation failed. Check MHS851 for the package error.',
+    lines: true,
+  },
+  '30': {
+    label: 'Package/ID validated, no errors',
+    advice:
+      'Package validated, but line processing did not complete. Check MHS851 for the package details.',
+    lines: true,
+  },
+  '35': {
+    label: 'Error on message lines/instructions',
+    advice: 'Line validation failed. Check MHS851 for the failing line.',
+    lines: true,
+  },
+  '40': {
+    label: 'Line/instructions validated, no errors',
+    advice:
+      'Lines validated, but downstream processing did not finish. Check MHS851 for the failing line.',
+    lines: true,
+  },
+  '45': {
+    label: 'Error from business component',
+    advice: 'Business validation failed during receipt processing.',
+    lines: true,
+  },
+  '90': { label: 'Processed, no errors' },
+  '92': {
+    label: 'Processed, test message, no update performed',
+    advice: 'The transaction ran in test mode, so no inventory update was performed.',
+  },
+  '99': {
+    label: 'Archived',
+    advice: 'The warehouse transaction message is archived.',
+  },
 };
 
 /** The only status that means the goods actually moved. */
 export const STATUS_PROCESSED_OK = '90';
 
 export function getTransactionStatusDescription(status: string): string {
-  return TRANSACTION_STATUS[status] || 'Unknown status';
+  const info = TRANSACTION_STATUS[status];
+  return info ? info.label : 'Unknown status';
 }
 
 /** Statuses where a per-line lookup will explain what failed. */
 export function statusWarrantsLineLookup(status: string): boolean {
-  return ['25', '30', '35', '40', '45'].indexOf(status) !== -1;
+  const info = TRANSACTION_STATUS[status];
+  return !!(info && info.lines);
 }
 
 export function getTroubleshootingInfo(
   status: string,
   lineFailureDetail = ''
 ): string {
-  const withDetail = (lead: string): string =>
-    [lead, lineFailureDetail].filter(Boolean).join('\n');
-
-  switch (status) {
-    case '10':
-      return 'Warehouse transaction message was created but has not been validated yet.';
-    case '15':
-      return 'Header validation failed. Check MHS850 for the header error.';
-    case '20':
-      return 'Header validated, but package processing did not start. Check MHS850 for the message details.';
-    case '25':
-      return 'Package validation failed. Check MHS851 for the package error.';
-    case '30':
-      return 'Package validated, but line processing did not complete. Check MHS851 for the package details.';
-    case '35':
-      return withDetail('Line validation failed. Check MHS851 for the failing line.');
-    case '40':
-      return withDetail(
-        'Lines validated, but downstream processing did not finish. Check MHS851 for the failing line.'
-      );
-    case '45':
-      return withDetail('Business validation failed during receipt processing.');
-    case '92':
-      return 'The transaction ran in test mode, so no inventory update was performed.';
-    case '99':
-      return 'The warehouse transaction message is archived.';
-    default:
-      return (
-        'Warehouse transaction ended in status ' +
+  const info = TRANSACTION_STATUS[status];
+  const advice =
+    info && info.advice
+      ? info.advice
+      : 'Warehouse transaction ended in status ' +
         status +
-        '. Check MHS850/MHS851 for details.'
-      );
-  }
+        '. Check MHS850/MHS851 for details.';
+  // Line detail is appended whenever the caller found any, rather than only for
+  // a hand-picked set of statuses: if a lookup returned something, it is worth
+  // showing under whichever status prompted it.
+  return [advice, lineFailureDetail].filter(Boolean).join('\n');
 }
 
 /* ─── MI error formatting ────────────────────────────────────────────────── */
 
-function formatErrorCode(errorCode: string, errorMessage: string): string {
-  if (errorCode && errorMessage) return '\n• Error: ' + errorCode + ': ' + errorMessage;
-  if (errorMessage) return '\n• Error: ' + errorMessage;
-  if (errorCode) return '\n• Error Code: ' + errorCode;
-  return '';
-}
-
-function getTechnicalDetails(error: MiErrorLike): string {
+function getTechnicalDetails(error: MiErrorLike, headline: string): string {
   const errorCode = error.errorCode || '';
   const errorMessage = error.errorMessage || '';
   const errorField = error.errorField || '';
@@ -111,9 +128,24 @@ function getTechnicalDetails(error: MiErrorLike): string {
   if (program && transaction) {
     details += '\n• API: ' + program + '/' + transaction;
   }
-  details += formatErrorCode(errorCode, errorMessage);
+  if (errorCode && errorMessage) {
+    details += '\n• Error: ' + errorCode + ': ' + errorMessage;
+  } else if (errorMessage) {
+    details += '\n• Error: ' + errorMessage;
+  } else if (errorCode) {
+    details += '\n• Error Code: ' + errorCode;
+  }
   if (errorField) {
     details += '\n• Field: ' + errorField;
+  }
+
+  // What the code means, when the headline has not already said it. Testing the
+  // headline rather than errorMessage matters: when M3 sends a bare code the
+  // headline IS the catalogued text, and repeating it here printed the same
+  // sentence twice.
+  const meaning = describeMiMessage(errorCode);
+  if (meaning && !messageMatchesCatalogue(errorCode, headline)) {
+    details += '\n• Means: ' + meaning;
   }
   return details;
 }
@@ -130,8 +162,14 @@ export function extractErrorMessage(
   if (!error) {
     return fallback;
   }
-  const headline = error.errorMessage || error.message || fallback;
-  return headline + getTechnicalDetails(error);
+  // The catalogued text stands in as the headline when M3 sent none, which is
+  // the difference between "Receipt failed" and "Purchase order U/M is invalid".
+  const headline =
+    error.errorMessage ||
+    error.message ||
+    describeMiMessage(error.errorCode) ||
+    fallback;
+  return headline + getTechnicalDetails(error, headline);
 }
 
 /**
@@ -143,11 +181,9 @@ export function extractErrorMessage(
  * call read as "that serial is free" and the receipt continued on a false
  * premise, creating equipment against a serial nobody had actually checked.
  *
- * Now the wording decides. A 400 carrying no not-found text is treated as a
- * real error, which fails the receipt loudly instead of proceeding on an
- * assumption. That is the safe direction: refusing a receipt that might have
- * been fine costs a retry, whereas posting one against an unverified serial
- * costs an inventory correction.
+ * Now the wording decides. Refusing a receipt that might have been fine costs
+ * a retry; posting one against an unverified serial costs an inventory
+ * correction.
  */
 export function isRecordMissingError(error: MiErrorLike | null | undefined): boolean {
   if (!error) return false;
@@ -158,18 +194,25 @@ export function isRecordMissingError(error: MiErrorLike | null | undefined): boo
 /**
  * Whether a failure is a transient lock or busy condition worth retrying.
  *
- * Ported from V6's isTransientProcessLock(), which only ever guarded
- * PrcWhsTran. Kept narrow on purpose: a retry is only safe on an operation
- * that is idempotent or has not yet taken effect, and processing a warehouse
- * message that failed to start is both. Nothing else in the write path retries.
+ * Only ever guards PrcWhsTran. Kept narrow on purpose: a retry is safe only on
+ * an operation that is idempotent or has not yet taken effect, and processing a
+ * warehouse message that failed to start is both.
  */
 const TRANSIENT_KEYWORDS = [
   'locked', 'record lock', 'busy', 'in use',
   'try again', 'temporary', 'timeout', 'deadlock',
 ];
 
-/** MI error codes that in practice mean "held elsewhere, come back". */
-const TRANSIENT_ERROR_CODES = ['WPU0901', 'M3LOCK'];
+/**
+ * XO_1130 ("Please try again later") is what MHS870 raises when its
+ * receiving-number lock times out during put-away — the one genuinely
+ * retryable failure on this path.
+ *
+ * V6 listed WPU0901 and M3LOCK here instead. WPU0901 is
+ * "Lowest status - purchase order &1 is invalid", a permanent rejection that
+ * no retry can clear, and M3LOCK is not an M3 message ID at all.
+ */
+const TRANSIENT_ERROR_CODES = ['XO_1130'];
 
 export function isTransientProcessLock(
   error: MiErrorLike | null | undefined

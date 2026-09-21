@@ -181,9 +181,17 @@ describe('isTransientProcessLock', () => {
     expect(isTransientProcessLock({ errorMessage: 'RECORD LOCKED' })).toBe(true);
   });
 
-  it('recognises the known lock error codes', () => {
-    expect(isTransientProcessLock({ errorCode: 'wpu0901' })).toBe(true);
-    expect(isTransientProcessLock({ errorCode: 'M3LOCK' })).toBe(true);
+  it('recognises the receiving-number lock timeout', () => {
+    // MHS870 raises XO_1130 when its receiving-number lock times out during
+    // put-away. That is the one retryable failure on this path.
+    expect(isTransientProcessLock({ errorCode: 'XO_1130' })).toBe(true);
+    expect(isTransientProcessLock({ errorCode: 'xo_1130' })).toBe(true);
+  });
+
+  it('does not retry WPU0901, which V6 wrongly treated as a lock', () => {
+    // "Lowest status - purchase order &1 is invalid" is permanent; retrying it
+    // only delays the error.
+    expect(isTransientProcessLock({ errorCode: 'WPU0901' })).toBe(false);
   });
 
   it('is false for nothing at all', () => {

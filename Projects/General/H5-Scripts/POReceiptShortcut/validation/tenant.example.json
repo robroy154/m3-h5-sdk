@@ -1,0 +1,61 @@
+{
+  "//": "Copy to tenant.local.json and fill in. tenant.local.json is gitignored; this file is NOT, so never put tenant values here. Nothing customer-specific belongs in either file that is committed.",
+
+  "environment": "SANDBOX",
+  "//environment": "One of DEV, TST, SANDBOX. The harness refuses to start on anything else, and refuses outright if the ION API URL or tenant looks like PRD unless --allow-production is passed on the command line.",
+
+  "ionApiFile": "./tenant.ionapi",
+  "//ionApiFile": "Path to the downloaded .ionapi credentials, relative to this config. Must come from an Authorized App of type 'Backend Service' — only that type carries the saak/sask service-account keys. The tenant string is read from the file's 'ti' field at runtime and is never written here.",
+
+  "company": "",
+  "division": "",
+  "//company": "CONO/DIVI. Leave blank to let M3 resolve the service account's own, which is what MI does for the script when the H5 user context is unreadable.",
+
+  "fixtures": {
+    "//": "Run --survey to fill the five item roles. The survey prints this block ready to paste.",
+
+    "puno": "",
+    "pnli": "",
+    "pnls": "0",
+    "//puno": "An open PO line to read. For scenario 1, use a NON-USD order — a USD one cannot demonstrate the CUCD fix.",
+
+    "coLinkedOrno": "",
+    "//coLinkedOrno": "Optional. A customer order linked to a PO (RORC 3). Left blank, probe 4 derives it from the PO line, and skips if there is none.",
+
+    "serialManualItem": "",
+    "serialAutoItem": "",
+    "serialForbiddenItem": "",
+    "lotUnregisteredItem": "",
+    "uncontrolledItem": "",
+    "//items": "INDI 2/BACD 0 · INDI 2/BACD 1,2,3,6,7 · INDI 2/BACD 4,5,8,9 · INDI 1 · INDI 0.",
+
+    "whlo": "",
+    "whsl": "",
+    "//whsl": "Leave blank to exercise the direct put-away path, where M3 places the goods itself and a blank location is correct.",
+
+    "faci": "",
+    "puun": "",
+    "grmt": "",
+    "quantity": "1",
+    "testLot": "",
+    "expiryDate": "",
+    "//expiryDate": "yyyyMMdd. Set with testLot to cover scenario 7.",
+
+    "wmsWarehouseGroup": "",
+    "//wmsWarehouseGroup": "Optional. Only set if this tenant has a WMS warehouse group to check (scenario 11).",
+
+    "cms474Group": "",
+    "cms474Field": "",
+    "//cms474": "The CMS474 custom field used for serials over 40 characters. Probe 10 only needs these to form a well-shaped key; it never creates a row."
+  },
+
+  "whsHeader": {
+    "//": "MHS850MI/AddWhsHead partner keys. E0PA/E0PB and E065 together resolve the MMS865 partner record M3 uses to interpret the message. These MUST match a partner record that exists on this tenant, or AddWhsHead is refused. See CONFIGURATION.md.",
+    "partnerA": "",
+    "partnerB": "",
+    "partnerQualifierA": "",
+    "partnerQualifierB": "",
+    "messageType": "",
+    "reference": "POReceiptShortcutV7-validation"
+  }
+}

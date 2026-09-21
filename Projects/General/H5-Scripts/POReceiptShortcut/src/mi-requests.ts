@@ -6,6 +6,7 @@
  * in M3, and none can be verified without a tenant.
  */
 
+import { describeMiMessage, messageMatchesCatalogue } from './mi-messages';
 import {
   CFMA_MAX_LENGTH,
   EEQN_MAX_LENGTH,
@@ -172,13 +173,39 @@ export const LINE_DIAGNOSTIC_FIELDS = [
   'MSLN', 'STAT', 'ITNO', 'BANO', 'MSID', 'MSGD', 'BREM', 'PACN',
 ];
 
-/** Picks the most useful failure text available on a returned line. */
+/**
+ * Picks the most useful failure text available on a returned line.
+ *
+ * `MSGD` is 78 characters and is often blank — M3 fills it when the line
+ * engine records an error, not when the line simply has not run. `MSID` is
+ * always there when something failed, so when the text is missing or cut off
+ * the catalogue supplies the sentence that goes with the id. Without that, a
+ * failed receipt reports `WPU0201` and stops.
+ */
 export function describeLineFailure(line: Record<string, string>): string {
   if (!line) return '';
   const parts: string[] = [];
   const message = line.MSGD || line.BREM || '';
-  if (message) parts.push(message);
-  if (line.MSID) parts.push('Message id: ' + line.MSID);
+  const meaning = describeMiMessage(line.MSID);
+
+  if (message) {
+    parts.push(message);
+  } else if (meaning) {
+    parts.push(meaning);
+  }
+
+  if (line.MSID) {
+    // The id keeps its explanation attached unless MSGD already said the same
+    // thing. Compared through the catalogue rather than by equality: MSGD is
+    // M3's filled-in text, so it is never byte-equal to the &1 template and a
+    // strict compare printed both wordings.
+    const explain = meaning && !messageMatchesCatalogue(line.MSID, message);
+    parts.push(
+      explain
+        ? 'Message id: ' + line.MSID + ' (' + meaning + ')'
+        : 'Message id: ' + line.MSID
+    );
+  }
   if (line.MSLN) parts.push('Line no: ' + line.MSLN);
   if (line.ITNO) parts.push('Item: ' + line.ITNO);
   if (line.BANO) parts.push('Lot/Serial: ' + line.BANO);

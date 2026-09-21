@@ -180,6 +180,22 @@ describe('line failure diagnostics', () => {
     expect(out).toContain('Lot/Serial: B1');
   });
 
+  it('does not repeat MSGD as the MSID explanation', () => {
+    // MSGD is M3's filled-in text, so it never equals the '&1' template. A
+    // strict compare printed the same sentence twice.
+    const out = describeLineFailure({
+      MSID: 'WWS0103',
+      MSGD: 'Location A-01-02 does not exist',
+    });
+    expect(out).toContain('Message id: WWS0103');
+    expect(out).not.toContain('WWS0103 (');
+  });
+
+  it('attaches the catalogued meaning when the line carries only an id', () => {
+    const out = describeLineFailure({ MSID: 'WPU0201' });
+    expect(out).toContain('Purchase order U/M is invalid');
+  });
+
   it('returns nothing for an absent or empty line', () => {
     expect(describeLineFailure(null as any)).toBe('');
     expect(describeLineFailure({})).toBe('');
