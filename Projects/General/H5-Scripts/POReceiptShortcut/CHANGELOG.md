@@ -106,9 +106,9 @@ No M3 tenant is reachable from CI, so exercise at minimum:
 
 ## Earlier versions
 
-`POReceiptShortcutV4` is the live script and stays frozen in
-`Projects/Benco/H5-Scripts/` as the rollback path. V1, V2, V3 and V5 are in
-`archive/` there. V6 was never released.
+`POReceiptShortcutV4` is the live script this asset replaces. It stays frozen in
+the originating customer's project folder under `Projects/`, as the rollback
+path, alongside an `archive/` holding V1, V2, V3 and V5. V6 was never released.
 
 One note for whoever reads V4: it sends `ALFM: '1'` to `MMS200MI/GetItmBasic`,
 whose actual input is `AFLM`. Transposed, non-mandatory, therefore silently
