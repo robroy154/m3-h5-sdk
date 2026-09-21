@@ -6,7 +6,7 @@ M3 customizations and integrations for the Benco client.
 
 ## Folder Structure
 
-```
+```text
 Benco/
 ├── H5-Scripts/     # In-panel H5 Script SDK customizations
 ├── Widgets/        # Ming.le / OS Portal Homepages widgets (future)

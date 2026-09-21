@@ -6,7 +6,7 @@ A multi-purpose development repository for building and extending Infor M3 ERP i
 
 ## Repository Map
 
-```
+```text
 m3-h5-sdk/
 ├── SDKs/                          # SDK source distributions
 │   ├── H5 Angular/                # Odin SDK — standalone M3 web applications
