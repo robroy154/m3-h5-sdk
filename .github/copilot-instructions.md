@@ -24,7 +24,7 @@ This is a **multi-SDK repository** for Infor M3 ERP development. It is NOT limit
 - If no matching sample exists, state that explicitly and follow documented public APIs only.
 
 ## Cross-SDK Pitfalls (Apply to All Tracks)
-- `MIService` in Odin = RxJS Observable (`.subscribe()`); in H5 Scripts = jQuery Deferred (`.done()/.fail()`) — they are NOT interchangeable
+- `MIService` in Odin = RxJS Observable (`.subscribe()`); in H5 Scripts = a Promise, handled with the two-argument `.then(success, error)` — they are NOT interchangeable. H5's `.d.ts` declares `executeRequest(request): Promise<{}>`; `.done()/.fail()` is a jQuery Deferred pattern that does not apply, and `.catch()` breaks some M3 minifiers because `catch` is a reserved word.
 - M3 date format is always `yyyyMMdd` — never ISO strings
 - Do not hardcode CONO/DIVI — both SDKs inject them from user context automatically
 - Widget SDK: always use `Infor_WidgetSDK_3.34.0`; `3.0.1` is legacy/reference only
@@ -32,8 +32,12 @@ This is a **multi-SDK repository** for Infor M3 ERP development. It is NOT limit
 - Odin core library must remain Angular-agnostic (no Angular imports in `@infor-up/m3-odin`)
 
 ## Projects Directory
-- `Projects/Benco/` — H5 Script customizations; see `Projects/Benco/H5-Scripts/README.md` for current file status
-- `Projects/General/Widgets/` — Reusable Homepages widgets
+- `Projects/Benco/` — customer-specific H5 Script customizations; see `Projects/Benco/H5-Scripts/README.md` for current file status
+- `Projects/General/H5-Scripts/` — reusable, customer-agnostic H5 scripts
+- `Projects/General/Widgets/` — reusable Homepages widgets
+
+`AGENTS.md` at the repository root is the single source of truth for the H5
+rules. Where this file and `AGENTS.md` differ, `AGENTS.md` wins.
 
 ---
 <!-- Full SDK details are in the scoped instruction files in .github/instructions/ -->

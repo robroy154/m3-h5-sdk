@@ -45,8 +45,26 @@ Two H5-specific rule decisions live in that config:
 ### `typecheck`
 
 ```bash
-npm run typecheck    # tsc --project Projects/Benco/H5-Scripts/tsconfig.json --noEmit
+npm run typecheck
 ```
+
+Three projects, in order:
+
+| Config | Covers |
+| --- | --- |
+| `Projects/Benco/H5-Scripts/tsconfig.json` | customer scripts, including frozen V4 |
+| `Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.json` | the reusable asset's sources, at `target: es5` — the contract H5 needs |
+| `Projects/General/H5-Scripts/POReceiptShortcut/tsconfig.tests.json` | the same sources **plus the tests** |
+
+The third exists because the build config excludes `tests/`, and Vitest strips
+types rather than checking them — so without it a test can drift from the API it
+exercises and still pass. It raises `target` to `es2020` only because Vitest's own
+`.d.ts` files use private identifiers; the es5 contract is still enforced by the
+config that actually emits.
+
+If you add a test config that `extends` a build config, override `exclude` as well
+as `include`. An inherited `exclude` wins over `include`, which silently checks
+nothing.
 
 ### `test`
 
@@ -54,7 +72,7 @@ npm run typecheck    # tsc --project Projects/Benco/H5-Scripts/tsconfig.json --n
 npm test    # vitest run --passWithNoTests
 ```
 
-`vitest.config.ts` scopes collection to `Projects/**/tests/**/*.{test,spec}.ts`.
+`vitest.config.mts` scopes collection to `Projects/**/tests/**/*.{test,spec}.ts`.
 Without that scope Vitest walks into `SDKs/H5 Angular/m3-odin/` and tries to collect
 the vendored Angular specs, whose dependencies are not installed here.
 
@@ -68,3 +86,15 @@ npm run lint
 npm run typecheck
 npm test
 ```
+
+Gate on the exit code, not on the output — `npm run lint | tail` reports the exit
+status of `tail`, which is always 0:
+
+```bash
+npm run lint >/dev/null 2>&1 && echo OK || { echo FAILED; exit 1; }
+```
+
+## Building the deliverables
+
+CI does not build, because the compiled `.js` files are committed. Rebuild them
+locally with `npm run build` before committing a `.ts` change.

@@ -19,7 +19,10 @@ Scripts built with this SDK run **inside** existing M3 H5 panels — they are no
 
 ## Basic Script Structure
 ```typescript
-class MyScript {
+// `var`, NOT `class`, `const` or `let`. The H5 loader resolves the class off
+// the global object at init time; with `const`/`let` it cannot find it and the
+// script fails to load silently, with no error.
+var MyScript = class {
     private controller: IInstanceController;
     private log: IScriptLog;
 
@@ -29,7 +32,10 @@ class MyScript {
     }
 
     public static Init(args: IScriptArgs): void {
-        new MyScript(args);
+        // Guard against re-attaching when the operator returns to the panel.
+        if (InstanceCache.ContainsKey(args.controller, "MyScript")) { return; }
+        InstanceCache.Add(args.controller, "MyScript", true);
+        new MyScript(args).run();
     }
 }
 ```
@@ -56,23 +62,38 @@ this.controller.GetContentElement()       // Access form layout
 this.controller.GetGrid()                 // Access list/grid (list panels only)
 ```
 
-### MIService (jQuery Deferred — NOT RxJS)
+### MIService (Promise — NOT RxJS, and NOT jQuery Deferred)
 ```typescript
 const request = new MIRequest();
 request.program = "MMS200MI";
 request.transaction = "GetItmBasic";
 request.record = { ITNO: "ABC123" };
+// Always set outputFields. Only ask for what the script reads.
 request.outputFields = ["ITDS", "UNMS"];
 
-MIService.Current.executeRequest(request)
-    .done((response: MIResponse) => {
+// H5 2.0+ calls MIService statically; 1.x goes through MIService.Current.
+const mi = ScriptUtil.version >= 2.0 ? MIService : MIService.Current;
+
+mi.executeRequest(request).then(
+    (response: IMIResponse) => {
         const items = response.items;
-    })
-    .fail((error: MIResponse) => {
+    },
+    (error: IMIResponse) => {
         this.log.Error("MI call failed: " + error.errorMessage);
-    });
+    }
+);
 ```
-⚠️ This uses jQuery Deferred (`.done()/.fail()`), not RxJS Observables — different from the Odin SDK.
+⚠️ `executeRequest` returns a **Promise** — `h5.script.d.ts` declares
+`executeRequest(request: IMIRequest): Promise<{}>`. `.done()/.fail()` is a
+jQuery Deferred pattern and does not apply here.
+
+⚠️ Use the two-argument `.then(success, error)`, never `.catch()`: `catch` is a
+reserved word and some M3 minifiers break on the member form.
+
+`executeRequestV2()` and `executeV2()` also exist and are documented in the
+developer guide, though they are missing from `h5.script.d.ts`. `executeRequest()`
+itself moved to the version 2 endpoint in October 2025. Neither returns metadata
+unless the request sets `includeMetadata`.
 
 ### IonApiService (Promise)
 ```typescript
@@ -80,21 +101,35 @@ IonApiService.Current.execute({
     url: "/TENANT/M3/m3api-rest/execute/CRS610MI/GetBasicData",
     method: "POST",
     data: { CUNO: "ABC123" }
-}).then((response) => {
-    // handle response
-}).catch((error) => {
-    this.log.Error("ION API failed");
-});
+}).then(
+    (response) => {
+        // handle response
+    },
+    (error) => {
+        this.log.Error("ION API failed");
+    }
+);
 ```
+⚠️ Two-argument `.then()` here too, for the same minifier reason.
 
 ### ScriptUtil
 ```typescript
-ScriptUtil.GetFieldValue(this.controller, "ITNO")
-ScriptUtil.SetFieldValue(this.controller, "ITNO", "ABC")
-ScriptUtil.Launch("/mforms/MMS200")
-ScriptUtil.GetUserContext()              // Returns IUserContext (USID, company, division)
-ScriptUtil.LoadScript("OtherScript")
+// Field name FIRST, controller optional and second.
+ScriptUtil.GetFieldValue("ITNO")                    // uses the active controller
+ScriptUtil.GetFieldValue("ITNO", this.controller)
+ScriptUtil.SetFieldValue("ITNO", "ABC")             // name, value, optional controller
+ScriptUtil.Launch("/mforms/MMS200")                 // relative URLs only
+ScriptUtil.GetUserContext()                          // USID, company, division
+ScriptUtil.LoadScript("scripts/Other.js", data => { })   // a URL, not a script name
+ScriptUtil.AddEventHandler(element, "click.myScript", handler)
+ScriptUtil.RemoveEventHandler(element, "click.myScript")
 ```
+⚠️ `Launch()` and personalization shortcuts take **relative** URLs. Absolute
+ones break when the tenant is migrated between dev, test and production.
+
+⚠️ `h5.script.d.ts` declares `SetFieldValue(fieldName, controller): string`. The
+developer guide documents `SetFieldValue(fieldName, value, controller?): void`,
+which is the real signature — the typing is wrong.
 
 ### ScriptLog
 ```typescript
@@ -107,11 +142,12 @@ this.log.Trace("message");
 
 ### MForms Automation
 ```typescript
+// addStep() returns void — it does not chain.
 const automation = new MFormsAutomation();
-automation.addStep()
-    .addField("ITNO", "ABC123")
-    .addField("WHLO", "001")
-    .setFocus("STQT");
+automation.addStep(ActionType.Run, "CMS100");
+automation.addField("ITNO", "ABC123");
+automation.addField("WHLO", "001");
+automation.setFocus("STQT");
 ScriptUtil.Launch(`/mforms/CMS100?automation=${automation.toEncodedURI()}`);
 ```
 
@@ -127,6 +163,15 @@ npm install && node webserver.js     # http://localhost:8080
 
 ## Best Practices
 - Always match class name to file name — this is non-negotiable
+- Declare the top-level class with `var`, never `const`/`let`
+- Use `InstanceCache` so a script attaches once per program instance
+- Use `ScriptUtil.AddEventHandler`/`RemoveEventHandler` with a namespaced event
+  type (`"click.myScript"`) so removal cannot disturb other handlers
+- Use `InstanceController.ParentWindow` to reach the panel. Never CSS selectors
+  like `$(".lawsonHost:visible")` — those are internal and break on H5 updates
+- Use `ContentElement.AddElement()`, not `.Add()` or `ControlFactory`
+- Use the `log` object, never `console.*` — log levels can be turned off
+- Never use `ScriptUtil.ApiRequest()`; it is deprecated in favour of `MIService`
 - Use try/catch around controller interactions; log errors at appropriate level
 - Avoid ES6+ features without transpilation — not all H5 environments run modern JS
 - Clean up event handlers to prevent memory leaks in long-running sessions
@@ -143,5 +188,11 @@ npm install && node webserver.js     # http://localhost:8080
 - `H5SampleMFormsAutomation.ts` — Automation sequences
 - `H5SampleDrillback.ts` — Drillback integration
 
-## Projects/Benco/ — Current File Status
-See `Projects/Benco/H5-Scripts/README.md` for which POReceiptShortcut version is current and which files are deprecated. Scripts live in `Projects/Benco/H5-Scripts/`.
+## Projects/ — Current File Status
+- `Projects/General/H5-Scripts/` — reusable, customer-agnostic scripts. Start
+  here for anything not specific to one customer.
+- `Projects/Benco/H5-Scripts/` — customer-specific scripts. See that folder's
+  `README.md` for which files are live, frozen or archived.
+
+`AGENTS.md` at the repository root is the single source of truth for the H5
+rules above. Where this file and `AGENTS.md` differ, `AGENTS.md` wins.

@@ -58,14 +58,20 @@ This is a **multi-SDK repository** for Infor M3 ERP development. It contains thr
 
 ## Projects Directory
 
-### `Projects/Benco/`
-Client-specific work for Benco, organized by SDK type:
-- `H5-Scripts/` — H5 Script customizations; see `Projects/Benco/H5-Scripts/README.md` for which files are current vs. experimental vs. deprecated
-- `Widgets/` — Homepages widgets (future)
-- `Odin-Apps/` — Standalone M3 apps (future)
+### `Projects/General/` — reusable, customer-agnostic assets
+Start here for anything that is not specific to one customer.
+- `H5-Scripts/` — reusable H5 scripts, one folder per asset, each with its own
+  `README.md`, `CONFIGURATION.md`, `tsconfig.json` and tests
+- `Widgets/` — reusable Homepages widgets; each subfolder has a `widget.manifest`
 
-### `Projects/General/Widgets/`
-Reusable Homepages widgets. Each widget subfolder contains a `widget.manifest`.
+### `Projects/Benco/` — customer-specific work
+- `H5-Scripts/` — H5 Script customizations; see `Projects/Benco/H5-Scripts/README.md`
+  for which files are live, frozen or archived
+- `APIs/` — API reference material
+
+A script that would be useful to more than one customer belongs in
+`Projects/General/`, with every tenant-specific value as a script argument —
+not in a customer folder with the values compiled in.
 
 ---
 
@@ -147,10 +153,39 @@ MIService.executeRequest(request).done(() => { }).fail(() => { });
 ```
 
 ### TypeScript Version
-TypeScript 5.8.3 is installed globally. Do not reinstall or change the version.
+TypeScript **6.0.2**, pinned as a devDependency (`typescript: ~6.0.2`). Run it
+through the npm scripts (`npm run build:h5`, `npm run typecheck`) rather than a
+global install, so a clean clone builds the same way CI does.
 
 ### Type Definitions
-Infor's official `.d.ts` files are located at:
+Infor's official `.d.ts` files ship with the SDK at:
+
+```text
+SDKs/M3 H5 Scripting/Templates/H5ScriptsProjectTemplate/H5ScriptsProjectTemplate/typings/
+  h5.script.d.ts        the H5 script API
+  jquery.d.ts           jQuery, which h5.script.d.ts depends on
+  jquery.json.d.ts
+  infor.controls.d.ts
+```
+
+A second copy lives under `SDKs/M3 H5 Scripting/Samples/Samples/typings/`.
+
+Two things to know before relying on them:
+
+1. **`h5.script.d.ts` is permanently incomplete.** It omits APIs the developer
+   guide documents in detail — `executeRequestV2()`, `executeV2()`,
+   `IonApiService`, `getSelectedGridRows()`, `getData()`/`setData()`,
+   `getCellElement()`, `ShowBusyIndicator()`/`HideBusyIndicator()` — and gets
+   `SetFieldValue`'s signature wrong. `H5ScriptDevelopersGuide.md` and
+   `Samples/Samples/*.ts` are the real contract; the `.d.ts` is not.
+   Each project therefore keeps a local augmentation file that merges the
+   missing members in. See
+   `Projects/General/H5-Scripts/POReceiptShortcut/typings/h5.extensions.d.ts`.
+
+2. **It needs one edit to compile under TypeScript 5+.** The SDK copy has
+   `declare module infor.companyon`, and TypeScript now rejects `module` for a
+   dotted name. Projects keep a local copy with `namespace` instead, because
+   the `SDKs/` tree is vendored and is never modified.
 
 ### Best Practices and Recommendations
 
