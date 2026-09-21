@@ -118,3 +118,62 @@ export function lotMustPreExist(indi: string): boolean {
 export function isDirectPutAway(dsto: number): boolean {
   return dsto === 1;
 }
+
+/* ─── MMS240MI/Add rules, from MMS240MI_MVX.java ─────────────────────────── */
+
+/**
+ * These are NOT the same rule as autoLotNo(), and conflating them is how V6
+ * fails. PPS300 decides whether to PROMPT; MMS240MI decides what its Add
+ * transaction will ACCEPT, and the two sets differ on BACD 4.
+ *
+ * MMS240MI_MVX.java, the Add transaction:
+ *
+ *   BACD 1,2,3,6,7  SERN must be blank; M3 generates it via RTVBAN().
+ *                   Supplying one returns MM24031 "Serial number must be
+ *                   blank, lot numbering method is &1" and Add returns early.
+ *
+ *   BACD 4,5,8,9    MM24032 "Adding serial number not permitted, lot
+ *                   numbering method is &1". Add refuses outright.
+ *
+ *   BACD 0          Manual. SERN is required and accepted.
+ *
+ * So V6, which always supplies a SERN and always calls Add for INDI 2, only
+ * works on BACD 0. Everything else fails at equipment creation and trips its
+ * rollback path.
+ */
+
+/** BACD values where MMS240MI/Add rejects a supplied SERN (MM24031). */
+const SERN_MUST_BE_BLANK = [1, 2, 3, 6, 7];
+
+/** BACD values where MMS240MI/Add refuses entirely (MM24032). */
+const ADD_NOT_PERMITTED = [4, 5, 8, 9];
+
+/** True when MMS240MI/Add will generate the serial and must not be given one. */
+export function equipmentSerialMustBeBlank(bacd: number): boolean {
+  return SERN_MUST_BE_BLANK.indexOf(bacd) !== -1;
+}
+
+/** True when MMS240MI/Add cannot be used for this item at all. */
+export function equipmentAddPermitted(bacd: number): boolean {
+  return ADD_NOT_PERMITTED.indexOf(bacd) === -1;
+}
+
+export type EquipmentPlan =
+  /** Call Add with the operator's serial. */
+  | 'add-with-serial'
+  /** Call Add with SERN omitted; M3 assigns it. */
+  | 'add-generated-serial'
+  /** Do not call Add; M3 does not permit it for this numbering method. */
+  | 'skip';
+
+/**
+ * How equipment creation must be approached for an item.
+ *
+ * Returning 'skip' is not a failure: for BACD 4/5/8/9 the receipt still posts
+ * through MHS850, there simply is no MMS240 record to pre-create.
+ */
+export function planEquipmentCreation(indi: string, bacd: number): EquipmentPlan {
+  if (classifyReceiptMode(indi) !== 'serial') return 'skip';
+  if (!equipmentAddPermitted(bacd)) return 'skip';
+  return equipmentSerialMustBeBlank(bacd) ? 'add-generated-serial' : 'add-with-serial';
+}

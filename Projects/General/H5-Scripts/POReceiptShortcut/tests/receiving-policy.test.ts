@@ -3,6 +3,9 @@ import {
   LotControl,
   autoLotNo,
   classifyReceiptMode,
+  equipmentAddPermitted,
+  equipmentSerialMustBeBlank,
+  planEquipmentCreation,
   isDirectPutAway,
   lotMustPreExist,
   manualLotNo,
@@ -142,5 +145,74 @@ describe('isDirectPutAway', () => {
     expect(isDirectPutAway(1)).toBe(true);
     expect(isDirectPutAway(0)).toBe(false);
     expect(isDirectPutAway(2)).toBe(false);
+  });
+});
+
+describe('MMS240MI/Add rules — from MMS240MI_MVX.java', () => {
+  it('rejects a supplied SERN for BACD 1,2,3,6,7 (MM24031)', () => {
+    for (const bacd of [1, 2, 3, 6, 7]) {
+      expect(equipmentSerialMustBeBlank(bacd)).toBe(true);
+    }
+  });
+
+  it('accepts a supplied SERN for BACD 0 and 4', () => {
+    // 4 is the set that differs from PPS300's AutoLotNo, which DOES include it.
+    expect(equipmentSerialMustBeBlank(0)).toBe(false);
+    expect(equipmentSerialMustBeBlank(4)).toBe(false);
+  });
+
+  it('refuses Add entirely for BACD 4,5,8,9 (MM24032)', () => {
+    for (const bacd of [4, 5, 8, 9]) {
+      expect(equipmentAddPermitted(bacd)).toBe(false);
+    }
+  });
+
+  it('permits Add for BACD 0,1,2,3,6,7', () => {
+    for (const bacd of [0, 1, 2, 3, 6, 7]) {
+      expect(equipmentAddPermitted(bacd)).toBe(true);
+    }
+  });
+
+  it('the two MMS240 sets differ from PPS300 AutoLotNo exactly on BACD 4', () => {
+    // PPS300 treats 4 as automatic (do not prompt); MMS240MI neither requires
+    // a blank SERN for it nor permits Add at all. Conflating the rules is the
+    // bug.
+    expect(autoLotNo('2', 4)).toBe(true);
+    expect(equipmentSerialMustBeBlank(4)).toBe(false);
+    expect(equipmentAddPermitted(4)).toBe(false);
+  });
+});
+
+describe('planEquipmentCreation', () => {
+  it('sends the serial only on manual numbering (BACD 0)', () =>
+    expect(planEquipmentCreation('2', 0)).toBe('add-with-serial'));
+
+  it('omits the serial where M3 generates it', () => {
+    for (const bacd of [1, 2, 3, 6, 7]) {
+      expect(planEquipmentCreation('2', bacd)).toBe('add-generated-serial');
+    }
+  });
+
+  it('skips Add where M3 forbids it, rather than failing the receipt', () => {
+    // The receipt still posts through MHS850; there is simply no MMS240
+    // record to pre-create.
+    for (const bacd of [4, 5, 8, 9]) {
+      expect(planEquipmentCreation('2', bacd)).toBe('skip');
+    }
+  });
+
+  it('skips Add for any non-serial item', () => {
+    for (const indi of ['0', '1', '3', '5']) {
+      expect(planEquipmentCreation(indi, 0)).toBe('skip');
+    }
+  });
+
+  it('REGRESSION: V6 would call Add with a serial on every INDI 2 item', () => {
+    // Only BACD 0 is actually valid for that. Every other numbering method
+    // returns MM24031 or MM24032 and trips V6's rollback.
+    const v6WouldSucceed = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(
+      (bacd) => planEquipmentCreation('2', bacd) === 'add-with-serial'
+    );
+    expect(v6WouldSucceed).toEqual([0]);
   });
 });
