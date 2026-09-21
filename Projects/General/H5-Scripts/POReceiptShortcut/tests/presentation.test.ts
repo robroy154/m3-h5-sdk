@@ -52,7 +52,9 @@ describe('buildReceiptSummary', () => {
 
 describe('dialog titles', () => {
   it('carry no emoji — dialogType conveys severity, and emoji fail in high contrast', () => {
-    const emoji = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u;
+    // \p{Extended_Pictographic} covers the emoji ranges without putting a
+    // variation selector inside a character class, which is misleading.
+    const emoji = /\p{Extended_Pictographic}/u;
     for (const title of Object.values(DIALOG_TITLES)) {
       expect(title).not.toMatch(emoji);
     }
