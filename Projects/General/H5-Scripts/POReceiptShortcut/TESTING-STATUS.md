@@ -2,11 +2,12 @@
 
 Where H5 testing on **ICSGDENA002_TST** stopped, and what is still unproven.
 
-Last updated 2026-09-21, at commit `be0a754`.
+Last updated 2026-09-21, at commit `9760043`.
 
-> The bundle in `dist/` is **two fixes ahead of anything that has run in H5**.
-> The last thing tested was the serial dialog on PO 2007775, and it failed.
-> That failure is fixed but unverified — start there.
+> The bundle is **three fixes ahead of anything that has run in H5**. The last
+> two attempts on PO 2007775 both failed — first the OK button discarded the
+> serials, then building the dialog threw. Both are fixed and neither has been
+> re-run. **Start by receiving on PO 2007775 line 010.**
 
 ## Deploy before testing anything
 
@@ -38,24 +39,28 @@ parses, but nothing has run it in H5.
 Everything here is committed, built and unit-tested. None of it has been run
 against M3.
 
-1. **OK on the serial dialog was discarding the serials.** The handler closed
+1. **Building the serial dialog threw.** `form.insertBefore(tools, list)` ran
+   before the list was a child of the form, so the operator saw "Receipt
+   failed: Failed to execute 'insertBefore' on 'Node'". Every `BACD 0` receipt
+   hit it. This is the most recent failure and the first thing to re-test.
+2. **OK on the serial dialog was discarding the serials.** The handler closed
    the dialog before resolving, and `close()` fires H5's cancel callback
    synchronously. Three typed serials were thrown away and the log read
    "Receipt cancelled by the operator". This is why PO 2007775 never completed.
    `promptLot` had the same ordering.
-2. **Collection is gated on `BACD 0`** (`operatorSuppliesNumber`). Two earlier
+3. **Collection is gated on `BACD 0`** (`operatorSuppliesNumber`). Two earlier
    gates were wrong — see the CHANGELOG section "Which BACD asks the operator
    for a number".
-3. **Enter** advances through the serial fields and submits on the last. This is
+4. **Enter** advances through the serial fields and submits on the last. This is
    the barcode-scanner path and is worth testing with an actual scanner.
-4. **Right-click paste** in the dialog inputs.
-5. **Stepped progress dialog** while posting, replacing the bare spinner.
+5. **Right-click paste** in the dialog inputs.
+6. **Stepped progress dialog** while posting, replacing the bare spinner.
    Escape is disabled on it.
-6. **Generate serials** and **Copy PO number** buttons. Generate is offered
+7. **Generate serials** and **Copy PO number** buttons. Generate is offered
    only for `BACD 0`.
-7. **BACD-aware wording** — "assigned by M3" for the automatic methods, "not
+8. **BACD-aware wording** — "assigned by M3" for the automatic methods, "not
    entered at goods receipt (numbering method N)" for 4, 5, 8 and 9.
-8. **Over-receipt warning.** Enter more than the line has outstanding and a
+9. **Over-receipt warning.** Enter more than the line has outstanding and a
    confirmation should appear. Never triggered.
 
 ## Never tested
@@ -78,6 +83,8 @@ capture that text. **Start here: PO 2007775 line 010, `RSTQ` 5.**
 | Equipment rollback | No failure induced after equipment creation | Scenario 12. A `BACD 0` serial that already exists should do it |
 | `maxserials` refusal | Not attempted | A line for more than 25 units on a `BACD 0` serialised item |
 | Posting duration | No receipt has completed since the timing log was added | The `Posting took Nms` line. Lines post sequentially, one round trip each, so this is where the reported slowness most likely is |
+| The progress dialog rendering | Never reached a successful post | It passes an empty `buttons` array, which no H5 version has been seen to accept. It is now fully guarded, so the worst case is that no bar appears — but confirm it actually draws |
+| The minified bundle | Never deployed | Checked mechanically only: global declaration, `Init` static, catalogue keys, no `.catch()`, parses |
 
 ## Known-good test data
 
@@ -85,7 +92,7 @@ Warehouse `001`, facility `A01`.
 
 | PO | Line | Item | `INDI`/`BACD` | `GRMT` | `RSTQ` now | Use |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2007775 | 010 | 651103 Fuel Pump | 2 / 0 | `A11` | **5** | The blocker above. Serial entry |
+| 2007775 | 010 | 651103 Fuel Pump | 2 / 0 | `A11` | **5** | The blocker above. Serial entry. Two failed attempts, both now fixed |
 | 2007774 | 001 | Y21002 | 3 / 6 | `F20` | 45 | Automatic numbering, confirm-only |
 | 2007773 | 001 | Y21002 | 3 / 6 | `F20` | 0 | Exhausted by the `RVQA` bug. Not reusable |
 
@@ -115,14 +122,32 @@ f33d338  Collect the serial when BACD says manual, whatever the receiving method
 1fa141d  Receive the entered quantity, and let the shortcut run more than once
 ```
 
-361 unit tests, lint and typecheck clean. Note that the unit tests do not cover
-`index.ts` or `dialogs.ts` beyond `settleOnce` — those need H5 globals and a
-DOM, so the interaction behaviour in "Fixed but NOT verified" rests on reading
-the code, not on a test.
+377 unit tests, lint and typecheck clean.
+
+`dialogs.ts` now has 16 real DOM tests (jsdom, dev dependency only, with
+`H5ControlUtil` stubbed): node order, input count, the Generate button, OK and
+Cancel resolution, validation keeping what was typed, Enter navigation,
+right-click propagation, stylesheet injection. Reinstating the `insertBefore`
+bug fails 9 of them. These were added *because* three rounds of UI changes went
+out verified only by reading them, and two of those rounds broke in H5.
+
+`index.ts` still has no coverage — it is the only file that touches the panel
+and the controller. The flow wiring in "Fixed but NOT verified" therefore rests
+on reading the code. That is the largest remaining test gap.
 
 ## If something is wrong
 
 `POReceiptShortcutV6.ts` in `Projects/Benco/H5-Scripts` is the script running
 in production. Where V7 and V6 disagree, V6 is probably right — three bugs this
-round came from V7 inventing logic V6 never had. Check it before reasoning from
-the M3 sources.
+round came from V7 inventing logic V6 never had:
+
+- the `manualLotNo()` gate, ported from PPS300's panel flow, which V6 has no
+  trace of;
+- an `InstanceCache` guard that let the panel receive exactly once, which V6
+  does not have;
+- taking the quantity from `RSTQ`, where V6 read `RVQA` and used `RSTQ` only to
+  warn about over-receipts.
+
+Check V6 before reasoning from the M3 sources, and be wary of any rule ported
+from PPS300: that is the interactive program this script replaces, and its
+panel-flow conditions do not govern a script that stages to MHS850MI.
