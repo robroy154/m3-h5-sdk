@@ -66,13 +66,13 @@ import { findMissingFields } from './validation';
 const SCRIPT_NAME = 'POReceiptShortcutV7';
 
 /**
- * Event namespace for ScriptUtil.AddEventHandler/RemoveEventHandler.
+ * The operator's entered quantity.
  *
- * Carries no version and no customer. V6's was '.poReceiptV4', in a class
- * called POReceiptShortcutV6 — which meant a V6 script could not remove its
- * own handlers if a V4 was ever loaded beside it.
+ * Read through the controller, not ScriptUtil.GetFieldValue: RVQA is an input
+ * on the detail panel rather than a header field, and GetFieldValue does not
+ * see it. V6 used controller.GetValue('RVQA') for exactly this reason.
  */
-const EVENT_NAMESPACE = '.poReceiptShortcut';
+const ENTERED_QUANTITY_FIELD = 'RVQA';
 
 /** PPS300/B field names. WW-prefixed fields are the panel header. */
 const PANEL_FIELDS = {
@@ -103,7 +103,6 @@ const POReceiptShortcutV7 = class {
   private readonly rawArgs: string;
   private config: ReceiptConfig;
   private execute: MiExecutor;
-  private attachedElement: JQuery | null = null;
 
   constructor(args: IScriptArgs) {
     this.controller = args.controller;
@@ -112,21 +111,18 @@ const POReceiptShortcutV7 = class {
   }
 
   /**
-   * Script entry point.
+   * Script entry point. H5 calls this every time the operator runs the
+   * shortcut, and each call performs one receipt.
    *
-   * The InstanceCache guard is the difference between attaching once and
-   * attaching every time the operator navigates back to this panel. V6 never
-   * used it, so repeated visits stacked handlers and a single click could fire
-   * the whole flow more than once.
+   * There is deliberately no InstanceCache guard. V7 had one, on the theory
+   * that it stopped handlers stacking across panel visits — but this script
+   * attaches no handler for the receipt, it runs the flow inline. All the
+   * guard did was make the second and every later run exit early with
+   * "already attached", so one panel instance could receive exactly once.
+   * V6, which runs in production, has no guard here either.
    */
   public static Init(args: IScriptArgs): void {
     try {
-      if (InstanceCache.ContainsKey(args.controller, SCRIPT_NAME)) {
-        args.log.Debug(SCRIPT_NAME + ' is already attached to this instance');
-        return;
-      }
-      InstanceCache.Add(args.controller, SCRIPT_NAME, true);
-
       const instance = new POReceiptShortcutV7(args);
       instance.start();
     } catch (error) {
@@ -157,47 +153,7 @@ const POReceiptShortcutV7 = class {
     this.config = parsed.config;
     this.execute = createExecutor(readCompanyContext(this.log), this.log);
 
-    this.attachCleanup();
     void this.run();
-  }
-
-  /**
-   * Releases the instance guard when the panel goes away.
-   *
-   * Without this the cache entry outlives the panel and the script never
-   * re-attaches after a genuine navigation. The handler is namespaced so
-   * removing it cannot disturb anyone else's.
-   */
-  private attachCleanup(): void {
-    try {
-      const element = this.controller.ParentWindow;
-      if (!element) return;
-      this.attachedElement = element;
-      ScriptUtil.AddEventHandler(
-        element,
-        'remove' + EVENT_NAMESPACE,
-        () => this.detach()
-      );
-    } catch (error) {
-      this.log.Warning(
-        'Could not attach the cleanup handler: ' +
-          ((error && (error as Error).message) || error)
-      );
-    }
-  }
-
-  private detach(): void {
-    try {
-      if (this.attachedElement) {
-        ScriptUtil.RemoveEventHandler(this.attachedElement, 'remove' + EVENT_NAMESPACE);
-        this.attachedElement = null;
-      }
-      InstanceCache.Remove(this.controller, SCRIPT_NAME);
-    } catch (error) {
-      this.log.Warning(
-        'Cleanup did not complete: ' + ((error && (error as Error).message) || error)
-      );
-    }
   }
 
   /* ─── Flow ─────────────────────────────────────────────────────────── */
@@ -206,11 +162,31 @@ const POReceiptShortcutV7 = class {
     const identity = this.readIdentity();
     if (!identity) return;
 
+    const entered = this.readEnteredQuantity();
+    if (!entered) return;
+
     try {
       const context = await withBusyIndicator(this.controller, () =>
-        this.loadLine(identity)
+        this.loadLine(identity, entered)
       );
       if (!context) return;
+
+      // V6 warned here and V7 dropped the check entirely. Receiving more than
+      // the line has outstanding is legal in M3 but almost never intended, so
+      // it is worth one confirmation before anything is staged.
+      const remaining = Number(context.remaining || '0');
+      if (remaining > 0 && Number(entered) > remaining) {
+        const proceed = await confirm(
+          DIALOG_TITLES.confirmReceipt,
+          'This line has ' + context.remaining + ' outstanding, but ' + entered +
+            ' has been entered — an over-receipt of ' +
+            (Number(entered) - remaining) + '. Receive anyway?'
+        );
+        if (!proceed) {
+          this.log.Info('Receipt cancelled by the operator');
+          return;
+        }
+      }
 
       // Deliberately outside the busy indicator: the panel must not look
       // frozen while it is waiting on the operator.
@@ -235,6 +211,37 @@ const POReceiptShortcutV7 = class {
       this.log.Error(SCRIPT_NAME + ': ' + message);
       await showError(message);
     }
+  }
+
+  /**
+   * Reads the quantity the operator typed into RVQA.
+   *
+   * V7 used the line's outstanding quantity (RSTQ) here, which meant every
+   * receipt took the whole line no matter what was entered. RSTQ is what is
+   * LEFT on the line; RVQA is what the operator is receiving now.
+   */
+  private readEnteredQuantity(): string | null {
+    let raw = '';
+    try {
+      const value = this.controller.GetValue(ENTERED_QUANTITY_FIELD);
+      raw = value === undefined || value === null ? '' : String(value).trim();
+    } catch (error) {
+      this.log.Warning(
+        'Could not read ' + ENTERED_QUANTITY_FIELD + ': ' +
+          ((error && (error as Error).message) || error)
+      );
+    }
+
+    const quantity = Number(raw);
+    if (!raw || !isFinite(quantity) || quantity <= 0) {
+      const reason =
+        'Enter the quantity to receive in the Received quantity field, then ' +
+        'run this shortcut again.';
+      this.log.Warning('RVQA is missing or not a positive number: "' + raw + '"');
+      void showMessage(DIALOG_TITLES.warning, reason, 'Warning');
+      return null;
+    }
+    return raw;
   }
 
   /**
@@ -290,7 +297,10 @@ const POReceiptShortcutV7 = class {
   }
 
   /** Stage 1 and the conditional stage 2 reads. */
-  private async loadLine(identity: LineIdentity): Promise<LineContext | null> {
+  private async loadLine(
+    identity: LineIdentity,
+    enteredQuantity: string
+  ): Promise<LineContext | null> {
     const raw = await fetchLineData(
       this.execute, identity.PUNO, identity.PNLI, identity.PNLS, identity.ITNO
     );
@@ -327,7 +337,8 @@ const POReceiptShortcutV7 = class {
       bacd,
       dsto,
       crbn,
-      quantity: raw.basic.RSTQ || '',
+      quantity: enteredQuantity,
+      remaining: raw.basic.RSTQ || '',
       defaultLocation: raw.basic.WHSL || '',
       purchaseUnit: raw.basic.PUUN || '',
       expiryRequired: (raw.item.EXPD || '') !== '' && raw.item.EXPD !== '0',
@@ -572,7 +583,10 @@ interface LineContext {
   bacd: number;
   dsto: number;
   crbn: number;
+  /** What the operator entered in RVQA. */
   quantity: string;
+  /** RSTQ — what is still outstanding on the line. Used only to warn. */
+  remaining: string;
   defaultLocation: string;
   purchaseUnit: string;
   expiryRequired: boolean;

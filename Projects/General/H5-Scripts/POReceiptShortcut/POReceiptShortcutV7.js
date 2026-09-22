@@ -3286,13 +3286,13 @@ var POReceiptShortcutV7 = (function() {
 	};
 	var SCRIPT_NAME = "POReceiptShortcutV7";
 	/**
-	* Event namespace for ScriptUtil.AddEventHandler/RemoveEventHandler.
+	* The operator's entered quantity.
 	*
-	* Carries no version and no customer. V6's was '.poReceiptV4', in a class
-	* called POReceiptShortcutV6 — which meant a V6 script could not remove its
-	* own handlers if a V4 was ever loaded beside it.
+	* Read through the controller, not ScriptUtil.GetFieldValue: RVQA is an input
+	* on the detail panel rather than a header field, and GetFieldValue does not
+	* see it. V6 used controller.GetValue('RVQA') for exactly this reason.
 	*/
-	var EVENT_NAMESPACE = ".poReceiptShortcut";
+	var ENTERED_QUANTITY_FIELD = "RVQA";
 	/** PPS300/B field names. WW-prefixed fields are the panel header. */
 	var PANEL_FIELDS = {
 		PUNO: "WWPUNO",
@@ -3306,26 +3306,23 @@ var POReceiptShortcutV7 = (function() {
 	};
 	var POReceiptShortcutV7 = function() {
 		function class_1(args) {
-			this.attachedElement = null;
 			this.controller = args.controller;
 			this.log = args.log;
 			this.rawArgs = args.args || "";
 		}
 		/**
-		* Script entry point.
+		* Script entry point. H5 calls this every time the operator runs the
+		* shortcut, and each call performs one receipt.
 		*
-		* The InstanceCache guard is the difference between attaching once and
-		* attaching every time the operator navigates back to this panel. V6 never
-		* used it, so repeated visits stacked handlers and a single click could fire
-		* the whole flow more than once.
+		* There is deliberately no InstanceCache guard. V7 had one, on the theory
+		* that it stopped handlers stacking across panel visits — but this script
+		* attaches no handler for the receipt, it runs the flow inline. All the
+		* guard did was make the second and every later run exit early with
+		* "already attached", so one panel instance could receive exactly once.
+		* V6, which runs in production, has no guard here either.
 		*/
 		class_1.Init = function(args) {
 			try {
-				if (InstanceCache.ContainsKey(args.controller, SCRIPT_NAME)) {
-					args.log.Debug(SCRIPT_NAME + " is already attached to this instance");
-					return;
-				}
-				InstanceCache.Add(args.controller, SCRIPT_NAME, true);
 				new POReceiptShortcutV7(args).start();
 			} catch (error) {
 				args.log.Error(SCRIPT_NAME + " failed to start: " + (error && error.message || error));
@@ -3355,93 +3352,97 @@ var POReceiptShortcutV7 = (function() {
 			}
 			this.config = parsed.config;
 			this.execute = createExecutor(readCompanyContext(this.log), this.log);
-			this.attachCleanup();
 			this.run();
-		};
-		/**
-		* Releases the instance guard when the panel goes away.
-		*
-		* Without this the cache entry outlives the panel and the script never
-		* re-attaches after a genuine navigation. The handler is namespaced so
-		* removing it cannot disturb anyone else's.
-		*/
-		class_1.prototype.attachCleanup = function() {
-			var _this = this;
-			try {
-				var element = this.controller.ParentWindow;
-				if (!element) return;
-				this.attachedElement = element;
-				ScriptUtil.AddEventHandler(element, "remove" + EVENT_NAMESPACE, function() {
-					return _this.detach();
-				});
-			} catch (error) {
-				this.log.Warning("Could not attach the cleanup handler: " + (error && error.message || error));
-			}
-		};
-		class_1.prototype.detach = function() {
-			try {
-				if (this.attachedElement) {
-					ScriptUtil.RemoveEventHandler(this.attachedElement, "remove" + EVENT_NAMESPACE);
-					this.attachedElement = null;
-				}
-				InstanceCache.Remove(this.controller, SCRIPT_NAME);
-			} catch (error) {
-				this.log.Warning("Cleanup did not complete: " + (error && error.message || error));
-			}
 		};
 		class_1.prototype.run = function() {
 			return __awaiter(this, void 0, void 0, function() {
-				var identity, context, collected, confirmed, error_1, message;
+				var identity, entered, context, remaining, proceed, collected, confirmed, error_1, message;
 				var _this = this;
 				return __generator(this, function(_a) {
 					switch (_a.label) {
 						case 0:
 							identity = this.readIdentity();
 							if (!identity) return [2];
+							entered = this.readEnteredQuantity();
+							if (!entered) return [2];
 							_a.label = 1;
 						case 1:
 							_a.trys.push([
 								1,
-								6,
+								8,
 								,
-								8
+								10
 							]);
 							return [4, withBusyIndicator(this.controller, function() {
-								return _this.loadLine(identity);
+								return _this.loadLine(identity, entered);
 							})];
 						case 2:
 							context = _a.sent();
 							if (!context) return [2];
-							return [4, this.collect(identity, context)];
+							remaining = Number(context.remaining || "0");
+							if (!(remaining > 0 && Number(entered) > remaining)) return [3, 4];
+							return [4, confirm(DIALOG_TITLES.confirmReceipt, "This line has " + context.remaining + " outstanding, but " + entered + " has been entered — an over-receipt of " + (Number(entered) - remaining) + ". Receive anyway?")];
 						case 3:
+							proceed = _a.sent();
+							if (!proceed) {
+								this.log.Info("Receipt cancelled by the operator");
+								return [2];
+							}
+							_a.label = 4;
+						case 4: return [4, this.collect(identity, context)];
+						case 5:
 							collected = _a.sent();
 							if (!collected) {
 								this.log.Info("Receipt cancelled by the operator");
 								return [2];
 							}
 							return [4, confirm(DIALOG_TITLES.confirmReceipt, this.describeIntent(identity, collected))];
-						case 4:
+						case 6:
 							confirmed = _a.sent();
 							if (!confirmed) {
 								this.log.Info("Receipt cancelled by the operator");
 								return [2];
 							}
 							return [4, this.post(identity, context, collected)];
-						case 5:
+						case 7:
 							_a.sent();
-							return [3, 8];
-						case 6:
+							return [3, 10];
+						case 8:
 							error_1 = _a.sent();
 							message = error_1 && error_1.message || String(error_1);
 							this.log.Error(SCRIPT_NAME + ": " + message);
 							return [4, showError(message)];
-						case 7:
+						case 9:
 							_a.sent();
-							return [3, 8];
-						case 8: return [2];
+							return [3, 10];
+						case 10: return [2];
 					}
 				});
 			});
+		};
+		/**
+		* Reads the quantity the operator typed into RVQA.
+		*
+		* V7 used the line's outstanding quantity (RSTQ) here, which meant every
+		* receipt took the whole line no matter what was entered. RSTQ is what is
+		* LEFT on the line; RVQA is what the operator is receiving now.
+		*/
+		class_1.prototype.readEnteredQuantity = function() {
+			var raw = "";
+			try {
+				var value = this.controller.GetValue(ENTERED_QUANTITY_FIELD);
+				raw = value === void 0 || value === null ? "" : String(value).trim();
+			} catch (error) {
+				this.log.Warning("Could not read " + ENTERED_QUANTITY_FIELD + ": " + (error && error.message || error));
+			}
+			var quantity = Number(raw);
+			if (!raw || !isFinite(quantity) || quantity <= 0) {
+				var reason = "Enter the quantity to receive in the Received quantity field, then run this shortcut again.";
+				this.log.Warning("RVQA is missing or not a positive number: \"" + raw + "\"");
+				showMessage(DIALOG_TITLES.warning, reason, "Warning");
+				return null;
+			}
+			return raw;
 		};
 		/**
 		* Reads the line the operator means, refusing anything ambiguous.
@@ -3485,7 +3486,7 @@ var POReceiptShortcutV7 = (function() {
 			return identity;
 		};
 		/** Stage 1 and the conditional stage 2 reads. */
-		class_1.prototype.loadLine = function(identity) {
+		class_1.prototype.loadLine = function(identity, enteredQuantity) {
 			return __awaiter(this, void 0, void 0, function() {
 				var raw, indi, bacd, grmt, crbn, dsto, method, item, customerNumber, order, proceed;
 				return __generator(this, function(_a) {
@@ -3527,7 +3528,8 @@ var POReceiptShortcutV7 = (function() {
 							bacd,
 							dsto,
 							crbn,
-							quantity: raw.basic.RSTQ || "",
+							quantity: enteredQuantity,
+							remaining: raw.basic.RSTQ || "",
 							defaultLocation: raw.basic.WHSL || "",
 							purchaseUnit: raw.basic.PUUN || "",
 							expiryRequired: (raw.item.EXPD || "") !== "" && raw.item.EXPD !== "0"
