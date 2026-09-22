@@ -73,6 +73,8 @@ export interface ReceiptDependencies {
   delay: (ms: number) => Promise<void>;
   /** Stamped into YREF so a receipt can be traced back to this script. */
   reference: string;
+  /** Called as each phase completes, for the progress dialog. Optional. */
+  onStep?: (label: string) => void;
 }
 
 export interface ReceiptPlan {
@@ -401,10 +403,17 @@ export async function runReceipt(
   const created: CreatedEquipment[] = [];
   let outcome: ReceiptOutcome;
 
+  const step = (label: string): void => {
+    if (deps.onStep) deps.onStep(label);
+  };
+
   try {
     await createEquipmentRecords(deps, plan, created);
+    if (plan.entries.length > 0) step('Equipment records created');
     const posted = await postWarehouseMessage(deps, plan);
+    step('Transaction queued');
     outcome = await processAndConfirm(deps, posted);
+    step('Message processed');
   } catch (error) {
     // Everything that throws does so before PrcWhsTran is reached, so nothing
     // has been processed and undoing the equipment is safe.

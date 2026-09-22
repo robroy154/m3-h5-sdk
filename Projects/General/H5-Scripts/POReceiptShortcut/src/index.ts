@@ -18,7 +18,7 @@
  */
 
 import { ReceiptConfig, buildConfig, canStoreOversizeSerial } from './config';
-import { promptLot, promptSerials } from './dialogs';
+import { openProgress, promptLot, promptSerials } from './dialogs';
 import {
   confirm,
   createExecutor,
@@ -533,8 +533,13 @@ const POReceiptShortcutV7 = class {
       },
     };
 
-    const result = await withBusyIndicator(this.controller, () =>
-      runReceipt(
+    // A stepped dialog rather than a bare spinner: posting is several MI round
+    // trips and the operator should see which one is running. V6 did this and
+    // V7 dropped it. The dialog is modal, so no busy indicator underneath.
+    const progress = openProgress(plan.entries.length > 0 ? 3 : 2);
+    let result: Awaited<ReturnType<typeof runReceipt>>;
+    try {
+      result = await runReceipt(
         {
           execute: this.execute,
           log: this.log,
@@ -542,10 +547,14 @@ const POReceiptShortcutV7 = class {
           retry: { maxAttempts: 3, delay, random: Math.random },
           delay,
           reference: SCRIPT_NAME,
+          onStep: (label) => progress.step(label),
         },
         plan
-      )
-    );
+      );
+      progress.done();
+    } finally {
+      progress.close();
+    }
 
     if (result.outcome.kind === 'posted') {
       await showMessage(

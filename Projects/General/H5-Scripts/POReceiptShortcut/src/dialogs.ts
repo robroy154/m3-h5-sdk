@@ -48,9 +48,39 @@ function labelledInput(
   input.className = 'inforTextBox';
   input.maxLength = maxLength;
   input.autocomplete = 'off';
+  // H5 swallows contextmenu on the panel beneath, which takes the native
+  // paste menu with it. V6 stopped propagation for the same reason; operators
+  // paste serials from a packing list.
+  input.addEventListener('contextmenu', (event) => event.stopPropagation());
   field.appendChild(label);
   field.appendChild(input);
   return { field, input };
+}
+
+/**
+ * Enter moves to the next field, and submits on the last one.
+ *
+ * Barcode scanners emit Enter after each scan, so without this a five-serial
+ * receipt means clicking into every field by hand. `submit` is the same code
+ * the OK button runs.
+ */
+function wireEnterKey(inputs: HTMLInputElement[], submit: () => void): void {
+  inputs.forEach((input, index) => {
+    input.addEventListener('keydown', (event) => {
+      if ((event as KeyboardEvent).key !== 'Enter') return;
+      event.preventDefault();
+      const next = inputs[index + 1];
+      if (next) {
+        next.focus();
+        // The list scrolls once there are more serials than fit.
+        if (typeof next.scrollIntoView === 'function') {
+          next.scrollIntoView({ block: 'nearest' });
+        }
+      } else {
+        submit();
+      }
+    });
+  });
 }
 
 interface DialogHandle {
@@ -69,24 +99,40 @@ function openDialog(
   content: HTMLElement,
   title: string,
   buttons: Array<{ text: string; isDefault?: boolean; click: (h: DialogHandle) => void }>,
-  onClose: () => void
-): void {
+  onClose: () => void,
+  closeOnEscape = true
+): DialogHandle {
   ensureStyles();
-  H5ControlUtil.H5Dialog.CreateDialogElement(content, {
+
+  // The model is needed outside the button handlers too, so the Enter key can
+  // submit. CreateDialogElement returns it, which is how V6 closed its own
+  // dialogs; the guard is there because H5Dialog is untyped.
+  let model: any = null;
+  const closeModel = (): void => {
+    if (model && typeof model.close === 'function') model.close();
+  };
+
+  model = H5ControlUtil.H5Dialog.CreateDialogElement(content, {
     title,
     dialogType: 'General',
     modal: true,
     width: 460,
     minHeight: 200,
-    closeOnEscape: true,
+    closeOnEscape,
     close: onClose,
     buttons: buttons.map((button) => ({
       text: button.text,
       isDefault: !!button.isDefault,
       width: 90,
-      click: (_event: any, model: any) => button.click({ close: () => model.close() }),
+      click: (_event: any, buttonModel: any) => {
+        // The model handed to a click is known good; prefer it.
+        model = buttonModel || model;
+        button.click({ close: closeModel });
+      },
     })),
   });
+
+  return { close: closeModel };
 }
 
 /**
@@ -153,45 +199,45 @@ export function promptSerials(
 
     const finish = settleOnce<string[]>(resolve);
 
-    openDialog(
+    let dialog: DialogHandle | null = null;
+    const submit = (): void => {
+      const values = inputs.map((input) => input.value.trim().toUpperCase());
+      const result = validateSerialBatch(values, options.maxLength);
+
+      inputs.forEach((input, index) => {
+        const field = input.parentElement;
+        if (!field) return;
+        const bad = result.issues.some((issue) => issue.index === index);
+        field.className =
+          'po-receipt-field' + (bad ? ' po-receipt-field--invalid' : '');
+      });
+
+      const text = buildValidationMessage(
+        result.issues, result.duplicates, options.maxLength
+      );
+      if (text) {
+        message.textContent = text;
+        message.style.display = '';
+        return; // stay open; the operator keeps what they typed
+      }
+      // finish BEFORE close. model.close() fires the dialog's `close`
+      // callback synchronously, which calls finish(null); settling the real
+      // value first makes that a no-op instead of a cancellation.
+      finish(values);
+      if (dialog) dialog.close();
+    };
+
+    dialog = openDialog(
       form,
       DIALOG_TITLES.serialEntry,
       [
-        {
-          text: 'OK',
-          isDefault: true,
-          click: (handle) => {
-            const values = inputs.map((input) => input.value.trim().toUpperCase());
-            const result = validateSerialBatch(values, options.maxLength);
-
-            inputs.forEach((input, index) => {
-              const field = input.parentElement;
-              if (!field) return;
-              const bad = result.issues.some((issue) => issue.index === index);
-              field.className =
-                'po-receipt-field' + (bad ? ' po-receipt-field--invalid' : '');
-            });
-
-            const text = buildValidationMessage(
-              result.issues, result.duplicates, options.maxLength
-            );
-            if (text) {
-              message.textContent = text;
-              message.style.display = '';
-              return; // stay open; the operator keeps what they typed
-            }
-            // finish BEFORE close. model.close() fires the dialog's `close`
-            // callback synchronously, which calls finish(null); settling the
-            // real value first makes that a no-op instead of a cancellation.
-            finish(values);
-            handle.close();
-          },
-        },
+        { text: 'OK', isDefault: true, click: () => submit() },
         { text: 'Cancel', click: (handle) => handle.close() },
       ],
       () => finish(null)
     );
 
+    wireEnterKey(inputs, submit);
     if (inputs.length > 0) inputs[0].focus();
   });
 }
@@ -235,43 +281,95 @@ export function promptLot(
 
     const finish = settleOnce<LotPromptResult>(resolve);
 
-    openDialog(
+    let dialog: DialogHandle | null = null;
+    const submit = (): void => {
+      const lot = lotField.input.value.trim().toUpperCase();
+      const expiry = expiryField.input.value.trim();
+
+      const problem =
+        validateLotNumber(lot) ||
+        validateExpirationDate(
+          expiry || null,
+          options.expiryRequired || !!expiry,
+          options.today
+        );
+
+      lotField.field.className =
+        'po-receipt-field' + (validateLotNumber(lot) ? ' po-receipt-field--invalid' : '');
+
+      if (problem) {
+        message.textContent = problem;
+        message.style.display = '';
+        return;
+      }
+      // finish BEFORE close — see the note in promptSerials.
+      finish({ lot, expiry });
+      if (dialog) dialog.close();
+    };
+
+    dialog = openDialog(
       form,
       DIALOG_TITLES.lotEntry,
       [
-        {
-          text: 'OK',
-          isDefault: true,
-          click: (handle) => {
-            const lot = lotField.input.value.trim().toUpperCase();
-            const expiry = expiryField.input.value.trim();
-
-            const problem =
-              validateLotNumber(lot) ||
-              validateExpirationDate(
-                expiry || null,
-                options.expiryRequired || !!expiry,
-                options.today
-              );
-
-            lotField.field.className =
-              'po-receipt-field' + (validateLotNumber(lot) ? ' po-receipt-field--invalid' : '');
-
-            if (problem) {
-              message.textContent = problem;
-              message.style.display = '';
-              return;
-            }
-            // finish BEFORE close — see the note in promptSerials.
-            finish({ lot, expiry });
-            handle.close();
-          },
-        },
+        { text: 'OK', isDefault: true, click: () => submit() },
         { text: 'Cancel', click: (handle) => handle.close() },
       ],
       () => finish(null)
     );
 
+    // Enter on the lot field moves to the expiry, and submits from there.
+    wireEnterKey([lotField.input, expiryField.input], submit);
     lotField.input.focus();
   });
+}
+
+export interface ProgressHandle {
+  /** Marks the named step done and moves the bar on. */
+  step(label: string): void;
+  /** Fills the bar and dismisses it. */
+  done(): void;
+  /** Dismisses without completing, for a failure. */
+  close(): void;
+}
+
+/**
+ * A stepped progress dialog, as V6 had.
+ *
+ * A receipt is several MI round trips, and a bare spinner says nothing about
+ * which one is running or whether it is stuck. `steps` is the expected count,
+ * used only to size the bar; an extra step past it just holds at full.
+ */
+export function openProgress(steps: number): ProgressHandle {
+  ensureStyles();
+
+  const form = element('div', 'po-receipt-form');
+  const label = element('div', 'po-receipt-progress-msg', 'Starting…');
+  const track = element('div', 'po-receipt-progress-track');
+  const fill = element('div', 'po-receipt-progress-fill');
+  track.appendChild(fill);
+  form.appendChild(label);
+  form.appendChild(track);
+
+  // closeOnEscape false: dismissing this would hide a receipt that is still
+  // in flight, and there is no button because there is nothing to decide.
+  const dialog = openDialog(form, DIALOG_TITLES.progress, [], () => undefined, false);
+
+  let index = 0;
+  const total = Math.max(steps, 1);
+
+  return {
+    step(text: string): void {
+      index++;
+      fill.style.width = Math.min(Math.round((index / total) * 100), 100) + '%';
+      label.textContent = text;
+    },
+    done(): void {
+      fill.style.width = '100%';
+      label.textContent = 'Done';
+      dialog.close();
+    },
+    close(): void {
+      dialog.close();
+    },
+  };
 }

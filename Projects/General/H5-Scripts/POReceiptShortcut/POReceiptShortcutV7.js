@@ -262,6 +262,9 @@ var POReceiptShortcutV7 = (function() {
 		"  border: 1px solid var(--ids-alert-color-success-default, #c3e6cb);",
 		"  color: var(--ids-alert-color-success-default, #155724);",
 		"}",
+		".po-receipt-progress-msg {",
+		"  margin-bottom: 10px;",
+		"}",
 		".po-receipt-progress-track {",
 		"  width: 100%; height: 18px; border-radius: 4px; overflow: hidden;",
 		"  background: var(--ids-color-background-secondary, #ddd);",
@@ -442,12 +445,35 @@ var POReceiptShortcutV7 = (function() {
 		input.className = "inforTextBox";
 		input.maxLength = maxLength;
 		input.autocomplete = "off";
+		input.addEventListener("contextmenu", function(event) {
+			return event.stopPropagation();
+		});
 		field.appendChild(label);
 		field.appendChild(input);
 		return {
 			field,
 			input
 		};
+	}
+	/**
+	* Enter moves to the next field, and submits on the last one.
+	*
+	* Barcode scanners emit Enter after each scan, so without this a five-serial
+	* receipt means clicking into every field by hand. `submit` is the same code
+	* the OK button runs.
+	*/
+	function wireEnterKey(inputs, submit) {
+		inputs.forEach(function(input, index) {
+			input.addEventListener("keydown", function(event) {
+				if (event.key !== "Enter") return;
+				event.preventDefault();
+				var next = inputs[index + 1];
+				if (next) {
+					next.focus();
+					if (typeof next.scrollIntoView === "function") next.scrollIntoView({ block: "nearest" });
+				} else submit();
+			});
+		});
 	}
 	/**
 	* Opens an H5 dialog around a built element.
@@ -457,29 +483,34 @@ var POReceiptShortcutV7 = (function() {
 	* buttons by their visible label text — the same internal-DOM coupling the
 	* repo's own rules ban for panels.
 	*/
-	function openDialog(content, title, buttons, onClose) {
+	function openDialog(content, title, buttons, onClose, closeOnEscape) {
+		if (closeOnEscape === void 0) closeOnEscape = true;
 		ensureStyles();
-		H5ControlUtil.H5Dialog.CreateDialogElement(content, {
+		var model = null;
+		var closeModel = function() {
+			if (model && typeof model.close === "function") model.close();
+		};
+		model = H5ControlUtil.H5Dialog.CreateDialogElement(content, {
 			title,
 			dialogType: "General",
 			modal: true,
 			width: 460,
 			minHeight: 200,
-			closeOnEscape: true,
+			closeOnEscape,
 			close: onClose,
 			buttons: buttons.map(function(button) {
 				return {
 					text: button.text,
 					isDefault: !!button.isDefault,
 					width: 90,
-					click: function(_event, model) {
-						return button.click({ close: function() {
-							return model.close();
-						} });
+					click: function(_event, buttonModel) {
+						model = buttonModel || model;
+						button.click({ close: closeModel });
 					}
 				};
 			})
 		});
+		return { close: closeModel };
 	}
 	/**
 	* Wraps a promise `resolve` so only the FIRST call counts.
@@ -521,29 +552,33 @@ var POReceiptShortcutV7 = (function() {
 			}
 			form.appendChild(list);
 			var finish = settleOnce(resolve);
-			openDialog(form, DIALOG_TITLES.serialEntry, [{
+			var dialog = null;
+			var submit = function() {
+				var values = inputs.map(function(input) {
+					return input.value.trim().toUpperCase();
+				});
+				var result = validateSerialBatch(values, options.maxLength);
+				inputs.forEach(function(input, index) {
+					var field = input.parentElement;
+					if (!field) return;
+					field.className = "po-receipt-field" + (result.issues.some(function(issue) {
+						return issue.index === index;
+					}) ? " po-receipt-field--invalid" : "");
+				});
+				var text = buildValidationMessage(result.issues, result.duplicates, options.maxLength);
+				if (text) {
+					message.textContent = text;
+					message.style.display = "";
+					return;
+				}
+				finish(values);
+				if (dialog) dialog.close();
+			};
+			dialog = openDialog(form, DIALOG_TITLES.serialEntry, [{
 				text: "OK",
 				isDefault: true,
-				click: function(handle) {
-					var values = inputs.map(function(input) {
-						return input.value.trim().toUpperCase();
-					});
-					var result = validateSerialBatch(values, options.maxLength);
-					inputs.forEach(function(input, index) {
-						var field = input.parentElement;
-						if (!field) return;
-						field.className = "po-receipt-field" + (result.issues.some(function(issue) {
-							return issue.index === index;
-						}) ? " po-receipt-field--invalid" : "");
-					});
-					var text = buildValidationMessage(result.issues, result.duplicates, options.maxLength);
-					if (text) {
-						message.textContent = text;
-						message.style.display = "";
-						return;
-					}
-					finish(values);
-					handle.close();
+				click: function() {
+					return submit();
 				}
 			}, {
 				text: "Cancel",
@@ -553,6 +588,7 @@ var POReceiptShortcutV7 = (function() {
 			}], function() {
 				return finish(null);
 			});
+			wireEnterKey(inputs, submit);
 			if (inputs.length > 0) inputs[0].focus();
 		});
 	}
@@ -569,24 +605,28 @@ var POReceiptShortcutV7 = (function() {
 			var expiryField = labelledInput("Expiration date (YYYYMMDD)" + (options.expiryRequired ? "" : " — optional"), 8);
 			form.appendChild(expiryField.field);
 			var finish = settleOnce(resolve);
-			openDialog(form, DIALOG_TITLES.lotEntry, [{
+			var dialog = null;
+			var submit = function() {
+				var lot = lotField.input.value.trim().toUpperCase();
+				var expiry = expiryField.input.value.trim();
+				var problem = validateLotNumber(lot) || validateExpirationDate(expiry || null, options.expiryRequired || !!expiry, options.today);
+				lotField.field.className = "po-receipt-field" + (validateLotNumber(lot) ? " po-receipt-field--invalid" : "");
+				if (problem) {
+					message.textContent = problem;
+					message.style.display = "";
+					return;
+				}
+				finish({
+					lot,
+					expiry
+				});
+				if (dialog) dialog.close();
+			};
+			dialog = openDialog(form, DIALOG_TITLES.lotEntry, [{
 				text: "OK",
 				isDefault: true,
-				click: function(handle) {
-					var lot = lotField.input.value.trim().toUpperCase();
-					var expiry = expiryField.input.value.trim();
-					var problem = validateLotNumber(lot) || validateExpirationDate(expiry || null, options.expiryRequired || !!expiry, options.today);
-					lotField.field.className = "po-receipt-field" + (validateLotNumber(lot) ? " po-receipt-field--invalid" : "");
-					if (problem) {
-						message.textContent = problem;
-						message.style.display = "";
-						return;
-					}
-					finish({
-						lot,
-						expiry
-					});
-					handle.close();
+				click: function() {
+					return submit();
 				}
 			}, {
 				text: "Cancel",
@@ -596,8 +636,44 @@ var POReceiptShortcutV7 = (function() {
 			}], function() {
 				return finish(null);
 			});
+			wireEnterKey([lotField.input, expiryField.input], submit);
 			lotField.input.focus();
 		});
+	}
+	/**
+	* A stepped progress dialog, as V6 had.
+	*
+	* A receipt is several MI round trips, and a bare spinner says nothing about
+	* which one is running or whether it is stuck. `steps` is the expected count,
+	* used only to size the bar; an extra step past it just holds at full.
+	*/
+	function openProgress(steps) {
+		ensureStyles();
+		var form = element("div", "po-receipt-form");
+		var label = element("div", "po-receipt-progress-msg", "Starting…");
+		var track = element("div", "po-receipt-progress-track");
+		var fill = element("div", "po-receipt-progress-fill");
+		track.appendChild(fill);
+		form.appendChild(label);
+		form.appendChild(track);
+		var dialog = openDialog(form, DIALOG_TITLES.progress, [], function() {}, false);
+		var index = 0;
+		var total = Math.max(steps, 1);
+		return {
+			step: function(text) {
+				index++;
+				fill.style.width = Math.min(Math.round(index / total * 100), 100) + "%";
+				label.textContent = text;
+			},
+			done: function() {
+				fill.style.width = "100%";
+				label.textContent = "Done";
+				dialog.close();
+			},
+			close: function() {
+				dialog.close();
+			}
+		};
 	}
 	//#endregion
 	//#region Projects/General/H5-Scripts/POReceiptShortcut/build/h5-adapter.js
@@ -2915,11 +2991,14 @@ var POReceiptShortcutV7 = (function() {
 	*/
 	function runReceipt(deps, plan) {
 		return __awaiter$1(this, void 0, void 0, function() {
-			var created, outcome, posted, error_5, remaining;
+			var created, outcome, step, posted, error_5, remaining;
 			return __generator$1(this, function(_a) {
 				switch (_a.label) {
 					case 0:
 						created = [];
+						step = function(label) {
+							if (deps.onStep) deps.onStep(label);
+						};
 						_a.label = 1;
 					case 1:
 						_a.trys.push([
@@ -2931,12 +3010,15 @@ var POReceiptShortcutV7 = (function() {
 						return [4, createEquipmentRecords(deps, plan, created)];
 					case 2:
 						_a.sent();
+						if (plan.entries.length > 0) step("Equipment records created");
 						return [4, postWarehouseMessage(deps, plan)];
 					case 3:
 						posted = _a.sent();
+						step("Transaction queued");
 						return [4, processAndConfirm(deps, posted)];
 					case 4:
 						outcome = _a.sent();
+						step("Message processed");
 						return [3, 6];
 					case 5:
 						error_5 = _a.sent();
@@ -3717,8 +3799,7 @@ var POReceiptShortcutV7 = (function() {
 		};
 		class_1.prototype.post = function(identity, context, collected) {
 			return __awaiter(this, void 0, void 0, function() {
-				var location, plan, result;
-				var _this = this;
+				var location, plan, progress, result;
 				return __generator(this, function(_a) {
 					switch (_a.label) {
 						case 0:
@@ -3740,23 +3821,39 @@ var POReceiptShortcutV7 = (function() {
 									PROD: context.poLine.PROD
 								}
 							};
-							return [4, withBusyIndicator(this.controller, function() {
-								return runReceipt({
-									execute: _this.execute,
-									log: _this.log,
-									config: _this.config,
-									retry: {
-										maxAttempts: 3,
-										delay,
-										random: Math.random
-									},
-									delay,
-									reference: SCRIPT_NAME
-								}, plan);
-							})];
+							progress = openProgress(plan.entries.length > 0 ? 3 : 2);
+							_a.label = 1;
 						case 1:
+							_a.trys.push([
+								1,
+								,
+								3,
+								4
+							]);
+							return [4, runReceipt({
+								execute: this.execute,
+								log: this.log,
+								config: this.config,
+								retry: {
+									maxAttempts: 3,
+									delay,
+									random: Math.random
+								},
+								delay,
+								reference: SCRIPT_NAME,
+								onStep: function(label) {
+									return progress.step(label);
+								}
+							}, plan)];
+						case 2:
 							result = _a.sent();
-							if (!(result.outcome.kind === "posted")) return [3, 3];
+							progress.done();
+							return [3, 4];
+						case 3:
+							progress.close();
+							return [7];
+						case 4:
+							if (!(result.outcome.kind === "posted")) return [3, 6];
 							return [4, showMessage(DIALOG_TITLES.success, buildReceiptSummary({
 								mode: collected.mode,
 								serials: collected.serials,
@@ -3765,12 +3862,12 @@ var POReceiptShortcutV7 = (function() {
 								quantity: Number(context.quantity || "0"),
 								location
 							}))];
-						case 2:
+						case 5:
 							_a.sent();
 							this.refresh();
 							return [2];
-						case 3: return [4, showError(result.outcome.message)];
-						case 4:
+						case 6: return [4, showError(result.outcome.message)];
+						case 7:
 							_a.sent();
 							return [2];
 					}
