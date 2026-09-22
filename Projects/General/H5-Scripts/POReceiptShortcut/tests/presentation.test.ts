@@ -32,8 +32,8 @@ describe('buildReceiptSummary', () => {
       mode: 'lot', lot: 'LOT-1', expiry: '2027-01-01', quantity: 10, location: 'A1',
     });
     expect(out).toContain('10 units received to A1');
-    expect(out).toContain('Lot: LOT-1');
-    expect(out).toContain('Expiry: 2027-01-01');
+    expect(out).toContain('Lot LOT-1');
+    expect(out).toContain('Expiry 2027-01-01');
   });
 
   it('omits the expiry line when the item has none', () =>
@@ -42,7 +42,7 @@ describe('buildReceiptSummary', () => {
 
   it('handles a plain receipt', () =>
     expect(buildReceiptSummary({ mode: 'plain', quantity: 1, location: 'A' }))
-      .toBe('1 unit received to A'));
+      .toBe('1 unit received to A.'));
 
   it('does not throw on missing counts', () => {
     expect(buildReceiptSummary({ mode: 'plain', location: 'A' })).toContain('0 units');
@@ -62,6 +62,7 @@ describe('buildReceiptSummary', () => {
     const out = buildReceiptSummary({ mode: 'lot', quantity: 5, location: '' });
     expect(out).toContain('5 units received');
     expect(out).toContain('Lot number assigned by M3');
+    expect(out).not.toMatch(/Lot:/);
     expect(out).not.toMatch(/Lot:\s*$/m);
   });
 });

@@ -184,15 +184,15 @@ var POReceiptShortcutV7 = (function() {
 		var units = plural(summary.quantity || 0, "unit") + " received " + where;
 		if (summary.mode === "serial") {
 			var serials = summary.serials || [];
-			if (serials.length === 0) return units + "\n" + ASSIGNED_BY_M3.serial;
-			return plural(serials.length, "serial") + " received " + where + "\nSerials: " + serials.join(", ");
+			if (serials.length === 0) return units + ".\n" + ASSIGNED_BY_M3.serial + ".";
+			return plural(serials.length, "serial") + " received " + where + ".\nSerials: " + serials.join(", ") + ".";
 		}
 		if (summary.mode === "lot") {
-			var lines = [units, summary.lot ? "Lot: " + summary.lot : ASSIGNED_BY_M3.lot];
-			if (summary.expiry) lines.push("Expiry: " + summary.expiry);
+			var lines = [units + ".", (summary.lot ? "Lot " + summary.lot : ASSIGNED_BY_M3.lot) + "."];
+			if (summary.expiry) lines.push("Expiry " + summary.expiry + ".");
 			return lines.join("\n");
 		}
-		return units;
+		return units + ".";
 	}
 	/**
 	* Titles carry no emoji.
@@ -3016,19 +3016,6 @@ var POReceiptShortcutV7 = (function() {
 		return isAutoNumberingMethod(bacd);
 	}
 	/**
-	* True when the operator has to supply the number.
-	*
-	* Ported from PPS300_MVX.java ManualLotNo():
-	*     !AutoLotNo() && INDI != 0 && PGRMT.CRBN != 1 && PGRMT.DSTO != 1
-	*
-	* `CRBN` and `DSTO` come from the goods receiving method record
-	* (PPS345MI/Get). `DSTO` is "Direct put-away": when set, M3 places the goods
-	* itself and does not stop to ask.
-	*/
-	function manualLotNo(indi, bacd, crbn, dsto) {
-		return !autoLotNo(indi, bacd) && indi !== LotControl.NONE && crbn !== 1 && dsto !== 1;
-	}
-	/**
 	* Which collection flow the item needs.
 	*
 	* V6 branched on '2' and '3' only, so INDI 1 and 5 fell through to the
@@ -3599,8 +3586,8 @@ var POReceiptShortcutV7 = (function() {
 						lines: [{ RVQA: context.quantity }],
 						serials: []
 					}];
-					if (!manualLotNo(context.indi, context.bacd, context.crbn, context.dsto)) {
-						this.log.Info("Lot numbering is automatic for this item (BACD " + context.bacd + "); no number collected");
+					if (autoLotNo(context.indi, context.bacd)) {
+						this.log.Info("M3 generates the number for this item (BACD " + context.bacd + "); none collected");
 						return [2, {
 							mode,
 							lines: [{ RVQA: context.quantity }],
@@ -3793,14 +3780,14 @@ var POReceiptShortcutV7 = (function() {
 		};
 		class_1.prototype.describeIntent = function(identity, collected, quantity) {
 			var lines = [
-				"Purchase order " + identity.PUNO + " line " + identity.PNLI,
-				"Item " + identity.ITNO,
-				"Quantity: " + quantity
+				"Purchase order " + identity.PUNO + ", line " + identity.PNLI + ".",
+				"Item " + identity.ITNO + ".",
+				"Quantity " + quantity + "."
 			];
-			if (collected.mode === "serial") lines.push(collected.serials.length > 0 ? "Serials: " + collected.serials.join(", ") : ASSIGNED_BY_M3.serial);
+			if (collected.mode === "serial") lines.push(collected.serials.length > 0 ? "Serials: " + collected.serials.join(", ") + "." : ASSIGNED_BY_M3.serial + ".");
 			else if (collected.mode === "lot") {
-				lines.push(collected.lot ? "Lot: " + collected.lot : ASSIGNED_BY_M3.lot);
-				if (collected.expiry) lines.push("Expiry: " + collected.expiry);
+				lines.push(collected.lot ? "Lot " + collected.lot + "." : ASSIGNED_BY_M3.lot + ".");
+				if (collected.expiry) lines.push("Expiry " + collected.expiry + ".");
 			}
 			return lines.join("\n");
 		};

@@ -58,6 +58,28 @@ describe('autoLotNo — ported from PPS300_MVX.java AutoLotNo()', () => {
   });
 });
 
+describe('which gate decides whether to collect a number', () => {
+  // Found receiving PO 2007775 in H5: item 651103, INDI 2 / BACD 0, under
+  // receiving method A11 (CRBN 1, DSTO 1). The script collected no serial and
+  // told the operator M3 would assign one. BACD 0 means it will not.
+  it('autoLotNo is false for BACD 0, so a serial must be collected', () => {
+    expect(autoLotNo(LotControl.SERIAL, 0)).toBe(false);
+  });
+
+  it('manualLotNo disagrees, because it also asks PPS300 panel questions', () => {
+    // PPS300's own comment: "Check if Manual numbering Lot No and not
+    // mandantory in PPS300". CRBN/DSTO decide whether that PANEL prompts.
+    // This script stages to MHS850MI and never goes through PPS300, so using
+    // manualLotNo as the gate skipped a serial the item genuinely needs.
+    expect(manualLotNo(LotControl.SERIAL, 0, 1, 1)).toBe(false);
+  });
+
+  it('still collects nothing when M3 really does generate the number', () => {
+    // PO 2007774, item Y21002: INDI 3 / BACD 6. This one is genuinely auto.
+    expect(autoLotNo('3', 6)).toBe(true);
+  });
+});
+
 describe('manualLotNo — ported from PPS300_MVX.java ManualLotNo()', () => {
   it('is true only when nothing else supplies the number', () => {
     expect(manualLotNo(LotControl.SERIAL, 0, 0, 0)).toBe(true);

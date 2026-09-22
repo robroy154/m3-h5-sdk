@@ -50,7 +50,7 @@ import {
   classifyReceiptMode,
   isDirectPutAway,
   lotMustPreExist,
-  manualLotNo,
+  autoLotNo,
   planEquipmentCreation,
 } from './receiving-policy';
 import { evaluateSelection } from './selection-policy';
@@ -388,12 +388,25 @@ const POReceiptShortcutV7 = class {
       return { mode, lines: [{ RVQA: context.quantity }], serials: [] };
     }
 
-    // M3 generates the number for the automatic methods, so asking the
-    // operator for one would be asking them to invent what M3 will overwrite.
-    if (!manualLotNo(context.indi, context.bacd, context.crbn, context.dsto)) {
+    // Gated on autoLotNo, NOT manualLotNo.
+    //
+    // autoLotNo asks the only question that matters here: does M3 generate the
+    // number itself? If it does, asking the operator would be asking them to
+    // invent what M3 overwrites.
+    //
+    // manualLotNo adds `CRBN != 1 && DSTO != 1` on top of that. Those come
+    // from PPS300's ManualLotNo(), whose own comment reads "Check if Manual
+    // numbering Lot No and not mandantory in PPS300" — it decides whether
+    // PPS300's PANEL offers an optional prompt, not whether the number is
+    // needed. This script does not go through PPS300; it stages to MHS850MI.
+    // Using that gate meant a serialised item with BACD 0 under a direct
+    // put-away receiving method collected no serial and claimed M3 would
+    // assign one, which BACD 0 means it will not. V6, which runs in
+    // production, branches on INDI alone and has no CRBN/DSTO check anywhere.
+    if (autoLotNo(context.indi, context.bacd)) {
       this.log.Info(
-        'Lot numbering is automatic for this item (BACD ' + context.bacd +
-          '); no number collected'
+        'M3 generates the number for this item (BACD ' + context.bacd +
+          '); none collected'
       );
       return { mode, lines: [{ RVQA: context.quantity }], serials: [] };
     }
@@ -569,22 +582,27 @@ const POReceiptShortcutV7 = class {
     collected: Collected,
     quantity: string
   ): string {
+    // Each fragment is a sentence because H5's ConfirmDialog collapses the
+    // newlines, so the operator sees one run-on line. Punctuated this way it
+    // reads correctly whether or not the breaks survive.
     const lines = [
-      'Purchase order ' + identity.PUNO + ' line ' + identity.PNLI,
-      'Item ' + identity.ITNO,
+      'Purchase order ' + identity.PUNO + ', line ' + identity.PNLI + '.',
+      'Item ' + identity.ITNO + '.',
       // The quantity is the whole point of the confirmation, and it was the
       // one thing this dialog did not show.
-      'Quantity: ' + quantity,
+      'Quantity ' + quantity + '.',
     ];
     if (collected.mode === 'serial') {
       lines.push(
         collected.serials.length > 0
-          ? 'Serials: ' + collected.serials.join(', ')
-          : ASSIGNED_BY_M3.serial
+          ? 'Serials: ' + collected.serials.join(', ') + '.'
+          : ASSIGNED_BY_M3.serial + '.'
       );
     } else if (collected.mode === 'lot') {
-      lines.push(collected.lot ? 'Lot: ' + collected.lot : ASSIGNED_BY_M3.lot);
-      if (collected.expiry) lines.push('Expiry: ' + collected.expiry);
+      lines.push(
+        collected.lot ? 'Lot ' + collected.lot + '.' : ASSIGNED_BY_M3.lot + '.'
+      );
+      if (collected.expiry) lines.push('Expiry ' + collected.expiry + '.');
     }
     return lines.join('\n');
   }

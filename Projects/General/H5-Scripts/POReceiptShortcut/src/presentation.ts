@@ -69,21 +69,24 @@ export function buildReceiptSummary(summary: ReceiptSummary): string {
     // No serials collected means M3 generated them (an automatic BACD). Saying
     // "0 serials received" would report a successful receipt as a failure.
     if (serials.length === 0) {
-      return units + '\n' + ASSIGNED_BY_M3.serial;
+      return units + '.\n' + ASSIGNED_BY_M3.serial + '.';
     }
     return plural(serials.length, 'serial') + ' received ' + where +
-      '\nSerials: ' + serials.join(', ');
+      '.\nSerials: ' + serials.join(', ') + '.';
   }
 
   if (summary.mode === 'lot') {
-    const lines = [units, summary.lot ? 'Lot: ' + summary.lot : ASSIGNED_BY_M3.lot];
+    const lines = [
+      units + '.',
+      (summary.lot ? 'Lot ' + summary.lot : ASSIGNED_BY_M3.lot) + '.',
+    ];
     if (summary.expiry) {
-      lines.push('Expiry: ' + summary.expiry);
+      lines.push('Expiry ' + summary.expiry + '.');
     }
     return lines.join('\n');
   }
 
-  return units;
+  return units + '.';
 }
 
 /**
