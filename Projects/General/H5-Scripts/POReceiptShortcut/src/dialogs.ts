@@ -263,7 +263,9 @@ export function promptSerials(
       copy.addEventListener('click', () => copyText(options.poNumber));
       tools.appendChild(copy);
 
-      form.insertBefore(tools, list);
+      // appendChild, not insertBefore(tools, list): the list is appended just
+      // below, so it is not a child of the form yet and insertBefore throws.
+      form.appendChild(tools);
     }
 
     form.appendChild(list);
@@ -413,36 +415,54 @@ export interface ProgressHandle {
  * used only to size the bar; an extra step past it just holds at full.
  */
 export function openProgress(steps: number): ProgressHandle {
-  ensureStyles();
-
-  const form = element('div', 'po-receipt-form');
-  const label = element('div', 'po-receipt-progress-msg', 'Starting…');
-  const track = element('div', 'po-receipt-progress-track');
-  const fill = element('div', 'po-receipt-progress-fill');
-  track.appendChild(fill);
-  form.appendChild(label);
-  form.appendChild(track);
-
-  // closeOnEscape false: dismissing this would hide a receipt that is still
-  // in flight, and there is no button because there is nothing to decide.
-  const dialog = openDialog(form, DIALOG_TITLES.progress, [], () => undefined, false);
-
-  let index = 0;
-  const total = Math.max(steps, 1);
-
-  return {
-    step(text: string): void {
-      index++;
-      fill.style.width = Math.min(Math.round((index / total) * 100), 100) + '%';
-      label.textContent = text;
-    },
-    done(): void {
-      fill.style.width = '100%';
-      label.textContent = 'Done';
-      dialog.close();
-    },
-    close(): void {
-      dialog.close();
-    },
+  const inert: ProgressHandle = {
+    step: () => undefined,
+    done: () => undefined,
+    close: () => undefined,
   };
+
+  // Progress is decoration. A receipt must never fail because the bar could
+  // not be drawn, so everything here is best-effort and falls back to showing
+  // nothing. The empty `buttons` array in particular is untested against H5.
+  try {
+    ensureStyles();
+
+    const form = element('div', 'po-receipt-form');
+    const label = element('div', 'po-receipt-progress-msg', 'Starting…');
+    const track = element('div', 'po-receipt-progress-track');
+    const fill = element('div', 'po-receipt-progress-fill');
+    track.appendChild(fill);
+    form.appendChild(label);
+    form.appendChild(track);
+
+    // closeOnEscape false: dismissing this would hide a receipt that is still
+    // in flight, and there is no button because there is nothing to decide.
+    const dialog = openDialog(form, DIALOG_TITLES.progress, [], () => undefined, false);
+
+    let index = 0;
+    const total = Math.max(steps, 1);
+    const guard = (work: () => void): void => {
+      try {
+        work();
+      } catch {
+        // Same reason: never let the indicator take the receipt down.
+      }
+    };
+
+    return {
+      step: (text: string) => guard(() => {
+        index++;
+        fill.style.width = Math.min(Math.round((index / total) * 100), 100) + '%';
+        label.textContent = text;
+      }),
+      done: () => guard(() => {
+        fill.style.width = '100%';
+        label.textContent = 'Done';
+        dialog.close();
+      }),
+      close: () => guard(() => dialog.close()),
+    };
+  } catch {
+    return inert;
+  }
 }

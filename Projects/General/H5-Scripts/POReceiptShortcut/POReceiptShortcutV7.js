@@ -608,7 +608,7 @@ var POReceiptShortcutV7 = (function() {
 					return copyText(options.poNumber);
 				});
 				tools.appendChild(copy);
-				form.insertBefore(tools, list);
+				form.appendChild(tools);
 			}
 			form.appendChild(list);
 			var finish = settleOnce(resolve);
@@ -709,32 +709,52 @@ var POReceiptShortcutV7 = (function() {
 	* used only to size the bar; an extra step past it just holds at full.
 	*/
 	function openProgress(steps) {
-		ensureStyles();
-		var form = element("div", "po-receipt-form");
-		var label = element("div", "po-receipt-progress-msg", "Starting…");
-		var track = element("div", "po-receipt-progress-track");
-		var fill = element("div", "po-receipt-progress-fill");
-		track.appendChild(fill);
-		form.appendChild(label);
-		form.appendChild(track);
-		var dialog = openDialog(form, DIALOG_TITLES.progress, [], function() {}, false);
-		var index = 0;
-		var total = Math.max(steps, 1);
-		return {
-			step: function(text) {
-				index++;
-				fill.style.width = Math.min(Math.round(index / total * 100), 100) + "%";
-				label.textContent = text;
-			},
-			done: function() {
-				fill.style.width = "100%";
-				label.textContent = "Done";
-				dialog.close();
-			},
-			close: function() {
-				dialog.close();
-			}
+		var inert = {
+			step: function() {},
+			done: function() {},
+			close: function() {}
 		};
+		try {
+			ensureStyles();
+			var form = element("div", "po-receipt-form");
+			var label_1 = element("div", "po-receipt-progress-msg", "Starting…");
+			var track = element("div", "po-receipt-progress-track");
+			var fill_1 = element("div", "po-receipt-progress-fill");
+			track.appendChild(fill_1);
+			form.appendChild(label_1);
+			form.appendChild(track);
+			var dialog_1 = openDialog(form, DIALOG_TITLES.progress, [], function() {}, false);
+			var index_1 = 0;
+			var total_1 = Math.max(steps, 1);
+			var guard_1 = function(work) {
+				try {
+					work();
+				} catch (_a) {}
+			};
+			return {
+				step: function(text) {
+					return guard_1(function() {
+						index_1++;
+						fill_1.style.width = Math.min(Math.round(index_1 / total_1 * 100), 100) + "%";
+						label_1.textContent = text;
+					});
+				},
+				done: function() {
+					return guard_1(function() {
+						fill_1.style.width = "100%";
+						label_1.textContent = "Done";
+						dialog_1.close();
+					});
+				},
+				close: function() {
+					return guard_1(function() {
+						return dialog_1.close();
+					});
+				}
+			};
+		} catch (_a) {
+			return inert;
+		}
 	}
 	//#endregion
 	//#region Projects/General/H5-Scripts/POReceiptShortcut/build/h5-adapter.js
