@@ -69,11 +69,25 @@ describe('buildConfig defaults', () => {
     expect(errors).toHaveLength(0); // legal until an oversize serial appears
   });
 
-  it('carries no tenant-specific value anywhere in the defaults', () => {
-    const serialised = JSON.stringify(DEFAULT_CONFIG).toUpperCase();
-    for (const leak of ['BENCO', 'WMSWHSE', 'EQUIPMENT', 'FULLSERNUM', 'USD']) {
-      expect(serialised).not.toContain(leak);
-    }
+  it('leaves every tenant-specific default empty', () => {
+    // Stronger than the deny-list of known strings this replaced, which could
+    // only catch the handful of values someone remembered to enumerate — and
+    // which named a customer inside a customer-agnostic asset. Asserting the
+    // fields are empty catches ANY value, including one nobody anticipated.
+    expect(DEFAULT_CONFIG.warehouseGroup).toBe('');
+    expect(DEFAULT_CONFIG.customFieldGroup).toBe('');
+    expect(DEFAULT_CONFIG.customFieldName).toBe('');
+    expect(DEFAULT_CONFIG.partnerQualifierA).toBe('');
+    expect(DEFAULT_CONFIG.partnerQualifierB).toBe('');
+    expect(DEFAULT_CONFIG.wmsCheckEnabled).toBe(false);
+  });
+
+  it('has no currency field at all', () => {
+    // The V6 regression this guards: CUCD was the literal 'USD'. Currency is
+    // resolved from the purchase order head, so configuration must not offer a
+    // place to hardcode one.
+    expect(Object.keys(DEFAULT_CONFIG)).not.toContain('currency');
+    expect(JSON.stringify(DEFAULT_CONFIG)).not.toContain('CUCD');
   });
 });
 
