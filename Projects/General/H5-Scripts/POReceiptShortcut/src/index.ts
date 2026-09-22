@@ -444,6 +444,12 @@ const POReceiptShortcutV7 = class {
       count,
       maxLength,
       itemNumber: identity.ITNO,
+      poNumber: identity.PUNO,
+      // Only BACD 0 requires and accepts an operator-supplied SERN. This
+      // dialog also opens for BACD 5, 8 and 9, where MMS240MI/Add refuses the
+      // item entirely, so generated serials there would be invented data.
+      allowGenerate:
+        planEquipmentCreation(context.indi, context.bacd) === 'add-with-serial',
       today: todayAsM3Date(),
     });
     if (!values) return null;

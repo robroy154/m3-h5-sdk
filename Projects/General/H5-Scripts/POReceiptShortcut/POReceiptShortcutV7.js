@@ -240,6 +240,13 @@ var POReceiptShortcutV7 = (function() {
 		"  background: var(--ids-alert-color-success-default, #2C8C3E);",
 		"}",
 		".po-receipt-serials { max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }",
+		".po-receipt-tools { display: flex; gap: 6px; margin-bottom: 10px; }",
+		".po-receipt-tool {",
+		"  padding: 4px 8px; border-radius: 2px; cursor: pointer; font-size: 12px;",
+		"  color: var(--ids-button-primary-color-text-default, #fff);",
+		"  background: var(--ids-button-primary-color-background-default, #0072C6);",
+		"  border: 1px solid var(--ids-button-primary-color-border-default, #0072C6);",
+		"}",
 		".po-receipt-field { margin-bottom: 10px; }",
 		".po-receipt-field input { width: 100%; text-transform: uppercase; }",
 		".po-receipt-field--invalid input {",
@@ -437,7 +444,7 @@ var POReceiptShortcutV7 = (function() {
 		if (text) node.appendChild(document.createTextNode(text));
 		return node;
 	}
-	function labelledInput(labelText, maxLength) {
+	function labelledInput(labelText, maxLength, placeholder) {
 		var field = element("div", "po-receipt-field");
 		var label = element("label", "inforLabel", labelText);
 		var input = document.createElement("input");
@@ -445,6 +452,7 @@ var POReceiptShortcutV7 = (function() {
 		input.className = "inforTextBox";
 		input.maxLength = maxLength;
 		input.autocomplete = "off";
+		if (placeholder) input.placeholder = placeholder;
 		input.addEventListener("contextmenu", function(event) {
 			return event.stopPropagation();
 		});
@@ -474,6 +482,26 @@ var POReceiptShortcutV7 = (function() {
 				} else submit();
 			});
 		});
+	}
+	/**
+	* Copies text without depending on the async Clipboard API, which H5 runs in
+	* an iframe where it is often blocked. Same approach V6 used.
+	*/
+	function copyText(value) {
+		var area = document.createElement("textarea");
+		area.value = value;
+		area.setAttribute("readonly", "readonly");
+		area.style.position = "fixed";
+		area.style.top = "-1000px";
+		area.style.opacity = "0";
+		document.body.appendChild(area);
+		try {
+			area.select();
+			area.setSelectionRange(0, value.length);
+			document.execCommand("copy");
+		} catch (_a) {} finally {
+			if (area.parentNode) area.parentNode.removeChild(area);
+		}
 	}
 	/**
 	* Opens an H5 dialog around a built element.
@@ -546,9 +574,33 @@ var POReceiptShortcutV7 = (function() {
 			var list = element("div", "po-receipt-serials");
 			var inputs = [];
 			for (var i = 0; i < options.count; i++) {
-				var _a = labelledInput("Serial " + (i + 1), options.maxLength), field = _a.field, input = _a.input;
+				var _a = labelledInput("Serial " + (i + 1), options.maxLength, "max " + options.maxLength + " characters"), field = _a.field, input = _a.input;
 				list.appendChild(field);
 				inputs.push(input);
+			}
+			if (options.allowGenerate) {
+				var tools = element("div", "po-receipt-tools");
+				var generate = element("button", "po-receipt-tool", "Generate serials");
+				generate.type = "button";
+				generate.addEventListener("click", function() {
+					inputs.forEach(function(input, index) {
+						input.value = options.poNumber + "-" + (index + 1);
+						var field = input.parentElement;
+						if (field) field.className = "po-receipt-field";
+					});
+					message.className = "po-receipt-message po-receipt-message--success";
+					message.textContent = "Filled " + inputs.length + " serials from " + options.poNumber + ".";
+					message.style.display = "";
+					if (inputs.length > 0) inputs[0].focus();
+				});
+				tools.appendChild(generate);
+				var copy = element("button", "po-receipt-tool", "Copy PO number");
+				copy.type = "button";
+				copy.addEventListener("click", function() {
+					return copyText(options.poNumber);
+				});
+				tools.appendChild(copy);
+				form.insertBefore(tools, list);
 			}
 			form.appendChild(list);
 			var finish = settleOnce(resolve);
@@ -567,6 +619,7 @@ var POReceiptShortcutV7 = (function() {
 				});
 				var text = buildValidationMessage(result.issues, result.duplicates, options.maxLength);
 				if (text) {
+					message.className = "po-receipt-message po-receipt-message--error";
 					message.textContent = text;
 					message.style.display = "";
 					return;
@@ -600,9 +653,9 @@ var POReceiptShortcutV7 = (function() {
 			var message = element("div", "po-receipt-message po-receipt-message--error");
 			message.style.display = "none";
 			form.appendChild(message);
-			var lotField = labelledInput("Lot number", 20);
+			var lotField = labelledInput("Lot number", 20, "Enter lot number");
 			form.appendChild(lotField.field);
-			var expiryField = labelledInput("Expiration date (YYYYMMDD)" + (options.expiryRequired ? "" : " — optional"), 8);
+			var expiryField = labelledInput("Expiration date (YYYYMMDD)" + (options.expiryRequired ? "" : " — optional"), 8, "YYYYMMDD");
 			form.appendChild(expiryField.field);
 			var finish = settleOnce(resolve);
 			var dialog = null;
@@ -3706,6 +3759,8 @@ var POReceiptShortcutV7 = (function() {
 								count,
 								maxLength,
 								itemNumber: identity.ITNO,
+								poNumber: identity.PUNO,
+								allowGenerate: planEquipmentCreation(context.indi, context.bacd) === "add-with-serial",
 								today: todayAsM3Date()
 							})];
 						case 3:

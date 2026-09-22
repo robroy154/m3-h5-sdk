@@ -39,7 +39,8 @@ function element(tag: string, className?: string, text?: string): HTMLElement {
 
 function labelledInput(
   labelText: string,
-  maxLength: number
+  maxLength: number,
+  placeholder?: string
 ): { field: HTMLElement; input: HTMLInputElement } {
   const field = element('div', 'po-receipt-field');
   const label = element('label', 'inforLabel', labelText);
@@ -48,6 +49,7 @@ function labelledInput(
   input.className = 'inforTextBox';
   input.maxLength = maxLength;
   input.autocomplete = 'off';
+  if (placeholder) input.placeholder = placeholder;
   // H5 swallows contextmenu on the panel beneath, which takes the native
   // paste menu with it. V6 stopped propagation for the same reason; operators
   // paste serials from a packing list.
@@ -81,6 +83,29 @@ function wireEnterKey(inputs: HTMLInputElement[], submit: () => void): void {
       }
     });
   });
+}
+
+/**
+ * Copies text without depending on the async Clipboard API, which H5 runs in
+ * an iframe where it is often blocked. Same approach V6 used.
+ */
+function copyText(value: string): void {
+  const area = document.createElement('textarea');
+  area.value = value;
+  area.setAttribute('readonly', 'readonly');
+  area.style.position = 'fixed';
+  area.style.top = '-1000px';
+  area.style.opacity = '0';
+  document.body.appendChild(area);
+  try {
+    area.select();
+    area.setSelectionRange(0, value.length);
+    document.execCommand('copy');
+  } catch {
+    // Nothing to do: copying is a convenience, never a step the receipt needs.
+  } finally {
+    if (area.parentNode) area.parentNode.removeChild(area);
+  }
 }
 
 interface DialogHandle {
@@ -159,6 +184,19 @@ export interface SerialPromptOptions {
   /** Longest serial the operator may enter, given where it can be stored. */
   maxLength: number;
   itemNumber: string;
+  /** Seeds the generated serials, as V6 did: PUNO-1, PUNO-2, … */
+  poNumber: string;
+  /**
+   * Whether the "Generate serials" shortcut is offered.
+   *
+   * Only for BACD 0, the one numbering method where M3 requires and accepts an
+   * operator-supplied SERN. This dialog also opens for BACD 5, 8 and 9, where
+   * MMS240MI/Add refuses outright (MM24032) and equipment creation is skipped
+   * — filling those with PUNO-1, PUNO-2 would fabricate serials M3 never
+   * expected anyone to assign. Typing one is a decision; having the script
+   * invent five is not.
+   */
+  allowGenerate: boolean;
   /** Today, as yyyyMMdd. Injected rather than read from the clock here. */
   today: string;
 }
@@ -191,10 +229,43 @@ export function promptSerials(
     const list = element('div', 'po-receipt-serials');
     const inputs: HTMLInputElement[] = [];
     for (let i = 0; i < options.count; i++) {
-      const { field, input } = labelledInput('Serial ' + (i + 1), options.maxLength);
+      const { field, input } = labelledInput(
+        'Serial ' + (i + 1),
+        options.maxLength,
+        'max ' + options.maxLength + ' characters'
+      );
       list.appendChild(field);
       inputs.push(input);
     }
+    if (options.allowGenerate) {
+      // Text label, not V6's emoji: dialogType carries the iconography and
+      // emoji do not survive high contrast.
+      const tools = element('div', 'po-receipt-tools');
+
+      const generate = element('button', 'po-receipt-tool', 'Generate serials');
+      (generate as HTMLButtonElement).type = 'button';
+      generate.addEventListener('click', () => {
+        inputs.forEach((input, index) => {
+          input.value = options.poNumber + '-' + (index + 1);
+          const field = input.parentElement;
+          if (field) field.className = 'po-receipt-field';
+        });
+        message.className = 'po-receipt-message po-receipt-message--success';
+        message.textContent =
+          'Filled ' + inputs.length + ' serials from ' + options.poNumber + '.';
+        message.style.display = '';
+        if (inputs.length > 0) inputs[0].focus();
+      });
+      tools.appendChild(generate);
+
+      const copy = element('button', 'po-receipt-tool', 'Copy PO number');
+      (copy as HTMLButtonElement).type = 'button';
+      copy.addEventListener('click', () => copyText(options.poNumber));
+      tools.appendChild(copy);
+
+      form.insertBefore(tools, list);
+    }
+
     form.appendChild(list);
 
     const finish = settleOnce<string[]>(resolve);
@@ -216,6 +287,7 @@ export function promptSerials(
         result.issues, result.duplicates, options.maxLength
       );
       if (text) {
+        message.className = 'po-receipt-message po-receipt-message--error';
         message.textContent = text;
         message.style.display = '';
         return; // stay open; the operator keeps what they typed
@@ -270,12 +342,13 @@ export function promptLot(
     message.style.display = 'none';
     form.appendChild(message);
 
-    const lotField = labelledInput('Lot number', 20);
+    const lotField = labelledInput('Lot number', 20, 'Enter lot number');
     form.appendChild(lotField.field);
 
     const expiryField = labelledInput(
       'Expiration date (YYYYMMDD)' + (options.expiryRequired ? '' : ' — optional'),
-      8
+      8,
+      'YYYYMMDD'
     );
     form.appendChild(expiryField.field);
 

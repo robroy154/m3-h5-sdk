@@ -238,3 +238,28 @@ describe('planEquipmentCreation', () => {
     expect(v6WouldSucceed).toEqual([0]);
   });
 });
+
+describe('when the "Generate serials" shortcut may be offered', () => {
+  // The serial dialog opens whenever numbering is not automatic, which since
+  // the gate fix includes BACD 5, 8 and 9 — methods where MMS240MI/Add refuses
+  // the item (MM24032) and equipment creation is skipped. Auto-filling
+  // PUNO-1..N there would invent serials M3 never expected to be assigned.
+  const offered = (bacd: number): boolean =>
+    planEquipmentCreation(LotControl.SERIAL, bacd) === 'add-with-serial';
+
+  it('is offered for BACD 0, where SERN is required and accepted', () => {
+    expect(offered(0)).toBe(true);
+  });
+
+  it('is withheld for BACD 4, 5, 8 and 9, where Add refuses the item', () => {
+    for (const bacd of [4, 5, 8, 9]) {
+      expect(offered(bacd), 'BACD ' + bacd).toBe(false);
+    }
+  });
+
+  it('is withheld for the methods where M3 generates the serial', () => {
+    for (const bacd of [1, 2, 3, 6, 7]) {
+      expect(offered(bacd), 'BACD ' + bacd).toBe(false);
+    }
+  });
+});
