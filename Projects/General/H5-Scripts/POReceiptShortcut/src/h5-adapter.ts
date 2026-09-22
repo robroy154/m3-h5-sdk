@@ -84,11 +84,19 @@ export function createExecutor(
     request.maxReturnedRecords =
       spec.maxReturnedRecords === undefined ? 1 : spec.maxReturnedRecords;
 
+    // Timed, because the only way to find a slow receipt is to see which call
+    // is slow. H5 turns Debug off in production, so this costs nothing there.
+    const startedAt = Date.now();
+    const elapsed = (): string => ' (' + (Date.now() - startedAt) + 'ms)';
     log.Debug(spec.program + '/' + spec.transaction);
 
     return service.executeRequest(request).then(
-      (response: MiResponse) => response,
+      (response: MiResponse) => {
+        log.Debug(spec.program + '/' + spec.transaction + ' ok' + elapsed());
+        return response;
+      },
       (error: MiResponse) => {
+        log.Debug(spec.program + '/' + spec.transaction + ' failed' + elapsed());
         throw error;
       }
     );

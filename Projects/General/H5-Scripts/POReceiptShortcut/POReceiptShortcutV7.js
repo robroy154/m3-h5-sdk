@@ -759,10 +759,16 @@ var POReceiptShortcutV7 = (function() {
 			request.record = applyCompanyScope(spec.record, spec.scope, context);
 			if (spec.outputFields) request.outputFields = spec.outputFields;
 			request.maxReturnedRecords = spec.maxReturnedRecords === void 0 ? 1 : spec.maxReturnedRecords;
+			var startedAt = Date.now();
+			var elapsed = function() {
+				return " (" + (Date.now() - startedAt) + "ms)";
+			};
 			log.Debug(spec.program + "/" + spec.transaction);
 			return service.executeRequest(request).then(function(response) {
+				log.Debug(spec.program + "/" + spec.transaction + " ok" + elapsed());
 				return response;
 			}, function(error) {
+				log.Debug(spec.program + "/" + spec.transaction + " failed" + elapsed());
 				throw error;
 			});
 		};
@@ -3356,7 +3362,7 @@ var POReceiptShortcutV7 = (function() {
 		};
 		class_1.prototype.run = function() {
 			return __awaiter(this, void 0, void 0, function() {
-				var identity, entered, context, remaining, proceed, collected, confirmed, error_1, message;
+				var identity, entered, readStartedAt, context, remaining, proceed, collected, confirmed, postStartedAt, error_1, message;
 				var _this = this;
 				return __generator(this, function(_a) {
 					switch (_a.label) {
@@ -3373,11 +3379,13 @@ var POReceiptShortcutV7 = (function() {
 								,
 								10
 							]);
+							readStartedAt = Date.now();
 							return [4, withBusyIndicator(this.controller, function() {
 								return _this.loadLine(identity, entered);
 							})];
 						case 2:
 							context = _a.sent();
+							this.log.Debug("Reading the line took " + (Date.now() - readStartedAt) + "ms");
 							if (!context) return [2];
 							remaining = Number(context.remaining || "0");
 							if (!(remaining > 0 && Number(entered) > remaining)) return [3, 4];
@@ -3403,9 +3411,11 @@ var POReceiptShortcutV7 = (function() {
 								this.log.Info("Receipt cancelled by the operator");
 								return [2];
 							}
+							postStartedAt = Date.now();
 							return [4, this.post(identity, context, collected)];
 						case 7:
 							_a.sent();
+							this.log.Debug("Posting took " + (Date.now() - postStartedAt) + "ms");
 							return [3, 10];
 						case 8:
 							error_1 = _a.sent();

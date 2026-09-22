@@ -166,9 +166,11 @@ const POReceiptShortcutV7 = class {
     if (!entered) return;
 
     try {
+      const readStartedAt = Date.now();
       const context = await withBusyIndicator(this.controller, () =>
         this.loadLine(identity, entered)
       );
+      this.log.Debug('Reading the line took ' + (Date.now() - readStartedAt) + 'ms');
       if (!context) return;
 
       // V6 warned here and V7 dropped the check entirely. Receiving more than
@@ -205,7 +207,9 @@ const POReceiptShortcutV7 = class {
         return;
       }
 
+      const postStartedAt = Date.now();
       await this.post(identity, context, collected);
+      this.log.Debug('Posting took ' + (Date.now() - postStartedAt) + 'ms');
     } catch (error) {
       const message = (error && (error as Error).message) || String(error);
       this.log.Error(SCRIPT_NAME + ': ' + message);
