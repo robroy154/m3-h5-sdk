@@ -158,6 +158,14 @@ var POReceiptShortcutV7 = (function() {
 	* them. The SDK's scantool sample loads a theme only because it is a
 	* standalone page.
 	*/
+	/**
+	* What to say when the operator supplied no number because M3 generates it.
+	* Printing a bare "Lot:" with nothing after it reads like a missing value.
+	*/
+	var ASSIGNED_BY_M3 = {
+		lot: "Lot number assigned by M3",
+		serial: "Serial numbers assigned by M3"
+	};
 	function locationPhrase(location) {
 		return location ? "to " + location : "to the location M3 assigned";
 	}
@@ -173,18 +181,18 @@ var POReceiptShortcutV7 = (function() {
 	*/
 	function buildReceiptSummary(summary) {
 		var where = locationPhrase(summary.location);
+		var units = plural(summary.quantity || 0, "unit") + " received " + where;
 		if (summary.mode === "serial") {
 			var serials = summary.serials || [];
-			var lines = [plural(serials.length, "serial") + " received " + where];
-			if (serials.length > 0) lines.push("Serials: " + serials.join(", "));
-			return lines.join("\n");
+			if (serials.length === 0) return units + "\n" + ASSIGNED_BY_M3.serial;
+			return plural(serials.length, "serial") + " received " + where + "\nSerials: " + serials.join(", ");
 		}
 		if (summary.mode === "lot") {
-			var lines = [plural(summary.quantity || 0, "unit") + " received " + where, "Lot: " + (summary.lot || "")];
+			var lines = [units, summary.lot ? "Lot: " + summary.lot : ASSIGNED_BY_M3.lot];
 			if (summary.expiry) lines.push("Expiry: " + summary.expiry);
 			return lines.join("\n");
 		}
-		return plural(summary.quantity || 0, "unit") + " received " + where;
+		return units;
 	}
 	/**
 	* Titles carry no emoji.
@@ -3404,7 +3412,7 @@ var POReceiptShortcutV7 = (function() {
 								this.log.Info("Receipt cancelled by the operator");
 								return [2];
 							}
-							return [4, confirm(DIALOG_TITLES.confirmReceipt, this.describeIntent(identity, collected))];
+							return [4, confirm(DIALOG_TITLES.confirmReceipt, this.describeIntent(identity, collected, entered))];
 						case 6:
 							confirmed = _a.sent();
 							if (!confirmed) {
@@ -3783,11 +3791,15 @@ var POReceiptShortcutV7 = (function() {
 				this.log.Warning("Could not refresh the panel: " + (error && error.message || error));
 			}
 		};
-		class_1.prototype.describeIntent = function(identity, collected) {
-			var lines = ["Purchase order " + identity.PUNO + " line " + identity.PNLI, "Item " + identity.ITNO];
-			if (collected.mode === "serial") lines.push("Serials: " + collected.serials.join(", "));
+		class_1.prototype.describeIntent = function(identity, collected, quantity) {
+			var lines = [
+				"Purchase order " + identity.PUNO + " line " + identity.PNLI,
+				"Item " + identity.ITNO,
+				"Quantity: " + quantity
+			];
+			if (collected.mode === "serial") lines.push(collected.serials.length > 0 ? "Serials: " + collected.serials.join(", ") : ASSIGNED_BY_M3.serial);
 			else if (collected.mode === "lot") {
-				lines.push("Lot: " + (collected.lot || ""));
+				lines.push(collected.lot ? "Lot: " + collected.lot : ASSIGNED_BY_M3.lot);
 				if (collected.expiry) lines.push("Expiry: " + collected.expiry);
 			}
 			return lines.join("\n");

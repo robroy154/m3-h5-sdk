@@ -40,7 +40,7 @@ import {
   toItems,
 } from './mi-gateway';
 import { WhsLineInput } from './mi-requests';
-import { DIALOG_TITLES, buildReceiptSummary } from './presentation';
+import { ASSIGNED_BY_M3, DIALOG_TITLES, buildReceiptSummary } from './presentation';
 import {
   ReceiptLog,
   ReceiptPlan,
@@ -200,7 +200,7 @@ const POReceiptShortcutV7 = class {
 
       const confirmed = await confirm(
         DIALOG_TITLES.confirmReceipt,
-        this.describeIntent(identity, collected)
+        this.describeIntent(identity, collected, entered)
       );
       if (!confirmed) {
         this.log.Info('Receipt cancelled by the operator');
@@ -564,15 +564,26 @@ const POReceiptShortcutV7 = class {
     }
   }
 
-  private describeIntent(identity: LineIdentity, collected: Collected): string {
+  private describeIntent(
+    identity: LineIdentity,
+    collected: Collected,
+    quantity: string
+  ): string {
     const lines = [
       'Purchase order ' + identity.PUNO + ' line ' + identity.PNLI,
       'Item ' + identity.ITNO,
+      // The quantity is the whole point of the confirmation, and it was the
+      // one thing this dialog did not show.
+      'Quantity: ' + quantity,
     ];
     if (collected.mode === 'serial') {
-      lines.push('Serials: ' + collected.serials.join(', '));
+      lines.push(
+        collected.serials.length > 0
+          ? 'Serials: ' + collected.serials.join(', ')
+          : ASSIGNED_BY_M3.serial
+      );
     } else if (collected.mode === 'lot') {
-      lines.push('Lot: ' + (collected.lot || ''));
+      lines.push(collected.lot ? 'Lot: ' + collected.lot : ASSIGNED_BY_M3.lot);
       if (collected.expiry) lines.push('Expiry: ' + collected.expiry);
     }
     return lines.join('\n');

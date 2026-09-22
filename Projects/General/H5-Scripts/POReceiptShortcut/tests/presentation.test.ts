@@ -45,8 +45,24 @@ describe('buildReceiptSummary', () => {
       .toBe('1 unit received to A'));
 
   it('does not throw on missing counts', () => {
-    expect(buildReceiptSummary({ mode: 'serial', location: 'A' })).toContain('0 serials');
     expect(buildReceiptSummary({ mode: 'plain', location: 'A' })).toContain('0 units');
+  });
+
+  it('says M3 assigned the serials rather than reporting "0 serials"', () => {
+    // An automatic BACD means M3 generates the numbers, so none are collected.
+    // Reporting "0 serials received" made a successful receipt read as a
+    // failure. Seen on PO 2007774 in H5.
+    const out = buildReceiptSummary({ mode: 'serial', quantity: 5, location: '' });
+    expect(out).toContain('5 units received');
+    expect(out).toContain('Serial numbers assigned by M3');
+    expect(out).not.toContain('0 serial');
+  });
+
+  it('never prints a bare "Lot:" when M3 assigned the number', () => {
+    const out = buildReceiptSummary({ mode: 'lot', quantity: 5, location: '' });
+    expect(out).toContain('5 units received');
+    expect(out).toContain('Lot number assigned by M3');
+    expect(out).not.toMatch(/Lot:\s*$/m);
   });
 });
 

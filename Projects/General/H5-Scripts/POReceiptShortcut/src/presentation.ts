@@ -36,6 +36,15 @@ export interface ReceiptSummary {
   location?: string;
 }
 
+/**
+ * What to say when the operator supplied no number because M3 generates it.
+ * Printing a bare "Lot:" with nothing after it reads like a missing value.
+ */
+export const ASSIGNED_BY_M3 = {
+  lot: 'Lot number assigned by M3',
+  serial: 'Serial numbers assigned by M3',
+};
+
 function locationPhrase(location: string | undefined): string {
   return location ? 'to ' + location : 'to the location M3 assigned';
 }
@@ -53,28 +62,28 @@ function plural(count: number, word: string): string {
  */
 export function buildReceiptSummary(summary: ReceiptSummary): string {
   const where = locationPhrase(summary.location);
+  const units = plural(summary.quantity || 0, 'unit') + ' received ' + where;
 
   if (summary.mode === 'serial') {
     const serials = summary.serials || [];
-    const lines = [plural(serials.length, 'serial') + ' received ' + where];
-    if (serials.length > 0) {
-      lines.push('Serials: ' + serials.join(', '));
+    // No serials collected means M3 generated them (an automatic BACD). Saying
+    // "0 serials received" would report a successful receipt as a failure.
+    if (serials.length === 0) {
+      return units + '\n' + ASSIGNED_BY_M3.serial;
     }
-    return lines.join('\n');
+    return plural(serials.length, 'serial') + ' received ' + where +
+      '\nSerials: ' + serials.join(', ');
   }
 
   if (summary.mode === 'lot') {
-    const lines = [
-      plural(summary.quantity || 0, 'unit') + ' received ' + where,
-      'Lot: ' + (summary.lot || ''),
-    ];
+    const lines = [units, summary.lot ? 'Lot: ' + summary.lot : ASSIGNED_BY_M3.lot];
     if (summary.expiry) {
       lines.push('Expiry: ' + summary.expiry);
     }
     return lines.join('\n');
   }
 
-  return plural(summary.quantity || 0, 'unit') + ' received ' + where;
+  return units;
 }
 
 /**
