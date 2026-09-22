@@ -4,10 +4,9 @@ Where H5 testing on **ICSGDENA002_TST** stopped, and what is still unproven.
 
 Last updated 2026-09-21, at commit `9760043`.
 
-> The bundle is **three fixes ahead of anything that has run in H5**. The last
-> two attempts on PO 2007775 both failed — first the OK button discarded the
-> serials, then building the dialog threw. Both are fixed and neither has been
-> re-run. **Start by receiving on PO 2007775 line 010.**
+> The serial path now works end to end. Two units received against PO 2007775
+> line 010, both message lines at status **90-Prcd, no err**, `RSTQ` 5 → 3.
+> That cleared the blocker this document previously led with.
 
 ## Deploy before testing anything
 
@@ -33,6 +32,10 @@ parses, but nothing has run it in H5.
 | The shortcut runs more than once per panel | Two receipts on one panel, transaction 123 then 124 |
 | The serial dialog opens for `BACD 0` | PO 2007775 line 010, item 651103 |
 | Read phase is not the slow part | 208–244 ms total; the four reads run in parallel (129/134/138/171 ms) plus `PPS345MI/Get` at 52–72 ms |
+| **A supplied serial posts under direct put-away** | PO 2007775 line 010, `BACD 0` under `A11` (`CRBN 1`, `DSTO 1`). Two lines, both status 90, lots `2007775-1` and `2007775-2`, receiving numbers `2006026001`/`2006026002`. `RSTQ` 5 → 3 |
+| The serial dialog builds, and OK keeps the serials | Same receipt. Covers both the `insertBefore` throw and the settle-before-close bug |
+| **Generate serials** | Those lot numbers are `PUNO-1` and `PUNO-2` — the button produced them |
+| One `MHILINPI` line per serial, each `RVQA 1` | Visible on MHS852 as lines 00001 and 00002 |
 
 ## Fixed but NOT verified in H5
 
@@ -65,12 +68,8 @@ against M3.
 
 ## Never tested
 
-**The blocker.** Does M3 accept a *supplied* serial under `CRBN=1 DSTO=1`?
-PO 2007775 is `BACD 0` under receiving method `A11`, which is direct put-away.
-The script now collects a serial and posts it as `BANO`. `AddWhsLine` accepts
-`BANO` (proven by the harness), but nothing has driven `PrcWhsTran` on this
-combination. If it is rejected, the error should name the code and explain it —
-capture that text. **Start here: PO 2007775 line 010, `RSTQ` 5.**
+The blocker that used to sit here — whether M3 accepts a *supplied* serial
+under `CRBN=1 DSTO=1` — is resolved. It does. See the confirmed table above.
 
 | Path | Why it is unproven | What it needs |
 | --- | --- | --- |
@@ -86,13 +85,39 @@ capture that text. **Start here: PO 2007775 line 010, `RSTQ` 5.**
 | The progress dialog rendering | Never reached a successful post | It passes an empty `buttons` array, which no H5 version has been seen to accept. It is now fully guarded, so the worst case is that no bar appears — but confirm it actually draws |
 | The minified bundle | Never deployed | Checked mechanically only: global declaration, `Init` static, catalogue keys, no `.catch()`, parses |
 
+## Not a bug: MHS852 "Remain qty"
+
+Receiving 2 of 5 as two serial lines leaves **both** MHS852 rows reading
+`Remain qty 4`, rather than 4 then 3. That is the field, not the receipt — the
+PO line correctly went `RSTQ` 5 → 3.
+
+`MHS852_MVX.java`, `RMQA()`, for qualifier `20`:
+
+```java
+XXRMQA = PLINE.getORQA() - HILIN.getRVQA();
+```
+
+It subtracts from `ORQA`, the **ordered** quantity, which never changes — not
+from the outstanding balance. And `HILIN.getRVQA()` is *that one message
+line's* quantity, not the sum across the message. So each row answers "what
+would be left if this line were the only receipt against the order": 5−1 and
+5−1.
+
+It ignores history too. Receive 2 last week and 1 today and the column still
+reads 4. It is a per-line field on a message inspector, not a ledger. The
+cumulative figure is `RSTQ` on the PO line, which is what PPS300's Remain
+column shows.
+
+Do not try to "fix" this, and do not read it as a running balance when
+diagnosing a receipt.
+
 ## Known-good test data
 
 Warehouse `001`, facility `A01`.
 
 | PO | Line | Item | `INDI`/`BACD` | `GRMT` | `RSTQ` now | Use |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2007775 | 010 | 651103 Fuel Pump | 2 / 0 | `A11` | **5** | The blocker above. Serial entry. Two failed attempts, both now fixed |
+| 2007775 | 010 | 651103 Fuel Pump | 2 / 0 | `A11` | 3 | Serial entry, working. 2 of 5 received |
 | 2007774 | 001 | Y21002 | 3 / 6 | `F20` | 45 | Automatic numbering, confirm-only |
 | 2007773 | 001 | Y21002 | 3 / 6 | `F20` | 0 | Exhausted by the `RVQA` bug. Not reusable |
 
