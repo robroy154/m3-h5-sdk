@@ -40,13 +40,29 @@ const chainTypeScriptSourcemaps = {
   },
 };
 
+/**
+ * Two outputs, same filename, because H5 binds the entry class by filename.
+ *
+ * - ./POReceiptShortcutV7.js      readable, for TST and for debugging.
+ * - ./dist/POReceiptShortcutV7.js minified, for production. The H5 developer
+ *   guide recommends minifying, and it keeps the source comments out of the
+ *   deployed asset. `name` is the global the loader reads, so it survives
+ *   minification; method names are not mangled, so Init still resolves.
+ *
+ * Maintain the .ts, never either .js — a minified file cannot be debugged,
+ * which is why the readable build is kept alongside.
+ */
+const base = {
+  format: 'iife',
+  name: 'POReceiptShortcutV7',
+  sourcemap: true,
+};
+
 export default {
   input: join(here, 'build/index.js'),
   plugins: [chainTypeScriptSourcemaps],
-  output: {
-    file: join(here, 'POReceiptShortcutV7.js'),
-    format: 'iife',
-    name: 'POReceiptShortcutV7',
-    sourcemap: true,
-  },
+  output: [
+    { ...base, file: join(here, 'POReceiptShortcutV7.js') },
+    { ...base, file: join(here, 'dist/POReceiptShortcutV7.js'), minify: true },
+  ],
 };

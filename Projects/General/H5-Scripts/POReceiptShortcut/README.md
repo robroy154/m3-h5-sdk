@@ -24,20 +24,31 @@ numbering method, not on the item being controlled — see
 
 ## Deploying
 
-1. `npm run build:poreceipt` from the repository root.
-2. Upload **`POReceiptShortcutV7.js`** in H5 Administration Tools → Data Files
-   → H5 Script. Never the `.ts`.
+1. `npm run build:poreceipt` from the repository root. It emits two bundles
+   with the same filename, because H5 binds the entry class by filename:
+
+   | File | Size | Use |
+   | --- | --- | --- |
+   | `POReceiptShortcutV7.js` | ~133 KB | TST, and anything you need to debug |
+   | `dist/POReceiptShortcutV7.js` | ~62 KB | **production** |
+
+   The production bundle is minified, as the H5 developer guide recommends,
+   which also keeps the source comments out of the deployed asset. Minification
+   preserves the global name and does not mangle method names, so the loader
+   still resolves `POReceiptShortcutV7.Init`. Both carry a source map.
+
+2. Upload the `.js` in H5 Administration Tools → Data Files → H5 Script.
+   Never the `.ts`.
 3. Attach it to PPS300/B as a shortcut and set the script arguments.
-4. `Ctrl+F5` in H5 to clear the script cache.
+4. `Ctrl+F5` in H5 to clear the script cache. Skipping this deploys the file
+   but keeps running the old one.
 
-The compiled `.js` and `.js.map` are committed so an H5 admin can deploy
-without running a build.
+Both compiled bundles are committed so an H5 admin can deploy without running
+a build. Maintain the `.ts` — never either `.js`. A minified file cannot be
+debugged, which is why the readable build is kept alongside it.
 
-> **Before a production deploy**, minify the `.js`. The H5 developer guide
-> recommends it, and this bundle is ~132 KB unminified because it keeps its
-> comments. Keep the `.ts` sources as the thing you maintain — a minified file
-> cannot be debugged. The code uses `.then(success, error)` throughout and
-> never `.catch()`, precisely so minifiers do not choke on the reserved word.
+The code uses `.then(success, error)` throughout and never `.catch()`,
+precisely so minifiers do not choke on the reserved word.
 
 ### Why the file name carries a version
 
