@@ -482,6 +482,23 @@ var POReceiptShortcutV7 = (function() {
 		});
 	}
 	/**
+	* Wraps a promise `resolve` so only the FIRST call counts.
+	*
+	* H5's dialog fires its `close` callback synchronously from `model.close()`,
+	* and that callback cancels. So an OK handler must settle its real value
+	* BEFORE closing, and this guard turns the cancellation that follows into a
+	* no-op. Doing it the other way round discards whatever the operator typed and
+	* reports a completed entry as "cancelled by the operator".
+	*/
+	function settleOnce(resolve) {
+		var settled = false;
+		return function(value) {
+			if (settled) return;
+			settled = true;
+			resolve(value);
+		};
+	}
+	/**
 	* Collects serial numbers.
 	*
 	* Validation runs on OK rather than per keystroke, and the dialog stays open
@@ -503,12 +520,7 @@ var POReceiptShortcutV7 = (function() {
 				inputs.push(input);
 			}
 			form.appendChild(list);
-			var settled = false;
-			var finish = function(value) {
-				if (settled) return;
-				settled = true;
-				resolve(value);
-			};
+			var finish = settleOnce(resolve);
 			openDialog(form, DIALOG_TITLES.serialEntry, [{
 				text: "OK",
 				isDefault: true,
@@ -530,8 +542,8 @@ var POReceiptShortcutV7 = (function() {
 						message.style.display = "";
 						return;
 					}
-					handle.close();
 					finish(values);
+					handle.close();
 				}
 			}, {
 				text: "Cancel",
@@ -556,12 +568,7 @@ var POReceiptShortcutV7 = (function() {
 			form.appendChild(lotField.field);
 			var expiryField = labelledInput("Expiration date (YYYYMMDD)" + (options.expiryRequired ? "" : " — optional"), 8);
 			form.appendChild(expiryField.field);
-			var settled = false;
-			var finish = function(value) {
-				if (settled) return;
-				settled = true;
-				resolve(value);
-			};
+			var finish = settleOnce(resolve);
 			openDialog(form, DIALOG_TITLES.lotEntry, [{
 				text: "OK",
 				isDefault: true,
@@ -575,11 +582,11 @@ var POReceiptShortcutV7 = (function() {
 						message.style.display = "";
 						return;
 					}
-					handle.close();
 					finish({
 						lot,
 						expiry
 					});
+					handle.close();
 				}
 			}, {
 				text: "Cancel",

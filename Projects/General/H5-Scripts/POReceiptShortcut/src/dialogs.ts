@@ -89,6 +89,24 @@ function openDialog(
   });
 }
 
+/**
+ * Wraps a promise `resolve` so only the FIRST call counts.
+ *
+ * H5's dialog fires its `close` callback synchronously from `model.close()`,
+ * and that callback cancels. So an OK handler must settle its real value
+ * BEFORE closing, and this guard turns the cancellation that follows into a
+ * no-op. Doing it the other way round discards whatever the operator typed and
+ * reports a completed entry as "cancelled by the operator".
+ */
+export function settleOnce<T>(resolve: (value: T | null) => void): (value: T | null) => void {
+  let settled = false;
+  return (value: T | null): void => {
+    if (settled) return;
+    settled = true;
+    resolve(value);
+  };
+}
+
 export interface SerialPromptOptions {
   /** How many serials to collect — the received quantity. */
   count: number;
@@ -133,12 +151,7 @@ export function promptSerials(
     }
     form.appendChild(list);
 
-    let settled = false;
-    const finish = (value: string[] | null): void => {
-      if (settled) return;
-      settled = true;
-      resolve(value);
-    };
+    const finish = settleOnce<string[]>(resolve);
 
     openDialog(
       form,
@@ -167,8 +180,11 @@ export function promptSerials(
               message.style.display = '';
               return; // stay open; the operator keeps what they typed
             }
-            handle.close();
+            // finish BEFORE close. model.close() fires the dialog's `close`
+            // callback synchronously, which calls finish(null); settling the
+            // real value first makes that a no-op instead of a cancellation.
             finish(values);
+            handle.close();
           },
         },
         { text: 'Cancel', click: (handle) => handle.close() },
@@ -217,12 +233,7 @@ export function promptLot(
     );
     form.appendChild(expiryField.field);
 
-    let settled = false;
-    const finish = (value: LotPromptResult | null): void => {
-      if (settled) return;
-      settled = true;
-      resolve(value);
-    };
+    const finish = settleOnce<LotPromptResult>(resolve);
 
     openDialog(
       form,
@@ -251,8 +262,9 @@ export function promptLot(
               message.style.display = '';
               return;
             }
-            handle.close();
+            // finish BEFORE close — see the note in promptSerials.
             finish({ lot, expiry });
+            handle.close();
           },
         },
         { text: 'Cancel', click: (handle) => handle.close() },
