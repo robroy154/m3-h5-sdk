@@ -40,7 +40,11 @@ import {
   toItems,
 } from './mi-gateway';
 import { WhsLineInput } from './mi-requests';
-import { ASSIGNED_BY_M3, DIALOG_TITLES, buildReceiptSummary } from './presentation';
+import {
+  DIALOG_TITLES,
+  buildReceiptSummary,
+  uncollectedNumberNote,
+} from './presentation';
 import {
   ReceiptLog,
   ReceiptPlan,
@@ -51,6 +55,7 @@ import {
   isDirectPutAway,
   lotMustPreExist,
   autoLotNo,
+  operatorSuppliesNumber,
   planEquipmentCreation,
 } from './receiving-policy';
 import { evaluateSelection } from './selection-policy';
@@ -200,7 +205,7 @@ const POReceiptShortcutV7 = class {
 
       const confirmed = await confirm(
         DIALOG_TITLES.confirmReceipt,
-        this.describeIntent(identity, collected, entered)
+        this.describeIntent(identity, collected, entered, this.numberNote(context, collected))
       );
       if (!confirmed) {
         this.log.Info('Receipt cancelled by the operator');
@@ -388,25 +393,22 @@ const POReceiptShortcutV7 = class {
       return { mode, lines: [{ RVQA: context.quantity }], serials: [] };
     }
 
-    // Gated on autoLotNo, NOT manualLotNo.
+    // Gated on operatorSuppliesNumber — BACD 0 alone.
     //
-    // autoLotNo asks the only question that matters here: does M3 generate the
-    // number itself? If it does, asking the operator would be asking them to
-    // invent what M3 overwrites.
+    // M3's field help for BACD: 0 is manual; 1, 2, 3, 6 and 7 are automatic;
+    // 4 is the goods receiving number, which PPS300 defaults itself; 5 is a
+    // manufacturing order number; 8 and 9 are outbound picking lot references.
+    // Only 0 asks the operator for anything during a purchase receipt.
     //
-    // manualLotNo adds `CRBN != 1 && DSTO != 1` on top of that. Those come
-    // from PPS300's ManualLotNo(), whose own comment reads "Check if Manual
-    // numbering Lot No and not mandantory in PPS300" — it decides whether
-    // PPS300's PANEL offers an optional prompt, not whether the number is
-    // needed. This script does not go through PPS300; it stages to MHS850MI.
-    // Using that gate meant a serialised item with BACD 0 under a direct
-    // put-away receiving method collected no serial and claimed M3 would
-    // assign one, which BACD 0 means it will not. V6, which runs in
-    // production, branches on INDI alone and has no CRBN/DSTO check anywhere.
-    if (autoLotNo(context.indi, context.bacd)) {
+    // This replaced manualLotNo(), which added PPS300's panel-flow conditions
+    // (CRBN != 1 && DSTO != 1) and so skipped the serial on a BACD 0 item
+    // under direct put-away. It also replaced a stop at autoLotNo(), which is
+    // false for 5, 8 and 9 and therefore prompted for numbers an inbound
+    // receipt never assigns.
+    if (!operatorSuppliesNumber(context.indi, context.bacd)) {
       this.log.Info(
-        'M3 generates the number for this item (BACD ' + context.bacd +
-          '); none collected'
+        'BACD ' + context.bacd + ' is not operator-supplied at goods receipt; ' +
+          'no number collected'
       );
       return { mode, lines: [{ RVQA: context.quantity }], serials: [] };
     }
@@ -572,6 +574,7 @@ const POReceiptShortcutV7 = class {
           expiry: collected.expiry,
           quantity: Number(context.quantity || '0'),
           location,
+          numberNote: this.numberNote(context, collected),
         })
       );
       this.refresh();
@@ -592,10 +595,20 @@ const POReceiptShortcutV7 = class {
     }
   }
 
+  /** Why no lot/serial was collected, for whichever dialog needs to say so. */
+  private numberNote(context: LineContext, collected: Collected): string {
+    return uncollectedNumberNote(
+      collected.mode === 'lot' ? 'lot' : 'serial',
+      autoLotNo(context.indi, context.bacd),
+      context.bacd
+    );
+  }
+
   private describeIntent(
     identity: LineIdentity,
     collected: Collected,
-    quantity: string
+    quantity: string,
+    numberNote: string
   ): string {
     // Each fragment is a sentence because H5's ConfirmDialog collapses the
     // newlines, so the operator sees one run-on line. Punctuated this way it
@@ -611,11 +624,11 @@ const POReceiptShortcutV7 = class {
       lines.push(
         collected.serials.length > 0
           ? 'Serials: ' + collected.serials.join(', ') + '.'
-          : ASSIGNED_BY_M3.serial + '.'
+          : numberNote + '.'
       );
     } else if (collected.mode === 'lot') {
       lines.push(
-        collected.lot ? 'Lot ' + collected.lot + '.' : ASSIGNED_BY_M3.lot + '.'
+        collected.lot ? 'Lot ' + collected.lot + '.' : numberNote + '.'
       );
       if (collected.expiry) lines.push('Expiry ' + collected.expiry + '.');
     }

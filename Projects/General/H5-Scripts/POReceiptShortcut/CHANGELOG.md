@@ -224,6 +224,39 @@ line lookup, which disagreed with the advice table about statuses 25 and 30.
 These are now one table, and line detail is shown whenever the caller found any
 rather than for a hand-picked subset.
 
+### Which BACD asks the operator for a number
+
+M3's field help for `BACD` (MMBACD) is the authority, and it does not group the
+way either PPS300 helper does:
+
+| BACD | M3's description | Operator supplies at receipt |
+| --- | --- | --- |
+| 0 | Manually | **yes** |
+| 1, 2, 3, 6 | Automatically, from the series 11 sequence (CRS165/E) | no |
+| 7 | Automatically, from the numbering rules (CRS040) | no |
+| 4 | Goods receiving number generated during goods receipt | no — PPS300 defaults `BANO` to the receiving number |
+| 5 | Order number, only used with manufacturing orders | no |
+| 8, 9 | Lot reference filled in when reporting picking lines | no — outbound, not receipt |
+
+So the gate is `BACD == 0`, and both obvious alternatives are wrong:
+
+- **`ManualLotNo()`** adds `CRBN != 1 && DSTO != 1`. Its own comment reads
+  "Check if Manual numbering Lot No and not mandantory in PPS300" — it decides
+  whether PPS300's *panel* offers an optional prompt. This script never goes
+  through PPS300, it stages to MHS850MI. Using it skipped the serial on item
+  `651103` (`BACD 0`) under receiving method `A11` (`CRBN 1`, `DSTO 1`).
+- **`AutoLotNo()`** is false for 5, 8 and 9, so stopping there prompted for
+  numbers an inbound receipt never assigns.
+
+`operatorSuppliesNumber(indi, bacd)` is now the gate. `autoLotNo` survives for
+one job only: deciding whether the dialog may say "assigned by M3", which is
+true for the automatic methods and false for 5, 8 and 9.
+
+The **Generate serials** shortcut — V6's button that fills each field with
+`PUNO-1`, `PUNO-2` … — is offered only where `MMS240MI/Add` requires and
+accepts a supplied `SERN`, which is `BACD 0`. Typing a serial is a decision;
+having the script invent five is not.
+
 ### Found while validating
 
 Two constraints on `MHS850MI/AddWhsLine` that the MI catalog does not state.

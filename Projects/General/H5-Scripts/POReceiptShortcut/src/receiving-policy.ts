@@ -77,6 +77,30 @@ export function manualLotNo(
 }
 
 /**
+ * True when the operator supplies the lot/serial at goods receipt.
+ *
+ * From M3's own field help for BACD (MMBACD):
+ *
+ *   0        Manually.
+ *   1,2,3,6  Automatically, from the series 11 sequence on CRS165/E.
+ *   7        Automatically, from the numbering rules on CRS040.
+ *   4        Goods receiving number generated during goods receipt. PPS300
+ *            defaults BANO to the receiving number for this one.
+ *   5        Order number — only used with manufacturing orders.
+ *   8,9      Simple lot tracing for OUTBOUND deliveries; the lot reference is
+ *            filled in when reporting picking lines, not at receipt.
+ *
+ * Only 0 asks the operator for a number during a purchase receipt. 5, 8 and 9
+ * are not inbound numbering at all, which is why autoLotNo() is the wrong
+ * question here: it is false for those three, so using it prompted for serials
+ * an inbound receipt never assigns.
+ */
+export function operatorSuppliesNumber(indi: string, bacd: number): boolean {
+  if (classifyReceiptMode(indi) === 'plain') return false;
+  return bacd === MANUAL_NUMBERING;
+}
+
+/**
  * Which collection flow the item needs.
  *
  * V6 branched on '2' and '3' only, so INDI 1 and 5 fell through to the
@@ -141,6 +165,9 @@ export function isDirectPutAway(dsto: number): boolean {
  * works on BACD 0. Everything else fails at equipment creation and trips its
  * rollback path.
  */
+
+/** The one BACD where M3 expects the operator to supply the number. */
+const MANUAL_NUMBERING = 0;
 
 /** BACD values where MMS240MI/Add rejects a supplied SERN (MM24031). */
 const SERN_MUST_BE_BLANK = [1, 2, 3, 6, 7];

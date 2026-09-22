@@ -162,10 +162,18 @@ var POReceiptShortcutV7 = (function() {
 	* What to say when the operator supplied no number because M3 generates it.
 	* Printing a bare "Lot:" with nothing after it reads like a missing value.
 	*/
-	var ASSIGNED_BY_M3 = {
-		lot: "Lot number assigned by M3",
-		serial: "Serial numbers assigned by M3"
-	};
+	/**
+	* Why no number was collected, when none was.
+	*
+	* "assigned by M3" is only true for the automatic methods. BACD 5 is a
+	* manufacturing order number and 8 and 9 are outbound picking references, so
+	* for those nothing assigns a number at goods receipt and saying M3 will is
+	* wrong. `auto` comes from autoLotNo; the caller owns that policy.
+	*/
+	function uncollectedNumberNote(mode, auto, bacd) {
+		var subject = mode === "serial" ? "Serial numbers" : "Lot number";
+		return auto ? subject + " assigned by M3" : subject + " not entered at goods receipt (numbering method " + bacd + ")";
+	}
 	function locationPhrase(location) {
 		return location ? "to " + location : "to the location M3 assigned";
 	}
@@ -184,11 +192,11 @@ var POReceiptShortcutV7 = (function() {
 		var units = plural(summary.quantity || 0, "unit") + " received " + where;
 		if (summary.mode === "serial") {
 			var serials = summary.serials || [];
-			if (serials.length === 0) return units + ".\n" + ASSIGNED_BY_M3.serial + ".";
+			if (serials.length === 0) return units + ".\n" + (summary.numberNote || "") + ".";
 			return plural(serials.length, "serial") + " received " + where + ".\nSerials: " + serials.join(", ") + ".";
 		}
 		if (summary.mode === "lot") {
-			var lines = [units + ".", (summary.lot ? "Lot " + summary.lot : ASSIGNED_BY_M3.lot) + "."];
+			var lines = [units + ".", (summary.lot ? "Lot " + summary.lot : summary.numberNote || "") + "."];
 			if (summary.expiry) lines.push("Expiry " + summary.expiry + ".");
 			return lines.join("\n");
 		}
@@ -3158,6 +3166,29 @@ var POReceiptShortcutV7 = (function() {
 		return isAutoNumberingMethod(bacd);
 	}
 	/**
+	* True when the operator supplies the lot/serial at goods receipt.
+	*
+	* From M3's own field help for BACD (MMBACD):
+	*
+	*   0        Manually.
+	*   1,2,3,6  Automatically, from the series 11 sequence on CRS165/E.
+	*   7        Automatically, from the numbering rules on CRS040.
+	*   4        Goods receiving number generated during goods receipt. PPS300
+	*            defaults BANO to the receiving number for this one.
+	*   5        Order number — only used with manufacturing orders.
+	*   8,9      Simple lot tracing for OUTBOUND deliveries; the lot reference is
+	*            filled in when reporting picking lines, not at receipt.
+	*
+	* Only 0 asks the operator for a number during a purchase receipt. 5, 8 and 9
+	* are not inbound numbering at all, which is why autoLotNo() is the wrong
+	* question here: it is false for those three, so using it prompted for serials
+	* an inbound receipt never assigns.
+	*/
+	function operatorSuppliesNumber(indi, bacd) {
+		if (classifyReceiptMode(indi) === "plain") return false;
+		return bacd === MANUAL_NUMBERING;
+	}
+	/**
 	* Which collection flow the item needs.
 	*
 	* V6 branched on '2' and '3' only, so INDI 1 and 5 fell through to the
@@ -3208,6 +3239,8 @@ var POReceiptShortcutV7 = (function() {
 	* works on BACD 0. Everything else fails at equipment creation and trips its
 	* rollback path.
 	*/
+	/** The one BACD where M3 expects the operator to supply the number. */
+	var MANUAL_NUMBERING = 0;
 	/** BACD values where MMS240MI/Add rejects a supplied SERN (MM24031). */
 	var SERN_MUST_BE_BLANK = [
 		1,
@@ -3541,7 +3574,7 @@ var POReceiptShortcutV7 = (function() {
 								this.log.Info("Receipt cancelled by the operator");
 								return [2];
 							}
-							return [4, confirm(DIALOG_TITLES.confirmReceipt, this.describeIntent(identity, collected, entered))];
+							return [4, confirm(DIALOG_TITLES.confirmReceipt, this.describeIntent(identity, collected, entered, this.numberNote(context, collected)))];
 						case 6:
 							confirmed = _a.sent();
 							if (!confirmed) {
@@ -3728,8 +3761,8 @@ var POReceiptShortcutV7 = (function() {
 						lines: [{ RVQA: context.quantity }],
 						serials: []
 					}];
-					if (autoLotNo(context.indi, context.bacd)) {
-						this.log.Info("M3 generates the number for this item (BACD " + context.bacd + "); none collected");
+					if (!operatorSuppliesNumber(context.indi, context.bacd)) {
+						this.log.Info("BACD " + context.bacd + " is not operator-supplied at goods receipt; no number collected");
 						return [2, {
 							mode,
 							lines: [{ RVQA: context.quantity }],
@@ -3915,7 +3948,8 @@ var POReceiptShortcutV7 = (function() {
 								lot: collected.lot,
 								expiry: collected.expiry,
 								quantity: Number(context.quantity || "0"),
-								location
+								location,
+								numberNote: this.numberNote(context, collected)
 							}))];
 						case 5:
 							_a.sent();
@@ -3937,15 +3971,19 @@ var POReceiptShortcutV7 = (function() {
 				this.log.Warning("Could not refresh the panel: " + (error && error.message || error));
 			}
 		};
-		class_1.prototype.describeIntent = function(identity, collected, quantity) {
+		/** Why no lot/serial was collected, for whichever dialog needs to say so. */
+		class_1.prototype.numberNote = function(context, collected) {
+			return uncollectedNumberNote(collected.mode === "lot" ? "lot" : "serial", autoLotNo(context.indi, context.bacd), context.bacd);
+		};
+		class_1.prototype.describeIntent = function(identity, collected, quantity, numberNote) {
 			var lines = [
 				"Purchase order " + identity.PUNO + ", line " + identity.PNLI + ".",
 				"Item " + identity.ITNO + ".",
 				"Quantity " + quantity + "."
 			];
-			if (collected.mode === "serial") lines.push(collected.serials.length > 0 ? "Serials: " + collected.serials.join(", ") + "." : ASSIGNED_BY_M3.serial + ".");
+			if (collected.mode === "serial") lines.push(collected.serials.length > 0 ? "Serials: " + collected.serials.join(", ") + "." : numberNote + ".");
 			else if (collected.mode === "lot") {
-				lines.push(collected.lot ? "Lot " + collected.lot + "." : ASSIGNED_BY_M3.lot + ".");
+				lines.push(collected.lot ? "Lot " + collected.lot + "." : numberNote + ".");
 				if (collected.expiry) lines.push("Expiry " + collected.expiry + ".");
 			}
 			return lines.join("\n");

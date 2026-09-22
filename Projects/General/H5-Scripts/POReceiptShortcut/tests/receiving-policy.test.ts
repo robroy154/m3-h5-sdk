@@ -9,6 +9,7 @@ import {
   isDirectPutAway,
   lotMustPreExist,
   manualLotNo,
+  operatorSuppliesNumber,
 } from '../src/receiving-policy';
 
 /**
@@ -58,25 +59,40 @@ describe('autoLotNo — ported from PPS300_MVX.java AutoLotNo()', () => {
   });
 });
 
-describe('which gate decides whether to collect a number', () => {
-  // Found receiving PO 2007775 in H5: item 651103, INDI 2 / BACD 0, under
-  // receiving method A11 (CRBN 1, DSTO 1). The script collected no serial and
-  // told the operator M3 would assign one. BACD 0 means it will not.
-  it('autoLotNo is false for BACD 0, so a serial must be collected', () => {
-    expect(autoLotNo(LotControl.SERIAL, 0)).toBe(false);
+describe('operatorSuppliesNumber — which BACD asks the operator', () => {
+  // M3's field help for BACD (MMBACD):
+  //   0        Manually
+  //   1,2,3,6  Automatically, from the series 11 sequence (CRS165/E)
+  //   7        Automatically, from the numbering rules (CRS040)
+  //   4        Goods receiving number generated during goods receipt
+  //   5        Order number — only used with manufacturing orders
+  //   8,9      Lot reference filled in when reporting picking lines (outbound)
+  it('asks only for BACD 0', () => {
+    expect(operatorSuppliesNumber(LotControl.SERIAL, 0)).toBe(true);
+    for (const bacd of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      expect(operatorSuppliesNumber(LotControl.SERIAL, bacd), 'BACD ' + bacd)
+        .toBe(false);
+    }
   });
 
-  it('manualLotNo disagrees, because it also asks PPS300 panel questions', () => {
-    // PPS300's own comment: "Check if Manual numbering Lot No and not
-    // mandantory in PPS300". CRBN/DSTO decide whether that PANEL prompts.
-    // This script stages to MHS850MI and never goes through PPS300, so using
-    // manualLotNo as the gate skipped a serial the item genuinely needs.
+  it('asks nothing for an uncontrolled item, whatever BACD says', () => {
+    expect(operatorSuppliesNumber(LotControl.NONE, 0)).toBe(false);
+  });
+
+  it('is the gate, because the two obvious alternatives both misfire', () => {
+    // manualLotNo() adds PPS300's panel conditions (CRBN != 1 && DSTO != 1),
+    // so it skipped the serial on item 651103 (BACD 0) under receiving method
+    // A11. Seen on PO 2007775 in H5.
     expect(manualLotNo(LotControl.SERIAL, 0, 1, 1)).toBe(false);
-  });
+    expect(operatorSuppliesNumber(LotControl.SERIAL, 0)).toBe(true);
 
-  it('still collects nothing when M3 really does generate the number', () => {
-    // PO 2007774, item Y21002: INDI 3 / BACD 6. This one is genuinely auto.
-    expect(autoLotNo('3', 6)).toBe(true);
+    // autoLotNo() is false for 5, 8 and 9, so stopping there prompted for
+    // numbers an inbound receipt never assigns.
+    for (const bacd of [5, 8, 9]) {
+      expect(autoLotNo(LotControl.SERIAL, bacd), 'BACD ' + bacd).toBe(false);
+      expect(operatorSuppliesNumber(LotControl.SERIAL, bacd), 'BACD ' + bacd)
+        .toBe(false);
+    }
   });
 });
 

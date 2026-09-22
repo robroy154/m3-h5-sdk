@@ -4,6 +4,7 @@ import {
   DIALOG_TITLES,
   buildReceiptSummary,
   buildValidationMessage,
+  uncollectedNumberNote,
 } from '../src/presentation';
 
 describe('buildReceiptSummary', () => {
@@ -52,18 +53,23 @@ describe('buildReceiptSummary', () => {
     // An automatic BACD means M3 generates the numbers, so none are collected.
     // Reporting "0 serials received" made a successful receipt read as a
     // failure. Seen on PO 2007774 in H5.
-    const out = buildReceiptSummary({ mode: 'serial', quantity: 5, location: '' });
+    const out = buildReceiptSummary({
+      mode: 'serial', quantity: 5, location: '',
+      numberNote: uncollectedNumberNote('serial', true, 6),
+    });
     expect(out).toContain('5 units received');
     expect(out).toContain('Serial numbers assigned by M3');
     expect(out).not.toContain('0 serial');
   });
 
   it('never prints a bare "Lot:" when M3 assigned the number', () => {
-    const out = buildReceiptSummary({ mode: 'lot', quantity: 5, location: '' });
+    const out = buildReceiptSummary({
+      mode: 'lot', quantity: 5, location: '',
+      numberNote: uncollectedNumberNote('lot', true, 6),
+    });
     expect(out).toContain('5 units received');
     expect(out).toContain('Lot number assigned by M3');
     expect(out).not.toMatch(/Lot:/);
-    expect(out).not.toMatch(/Lot:\s*$/m);
   });
 });
 
@@ -117,4 +123,22 @@ describe('buildValidationMessage', () => {
 
   it('is empty when there is nothing to report', () =>
     expect(buildValidationMessage([], [], 20)).toBe(''));
+});
+
+describe('uncollectedNumberNote', () => {
+  it('credits M3 only for the automatic methods', () => {
+    expect(uncollectedNumberNote('serial', true, 6))
+      .toBe('Serial numbers assigned by M3');
+  });
+
+  it('does not claim M3 assigns anything for BACD 5, 8 and 9', () => {
+    // 5 is a manufacturing order number; 8 and 9 are outbound picking lot
+    // references. Nothing assigns a number at goods receipt for those.
+    for (const bacd of [5, 8, 9]) {
+      const out = uncollectedNumberNote('serial', false, bacd);
+      expect(out).toContain('not entered at goods receipt');
+      expect(out).toContain('numbering method ' + bacd);
+      expect(out).not.toContain('assigned by M3');
+    }
+  });
 });

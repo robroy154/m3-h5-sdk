@@ -34,16 +34,32 @@ export interface ReceiptSummary {
   quantity?: number;
   /** Blank when M3 assigned the location itself. */
   location?: string;
+  /** Why no lot/serial was collected. From uncollectedNumberNote. */
+  numberNote?: string;
 }
 
 /**
  * What to say when the operator supplied no number because M3 generates it.
  * Printing a bare "Lot:" with nothing after it reads like a missing value.
  */
-export const ASSIGNED_BY_M3 = {
-  lot: 'Lot number assigned by M3',
-  serial: 'Serial numbers assigned by M3',
-};
+/**
+ * Why no number was collected, when none was.
+ *
+ * "assigned by M3" is only true for the automatic methods. BACD 5 is a
+ * manufacturing order number and 8 and 9 are outbound picking references, so
+ * for those nothing assigns a number at goods receipt and saying M3 will is
+ * wrong. `auto` comes from autoLotNo; the caller owns that policy.
+ */
+export function uncollectedNumberNote(
+  mode: 'serial' | 'lot',
+  auto: boolean,
+  bacd: number
+): string {
+  const subject = mode === 'serial' ? 'Serial numbers' : 'Lot number';
+  return auto
+    ? subject + ' assigned by M3'
+    : subject + ' not entered at goods receipt (numbering method ' + bacd + ')';
+}
 
 function locationPhrase(location: string | undefined): string {
   return location ? 'to ' + location : 'to the location M3 assigned';
@@ -69,7 +85,7 @@ export function buildReceiptSummary(summary: ReceiptSummary): string {
     // No serials collected means M3 generated them (an automatic BACD). Saying
     // "0 serials received" would report a successful receipt as a failure.
     if (serials.length === 0) {
-      return units + '.\n' + ASSIGNED_BY_M3.serial + '.';
+      return units + '.\n' + (summary.numberNote || '') + '.';
     }
     return plural(serials.length, 'serial') + ' received ' + where +
       '.\nSerials: ' + serials.join(', ') + '.';
@@ -78,7 +94,7 @@ export function buildReceiptSummary(summary: ReceiptSummary): string {
   if (summary.mode === 'lot') {
     const lines = [
       units + '.',
-      (summary.lot ? 'Lot ' + summary.lot : ASSIGNED_BY_M3.lot) + '.',
+      (summary.lot ? 'Lot ' + summary.lot : summary.numberNote || '') + '.',
     ];
     if (summary.expiry) {
       lines.push('Expiry ' + summary.expiry + '.');
